@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyDesktop Pal - Refined UI/UX Mockup</title>
+    <style>
+        /* Basic Reset & Font */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0f2f7; /* Light blue desktop background */
+            color: #333;
+            padding: 20px;
+            height: 100vh;
+            position: relative;
+            overflow: hidden; /* Prevent scrollbars for mockup */
+        }
+
+        /* --- Desktop Area Simulation --- */
+        .desktop-area {
+            position: relative;
+            height: 100%;
+            border: 1px dashed #ccc;
+            padding: 10px;
+        }
+        .mockup-title {
+            position: absolute; top: 10px; left: 10px;
+            background-color: rgba(255, 255, 255, 0.8); padding: 5px 10px;
+            border-radius: 4px; font-size: 14px; font-weight: bold; z-index: 100;
+        }
+
+        /* --- The Pet Placeholder --- */
+        .desktop-pet-container {
+             position: absolute;
+             bottom: 50px; /* Position above taskbar area */
+             left: 100px;
+             width: 90px; /* Container slightly larger for bubble */
+             height: 100px;
+        }
+        .desktop-pet {
+            width: 80px; height: 80px;
+            background-color: #ffcc80; border: 2px solid #e65100;
+            border-radius: 50% 50% 30% 30% / 60% 60% 40% 40%;
+            position: absolute; bottom: 0; left: 5px; /* Center in container */
+            cursor: grab; display: flex; justify-content: center; align-items: center;
+            text-align: center; font-size: 12px; color: #e65100;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.1s ease-out;
+        }
+        .desktop-pet:hover { transform: scale(1.05); }
+        .desktop-pet::before { content: 'Pet :)'; }
+
+        /* --- Thought Bubble --- */
+        .thought-bubble {
+            position: absolute;
+            top: -5px; /* Position above pet */
+            left: 55px; /* Offset to the side */
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ccc;
+            border-radius: 50%; /* Circular bubble */
+            padding: 5px 8px;
+            font-size: 18px; /* Icon size */
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+            z-index: 5;
+            /* display: none; /* Control visibility with JS */
+        }
+        .thought-bubble::after { /* Pointer */
+            content: '';
+            position: absolute;
+            bottom: -4px; left: 5px;
+            width: 8px; height: 8px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-right: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            transform: rotate(45deg);
+        }
+
+
+        /* --- Context Menu (Refined) --- */
+        .context-menu {
+            position: absolute; top: 300px; left: 200px;
+            background-color: #ffffff; border: 1px solid #ccc; border-radius: 4px;
+            box-shadow: 3px 3px 8px rgba(0,0,0,0.15); padding: 5px 0;
+            min-width: 180px; z-index: 10;
+        }
+        .context-menu ul { list-style: none; }
+        .context-menu li {
+            padding: 8px 15px; font-size: 14px; cursor: pointer;
+            display: flex; align-items: center; gap: 10px; /* Increased gap */
+        }
+        .context-menu li:hover { background-color: #f0f0f0; }
+        .context-menu hr { border: none; border-top: 1px solid #eee; margin: 5px 0; }
+        .context-menu .icon-placeholder {
+            display: inline-block; width: 18px; height: 18px; /* Slightly larger */
+            text-align: center; font-size: 14px; /* Match icon size */
+            line-height: 18px; color: #555; font-weight: bold; /* Make icons clearer */
+        }
+
+        /* --- Settings Window (Sidebar Layout) --- */
+        .settings-window {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%; max-width: 650px; /* Wider for sidebar */
+            height: 70vh; max-height: 500px; /* Fixed height */
+            background-color: #f8f9fa; border: 1px solid #ccc; border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 20;
+            display: flex; /* Use flexbox for layout */
+            overflow: hidden; /* Prevent content overflow */
+            /* display: none; /* Initially hidden */
+        }
+
+        /* Sidebar Navigation */
+        .settings-nav {
+            width: 160px; /* Fixed width for sidebar */
+            background-color: #e9ecef;
+            border-right: 1px solid #ccc;
+            padding: 15px 0;
+            flex-shrink: 0; /* Prevent sidebar from shrinking */
+        }
+        .settings-nav ul { list-style: none; }
+        .settings-nav li {
+            padding: 12px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #495057;
+            border-left: 3px solid transparent; /* Indicator for active */
+        }
+        .settings-nav li:hover { background-color: #dee2e6; }
+        .settings-nav li.active {
+            background-color: #ffffff;
+            font-weight: bold;
+            color: #007bff;
+            border-left-color: #007bff;
+        }
+        .settings-nav .icon-placeholder {
+             display: inline-block; width: 18px; height: 18px;
+             text-align: center; font-size: 14px; line-height: 18px;
+        }
+
+        /* Main Content Area */
+        .settings-main-content {
+            flex-grow: 1; /* Take remaining space */
+            display: flex;
+            flex-direction: column; /* Stack header, content, footer */
+        }
+        .settings-header {
+            background-color: #ffffff; padding: 10px 20px; font-weight: bold;
+            border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; /* Prevent header from shrinking */
+        }
+        .settings-header .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #666; }
+        .settings-header .close-btn:hover { color: #333; }
+
+        .settings-content-area {
+            padding: 25px;
+            overflow-y: auto; /* Enable scroll for content */
+            flex-grow: 1; /* Take available vertical space */
+        }
+        .settings-section { margin-bottom: 30px; }
+        .settings-section h3 {
+            font-size: 18px; margin-bottom: 15px; border-bottom: 1px solid #eee;
+            padding-bottom: 8px; color: #007bff; font-weight: 600;
+        }
+        .setting-item {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; font-size: 14px;
+        }
+        .setting-item label:first-child { flex-basis: 60%; /* Give label more space */ }
+
+        /* Toggle Switch Styling (Unchanged) */
+        .toggle-switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #28a745; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Slider Styling (Unchanged) */
+        .range-slider { flex-grow: 1; margin-left: 15px; cursor: pointer; max-width: 150px; /* Limit width */ }
+
+        /* Activity Level Radio Buttons */
+        .activity-options label { margin-left: 15px; font-size: 14px; cursor: pointer; }
+        .activity-options input[type="radio"] { margin-right: 5px; }
+
+        /* Pet/Accessory Selection Section Layout */
+        .selection-section-layout {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Live Preview Area */
+        .live-preview {
+            flex-basis: 120px; /* Fixed width for preview */
+            flex-shrink: 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #e9ecef;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            height: 180px; /* Fixed height */
+        }
+        .live-preview .preview-pet {
+            width: 80px; height: 80px;
+            background-color: #ffcc80; /* Match selected pet */
+            border: 2px solid #e65100;
+            border-radius: 50% 50% 30% 30% / 60% 60% 40% 40%;
+            margin-bottom: 10px;
+            position: relative; /* For accessory positioning */
+        }
+         /* Example Accessory in Preview */
+        .live-preview .preview-accessory {
+            position: absolute;
+            top: -5px; left: 20px; /* Position accessory on pet */
+            font-size: 24px;
+            /* content: '👓'; /* Example accessory */
+        }
+
+        .live-preview .preview-name {
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* Selection Grid */
+        .selection-grid-container {
+            flex-grow: 1; /* Take remaining space */
+        }
+        .selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+        }
+        .grid-item {
+            border: 2px solid #ddd; border-radius: 4px; padding: 10px;
+            text-align: center; cursor: pointer; transition: all 0.2s ease;
+            background-color: #fff; height: 90px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .grid-item:hover { border-color: #007bff; transform: translateY(-2px); }
+        .grid-item.selected {
+            border-color: #007bff; box-shadow: 0 0 8px rgba(0, 123, 255, 0.4);
+            transform: scale(1.02);
+        }
+        .grid-item .item-preview {
+            width: 45px; height: 45px; background-color: #eee; margin-bottom: 8px;
+            border-radius: 4px; display: flex; justify-content: center; align-items: center; font-size: 20px;
+        }
+        .grid-item .item-name { font-size: 12px; color: #555; }
+        /* Special style for "Get More" */
+        .grid-item.get-more {
+            background-color: #f8f9fa; border-style: dashed; color: #6c757d;
+        }
+        .grid-item.get-more:hover { border-color: #5a6268; color: #343a40; }
+        .grid-item.get-more .item-preview { background-color: transparent; font-size: 24px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="desktop-area">
+        <div class="mockup-title">Refined UI Mockup Area</div>
+
+        <!-- Pet Placeholder with Thought Bubble -->
+        <div class="desktop-pet-container">
+            <div class="desktop-pet"></div>
+            <div class="thought-bubble">🍕</div> <!-- Example: Pizza for hungry state -->
+        </div>
+
+
+        <!-- Context Menu (Refined Order & Icons) -->
+        <div class="context-menu">
+            <ul>
+                <li><span class="icon-placeholder">🍎</span> Feed</li>
+                <li><span class="icon-placeholder">🖐️</span> Pet</li>
+                <li><span class="icon-placeholder">👁️</span> Hide Pet</li>
+                <hr>
+                <li><span class="icon-placeholder">🐾</span> Change Pet...</li>
+                <li><span class="icon-placeholder">🎩</span> Accessories...</li>
+                <li><span class="icon-placeholder">📌</span> Always on Top</li>
+                <hr>
+                <li><span class="icon-placeholder">⚙️</span> Settings...</li>
+                <li><span class="icon-placeholder">❌</span> Exit</li>
+            </ul>
+        </div>
+
+        <!-- Settings Window (Sidebar Layout) -->
+        <div class="settings-window">
+            <!-- Sidebar Navigation -->
+            <nav class="settings-nav">
+                <ul>
+                    <li class="active"><span class="icon-placeholder">📄</span> General</li>
+                    <li><span class="icon-placeholder">🎨</span> Appearance</li>
+                    <li><span class="icon-placeholder">🐾</span> Pet Selection</li>
+                    <li><span class="icon-placeholder">🎩</span> Accessories</li>
+                    <li><span class="icon-placeholder">🛒</span> Store</li> <!-- Example for future -->
+                </ul>
+            </nav>
+
+            <!-- Main Content Area -->
+            <div class="settings-main-content">
+                <div class="settings-header">
+                    <span>Settings</span>
+                    <button class="close-btn" title="Close">×</button>
+                </div>
+
+                <div class="settings-content-area">
+                    <!-- Content for 'General' Section (Example) -->
+                    <div class="settings-section" id="general-settings">
+                        <h3>General</h3>
+                        <div class="setting-item">
+                            <label for="launch-startup">Launch MyDesktop Pal on Startup</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="launch-startup" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label for="enable-sound">Enable Sound Effects</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="enable-sound">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                         <div class="setting-item">
+                            <label for="activity-level">Pet Activity Level</label>
+                            <div class="activity-options">
+                                <input type="radio" id="activity-calm" name="activity" value="calm"> <label for="activity-calm">Calm</label>
+                                <input type="radio" id="activity-normal" name="activity" value="normal" checked> <label for="activity-normal">Normal</label>
+                                <input type="radio" id="activity-playful" name="activity" value="playful"> <label for="activity-playful">Playful</label>
+                            </div>
+                        </div>
+                         <div class="setting-item">
+                            <label for="auto-hide">Auto-hide on Fullscreen</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="auto-hide">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Content for 'Appearance' Section (Example - initially hidden) -->
+                     <div class="settings-section" id="appearance-settings" style="display: none;">
+                        <h3>Appearance</h3>
+                         <div class="setting-item">
+                            <label for="pet-size">Pet Size</label>
+                            <input type="range" id="pet-size" class="range-slider" min="50" max="150" value="100">
+                        </div>
+                        <div class="setting-item">
+                            <label for="pet-opacity">Pet Opacity</label>
+                            <input type="range" id="pet-opacity" class="range-slider" min="20" max="100" value="100">
+                        </div>
+                    </div>
+
+
+                    <!-- Content for 'Pet Selection' Section (Example - initially hidden) -->
+                    <div class="settings-section" id="pet-selection-settings" style="display: none;">
+                        <h3>Pet Selection</h3>
+                        <div class="selection-section-layout">
+                            <div class="live-preview">
+                                <div class="preview-pet" style="background-color: #ffcc80; border-color: #e65100;">
+                                    <!-- Accessories would be overlaid here if selected -->
+                                </div>
+                                <div class="preview-name">Blobby</div>
+                            </div>
+                            <div class="selection-grid-container">
+                                <div class="selection-grid">
+                                    <div class="grid-item selected">
+                                        <span class="item-preview" style="background-color: #ffcc80;"></span>
+                                        <span class="item-name">Blobby</span>
+                                    </div>
+                                    <div class="grid-item">
+                                        <span class="item-preview" style="background-color: #a5d6a7;"></span>
+                                        <span class="item-name">Leafy</span>
+                                    </div>
+                                    <div class="grid-item">
+                                        <span class="item-preview" style="background-color: #90caf9;"></span>
+                                        <span class="item-name">Droplet</span>
+                                    </div>
+                                    <div class="grid-item get-more">
+                                        <span class="item-preview">+</span>
+                                        <span class="item-name">Get More</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                     <!-- Content for 'Accessories' Section (Example - initially hidden) -->
+                    <div class="settings-section" id="accessories-settings" style="display: none;">
+                        <h3>Accessories</h3>
+                         <div class="selection-section-layout">
+                            <div class="live-preview">
+                                <div class="preview-pet" style="background-color: #ffcc80; border-color: #e65100;">
+                                     <span class="preview-accessory">👓</span> <!-- Example accessory shown -->
+                                </div>
+                                <div class="preview-name">Blobby</div>
+                            </div>
+                            <div class="selection-grid-container">
+                                <div class="selection-grid">
+                                    <div class="grid-item">
+                                        <span class="item-preview">👑</span>
+                                        <span class="item-name">Crown</span>
+                                    </div>
+                                    <div class="grid-item selected">
+                                        <span class="item-preview">👓</span>
+                                        <span class="item-name">Glasses</span>
+                                    </div>
+                                    <div class="grid-item">
+                                        <span class="item-preview">🎀</span>
+                                        <span class="item-name">Bow Tie</span>
+                                    </div>
+                                    <div class="grid-item">
+                                        <span class="item-preview">🧢</span>
+                                        <span class="item-name">Cap</span>
+                                    </div>
+                                     <div class="grid-item get-more">
+                                        <span class="item-preview">+</span>
+                                        <span class="item-name">Get More</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- Footer removed - actions implied by interaction or specific confirm buttons -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Basic JS for Tab Switching (Mockup Only) -->
+    <script>
+        const navItems = document.querySelectorAll('.settings-nav li');
+        const contentSections = document.querySelectorAll('.settings-content-area .settings-section');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // Deactivate all nav items and hide all sections
+                navItems.forEach(i => i.classList.remove('active'));
+                contentSections.forEach(s => s.style.display = 'none');
+
+                // Activate clicked nav item
+                item.classList.add('active');
+
+                // Show corresponding content section
+                const targetId = item.textContent.trim().toLowerCase().replace(' ', '-') + '-settings';
+                // Adjust for specific IDs if needed
+                 let sectionId = '';
+                 if (item.textContent.includes('General')) sectionId = 'general-settings';
+                 else if (item.textContent.includes('Appearance')) sectionId = 'appearance-settings';
+                 else if (item.textContent.includes('Pet Selection')) sectionId = 'pet-selection-settings';
+                 else if (item.textContent.includes('Accessories')) sectionId = 'accessories-settings';
+                 // Add more else if for other sections like Store
+
+                const targetSection = document.getElementById(sectionId);
+                if (targetSection) {
+                    targetSection.style.display = 'block';
+                }
+            });
+        });
+
+        // Show the default section (General) initially
+        document.getElementById('general-settings').style.display = 'block';
+    </script>
+
+</body>
+</html>
