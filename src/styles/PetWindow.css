@@ -2,19 +2,22 @@
 
 /* Main container for pet and menu */
 .pet-container {
-  display: flex;
-  flex-direction: row; /* Arrange items horizontally */
-  align-items: center; /* Vertically center items */
-  justify-content: center; /* Center items horizontally */
-  gap: 10px; /* Adjust horizontal gap */
-  width: 100%;
-  height: 100%;
-  padding: 15px; /* Increase padding */
-  box-sizing: border-box; /* Include padding in width/height */
-  /* overflow: hidden; */ /* Hide overflow - Temporarily commented out for debugging */
-  background-color: transparent; /* Set background to transparent */
-  pointer-events: all;
+  /* display: flex; */ /* No longer using flex for main layout */
+  /* flex-direction: row; */
+  /* align-items: center; */
+  /* justify-content: center; */
+  /* gap: 10px; */
+  width: 100%; /* Or fit-content if needed */
+  height: 100%; /* Or fit-content */
+  padding: 15px; /* Keep padding for spacing */
+  box-sizing: border-box;
+  background-color: transparent;
+  pointer-events: none; /* Container doesn't block clicks */
+  position: relative; /* Crucial for absolute positioning of children */
+  z-index: 100;
 }
+
+/* Removed rule for .pet-container * as it's no longer needed */
 
 /* Pet element */
 .pet {
@@ -40,11 +43,12 @@
   user-select: none;
   /* -webkit-app-region: drag; */ /* Remove drag region entirely */
   /* z-index: 2; */ /* No longer needed with flex layout */
-  pointer-events: all; /* 确保宠物可以接收点击事件 */
+  pointer-events: auto; /* Pet should now always be interactive */
 }
 
 .pet:hover {
   transform: scale(1.05);
+  /* pointer-events: auto; - Removed, pet is always auto now */
 }
 
 .pet:active {
@@ -58,10 +62,14 @@
 
 /* 状态条 */
 .status-bar {
-  position: relative; /* Change from absolute */
+  position: absolute; /* Position absolutely relative to pet-container */
+  top: 15px; /* Align with top padding of container */
+  left: 100px; /* Position to the right of the pet (adjust as needed based on pet size/padding) */
+  /* bottom: -10px; */ /* Remove bottom positioning */
+  /* transform: translateX(-50%); */ /* Remove horizontal centering */
   /* top: -80px; */ /* Remove */
   /* left: 0; */ /* Remove */
-  width: 150px; /* Set a fixed width for the status bar */
+  width: 150px; /* Default width for full view */
   background-color: rgba(255, 255, 255, 0.9);
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -72,6 +80,53 @@
   flex-direction: column;
   gap: 6px;
   /* -webkit-app-region: no-drag; */ /* 移除 */
+  overflow: hidden; /* Hide overflowing content during transition */
+  transition: width 0.3s ease-in-out, padding 0.3s ease-in-out, background-color 0.3s ease-in-out, opacity 0.3s ease-in-out; /* Add transitions, including opacity */
+  opacity: 1; /* Always visible */
+  pointer-events: auto; /* Allow interaction if needed, e.g., clicking on status bar elements in future */
+}
+
+/* Remove the hover rule as the bar is always visible now */
+/*
+.pet-container:hover .status-bar {
+  opacity: 1;
+  pointer-events: auto;
+}
+*/
+
+/* Styles for the simplified status bar (when not hovering) */
+/* These styles apply when the 'simple' class is present */
+.status-bar.simple {
+  pointer-events: auto;
+}
+
+
+/* Styles for the simplified status bar (when not hovering) */
+.status-bar.simple {
+  width: auto; /* Auto width to fit content */
+  padding: 4px 8px; /* Smaller padding */
+  background-color: rgba(255, 255, 255, 0.8); /* Slightly more transparent */
+}
+
+/* Hide all items except the simple level display in simple mode */
+.status-bar.simple .status-item:not(.simple-level) {
+  display: none;
+}
+
+/* Ensure the simple level item is displayed correctly */
+.status-bar.simple .status-item.simple-level {
+  display: flex; /* Ensure it's displayed */
+  justify-content: center; /* Center the level text */
+}
+
+.status-bar.simple .status-label,
+.status-bar.simple .status-meter {
+  display: none; /* Hide label and meter in simple view */
+}
+
+.status-bar.simple .status-value {
+  min-width: auto; /* Remove min-width */
+  text-align: center; /* Center text */
 }
 
 .status-item {
@@ -79,6 +134,10 @@
   align-items: center;
   gap: 5px; /* 稍微减小间隙 */
   justify-content: space-between; /* 让元素分布在两端 */
+  opacity: 1; /* Default opacity */
+  max-height: 50px; /* Default max-height, adjust if needed */
+  overflow: hidden; /* Hide content if it overflows during transition */
+  transition: opacity 0.3s ease-in-out, max-height 0.3s ease-in-out; /* Add transitions */
 }
 
 .status-label {
@@ -119,6 +178,10 @@
   background-color: #06d6a0;
 }
 
+.status-meter-fill.exp {
+  background-color: #9b59b6; /* Added purple color for EXP bar */
+}
+
 /* 新增：状态数值样式 */
 .status-value {
   font-size: 11px; /* 稍小一点的字体 */
@@ -127,6 +190,13 @@
   min-width: 25px; /* 保证至少有一定宽度 */
   text-align: right; /* 右对齐 */
   flex-shrink: 0; /* 防止数值收缩 */
+}
+
+/* Specific style for EXP value to ensure it fits */
+.status-value.exp-value {
+  min-width: 60px; /* Increase min-width to fit "XXX / XXX" */
+  font-size: 10px; /* Slightly smaller font if needed */
+  text-align: right;
 }
 
 /* 低状态警告样式 */
@@ -208,14 +278,15 @@
   position: absolute; /* Position relative to the pet wrapper */
   /* top: -5px; */ /* Remove static positioning, will be handled by JS */
   /* left: 55px; */ /* Remove static positioning, will be handled by JS */
-  background-color: #ffffff; /* Opaque white background */
-  border: 1px solid #e2e8f0; /* Lighter border */
-  border-radius: 12px; /* Less circular radius */
-  padding: 8px 12px; /* Increased padding */
+  background-image: linear-gradient(to bottom, #ffffff 90%, #f8f9fa); /* Subtle gradient */
+  border: 1px solid #dee2e6; /* Slightly softer border */
+  border-radius: 14px; /* Slightly more rounded */
+  padding: 10px 14px; /* Slightly increased padding */
   /* font-size: 18px; */ /* Remove static font size, handled by JS */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08); /* Softer shadow */
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06); /* More diffused shadow */
+  color: #495057; /* Optimized text color for better readability */
   z-index: 5;
-  animation: popIn 0.3s ease-out;
+  animation: bubbleAppear 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* New animation */
   /* white-space: nowrap; */ /* Allow text wrapping */
   max-width: 150px; /* Optional: Limit maximum width */
 }
@@ -223,15 +294,16 @@
 .thought-bubble::after {
   content: '';
   position: absolute;
-  bottom: -5px; /* Position tail slightly lower */
-  left: 10px; /* Adjust horizontal position of tail */
-  width: 10px; /* Slightly larger tail */
-  height: 10px;
-  background-color: #ffffff; /* Match bubble background */
-  border: none; /* Remove border from tail */
-  border-bottom: 1px solid #e2e8f0; /* Add border only to relevant sides */
-  border-right: 1px solid #e2e8f0;
+  bottom: -6px; /* Position tail slightly lower */
+  left: 15px; /* Adjust horizontal position of tail */
+  width: 12px; /* Slightly larger tail */
+  height: 12px;
+  background-color: #ffffff; /* Match bubble background (top part of gradient) */
+  border: 1px solid #dee2e6; /* Match bubble border */
+  border-top: none; /* Remove border from sides not visible */
+  border-left: none;
   transform: rotate(45deg); /* Keep rotation */
+  border-bottom-right-radius: 3px; /* Slightly round the corner */
 }
 
 /* Menu (previously context menu) */
@@ -242,7 +314,7 @@
   /* left: 50%; */
   /* transform: translateX(-50%); */
   background-color: #ffffff; /* White background */
-  border: 1px solid #e2e8f0; /* Lighter border */
+  border: 2px solid #e2e8f0; /* Lighter border */
   border-radius: 10px; /* Softer radius */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow for popup */
   padding: 8px; /* Keep padding */
@@ -250,8 +322,8 @@
   flex-direction: column; /* Stack items vertically */
   width: fit-content; /* Make menu width fit content */
   gap: 6px; /* Keep gap */
-  /* min-width: 120px; */ /* Optional: set a min-width if needed */
-  z-index: 10; /* Ensure it's above other elements */
+  min-width: 120px; /* Set a min-width to prevent empty menu */
+  z-index: 1000; /* Higher z-index to ensure it's on top */
   animation: fadeIn 0.15s ease-out; /* Add a subtle fade-in */
   pointer-events: all; /* Ensure menu itself is interactive */
   /* -webkit-app-region: no-drag; */ /* 移除 */
@@ -290,7 +362,18 @@
 /* .menu .icon-placeholder { ... } */
 
 /* 动画效果 */
-@keyframes popIn {
+@keyframes bubbleAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes popIn { /* Keep original popIn if used elsewhere, otherwise remove */
   0% {
     opacity: 0;
     transform: scale(0.5);
@@ -340,12 +423,38 @@
 }
 .shake-animation { animation: shake 0.4s ease-in-out; }
 
+/* 快速摇晃动画 (喂食变体) */
+@keyframes fast-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+.fast-shake-animation { animation: fast-shake 0.3s linear; }
+
 /* 缩放/心跳动画 (例如：抚摸) */
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.1); }
 }
 .pulse-animation { animation: pulse 0.5s ease-in-out; }
+
+/* 开心摇摆动画 (抚摸变体) */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+.wiggle-animation { animation: wiggle 0.4s ease-in-out; }
+
+/* 睡觉动画 */
+@keyframes sleep {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(2px); }
+}
+.sleep-animation {
+  animation: sleep 1.5s ease-in-out infinite;
+  opacity: 0.8;
+}
 
 /* Remove drag handle style */
 /* .drag-handle { ... } */
@@ -422,12 +531,17 @@
     transform: scale(1.5) rotate(5deg);
     filter: brightness(1.8);
   }
+
   100% {
     transform: scale(1) rotate(0);
     filter: brightness(1);
     box-shadow: 0 0 0 rgba(255, 100, 200, 0);
   }
 }
+
+/* Removed .pet-interaction-area styles */
+/* Removed extraneous closing brace */
+
 
 /* 等级显示样式 */
 .level-display {
@@ -444,4 +558,147 @@
   justify-content: center;
   font-size: 12px;
   font-weight: bold;
+}
+
+/* --- Dragging Feedback Animations --- */
+
+/* 被提起动画 */
+@keyframes picked-up {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-8px) scale(1.05); } /* 向上跳跃并稍微放大 */
+  100% { transform: translateY(-5px) scale(1.03); } /* 停留在稍微抬起的状态 */
+}
+
+.pet.picked-up {
+  /* 应用动画，并保持最后一帧状态 */
+  animation: picked-up 0.3s ease-out forwards;
+}
+
+/* 拖拽中晃动动画 */
+@keyframes dragging-shake {
+  0%, 100% { transform: translateY(-5px) rotate(0deg) scale(1.03); } /* 保持抬起和放大状态 */
+  25% { transform: translateY(-5px) rotate(-2deg) scale(1.03); }
+  75% { transform: translateY(-5px) rotate(2deg) scale(1.03); }
+}
+
+/* 这个类会被 PetWindow.tsx 动态添加/移除 */
+.pet.dragging-shake {
+  /* 应用持续的晃动动画 */
+  /* 注意：确保这个动画不会覆盖 picked-up 或 landed 的结束状态 */
+  /* 如果 picked-up/landed 使用了 forwards，这个动画可能需要更复杂的处理 */
+  /* 暂时这样，如果效果不理想再调整 */
+  animation: dragging-shake 0.4s ease-in-out infinite alternate;
+}
+
+/* --- Simplified Status Bar Styles --- */
+
+/* Style for the status bar container when simplified */
+.status-bar.simple {
+  width: 55px; /* Fixed width for simple view (adjust as needed) */
+  min-width: 40px; /* Ensure a minimum width */
+  padding: 4px 8px; /* Reduce padding */
+  background-color: rgba(255, 255, 255, 0.8); /* Slightly more transparent */
+}
+
+/* Hide full status items when simple, except the level */
+.status-bar.simple .status-item:not(.simple-level) {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0; /* Remove padding during transition */
+  padding-bottom: 0;
+  margin-top: 0; /* Remove margin during transition */
+  margin-bottom: 0;
+  gap: 0; /* Remove gap */
+  border-top: none; /* Remove potential borders */
+}
+
+/* Style for the level item within the simplified bar */
+.status-item.simple-level {
+justify-content: center; /* Center the level text */
+gap: 0; /* No gap needed */
+}
+
+/* Adjust the level value text in simple mode */
+.status-bar.simple .status-value {
+min-width: auto; /* Remove min-width */
+text-align: center; /* Center text */
+font-size: 12px; /* Slightly larger font for visibility */
+}
+
+
+/* 落地动画 */
+@keyframes landed {
+  0% { transform: translateY(-5px) scale(1.03); } /* 从抬起状态开始 */
+  30% { transform: translateY(3px) scale(0.95); } /* 向下压缩 */
+  60% { transform: translateY(-2px) scale(1.02); } /* 轻微反弹 */
+  100% { transform: translateY(0) scale(1); } /* 恢复原状 */
+}
+
+.pet.landed {
+  /* 应用落地动画 */
+  animation: landed 0.4s ease-out;
+}
+
+/* 新增：待机 - 伸懒腰动画 */
+@keyframes stretch {
+  0%, 100% { transform: scaleY(1) scaleX(1); }
+  50% { transform: scaleY(1.15) scaleX(0.9); } /* 垂直拉伸，水平略微压缩 */
+}
+.stretch-animation {
+  animation: stretch 0.8s ease-in-out;
+}
+
+/* 新增：待机 - 晃动动画 */
+@keyframes idle-wiggle {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  25% { transform: translateX(-2px) rotate(-2deg); }
+  75% { transform: translateX(2px) rotate(2deg); }
+}
+.idle-wiggle-animation {
+  animation: idle-wiggle 0.6s ease-in-out;
+}
+
+/* 鼠标悬停歪头动画 */
+@keyframes tilt-head {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-8deg); } /* 稍微歪一下头 */
+}
+.tilt-head {
+  animation: tilt-head 0.6s ease-in-out;
+}
+
+/* 鼠标快速移动环顾动画 */
+@keyframes look-around-fast {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-10deg) scale(1.02); } /* 向左看 */
+  75% { transform: rotate(10deg) scale(1.02); } /* 向右看 */
+}
+.look-around-fast {
+  animation: look-around-fast 0.4s ease-in-out;
+}
+
+/* 眨眼动画 */
+@keyframes blink {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.1); } /* 垂直方向短暂压缩 */
+}
+
+.blink-animation {
+  animation: blink 0.3s ease-in-out;
+}
+
+/* 重复的眨眼动画定义已删除 */
+/* --- End Dragging Feedback Animations --- */
+
+/* --- Autonomous Movement Animation --- */
+@keyframes walk-animation {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-2px) rotate(-3deg); } /* Slight lift and tilt left */
+  75% { transform: translateY(-2px) rotate(3deg); } /* Slight lift and tilt right */
+}
+
+.walk-animation {
+  /* Apply the walking animation */
+  /* Adjust duration and timing function as needed */
+  animation: walk-animation 0.6s ease-in-out infinite alternate;
 }

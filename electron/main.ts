@@ -1,8 +1,20 @@
-import { app, BrowserWindow, ipcMain, screen, globalShortcut, Tray, Menu } from 'electron'
+import { app, BrowserWindow, ipcMain, screen, globalShortcut, Tray, Menu, dialog } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
+import { promises as fsPromises } from 'node:fs'
+import * as stream from 'stream';
+import type { SavedPetData } from '../src/types/petTypes'; // Import the type
+
+// 设置标准输出和标准错误的编码为 UTF-8
+if (process.stdout instanceof stream.Writable) {
+  process.stdout.setDefaultEncoding('utf-8');
+}
+if (process.stderr instanceof stream.Writable) {
+  process.stderr.setDefaultEncoding('utf-8');
+}
+
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -83,7 +95,7 @@ function createPetWindow() {
   // 设置鼠标穿透，允许事件转发到下面的窗口
   petWindow.setIgnoreMouseEvents(true, { forward: true })
   
-  // 禁止窗口右键菜单 (Temporarily disabled for debugging context menu issue)
+  // 注释掉禁止窗口右键菜单的代码，允许右键事件传递
   // petWindow.hookWindowMessage(0x0116, () => {
   //   petWindow?.setEnabled(false)
   //   petWindow?.setEnabled(true)
@@ -223,24 +235,7 @@ app.on('before-quit', () => {
   quitting = true
 })
 
-// 宠物状态
-interface PetState {
-  mood: number; // 0-100
-  cleanliness: number; // 0-100
-  hunger: number; // 0-100
-  energy: number; // 0-100
-  lastInteractionTime: number;
-}
-
-let petState: PetState = {
-  mood: 80,
-  cleanliness: 90,
-  hunger: 30,
-  energy: 70,
-  lastInteractionTime: Date.now()
-};
-
-// 宠物行为配置
+// 宠物行为配置 (保留，因为它似乎由设置管理)
 interface PetBehavior {
   activityLevel: 'calm' | 'normal' | 'playful';
   moveInterval: number;
@@ -253,44 +248,79 @@ let petBehavior: PetBehavior = {
   expressionChangeInterval: 15000 // 15秒
 };
 
+// 移除主进程的 petState 变量
+// let petState: PetState = { ... };
+
 // 状态持久化
 const STATE_FILE = path.join(app.getPath('userData'), 'pet-state.json');
+const STATE_FILE_BAK = path.join(app.getPath('userData'), 'pet-state.json.bak');
+const STATE_FILE_TMP = path.join(app.getPath('userData'), 'pet-state.json.tmp');
 
-async function loadPetState() {
+// 加载状态文件，优先加载主文件，失败则尝试备份文件
+async function loadSavedState(): Promise<SavedPetData | null> { // Update return type
   try {
-    const data = await fs.promises.readFile(STATE_FILE, 'utf-8');
-    petState = JSON.parse(data);
-    petState.lastInteractionTime = Date.now(); // 重置最后互动时间
-  } catch (err) {
-    console.log('使用默认宠物状态');
+    const data = await fsPromises.readFile(STATE_FILE, 'utf-8');
+    console.log('成功加载状态文件:', STATE_FILE);
+    const parsedData = JSON.parse(data);
+    // Basic validation to ensure it looks like SavedPetData
+    if (parsedData && typeof parsedData === 'object' && parsedData.status && parsedData.petTypeId) {
+        return parsedData as SavedPetData;
+    } else {
+        console.warn('解析的状态文件数据格式无效:', parsedData);
+        return null;
+    }
+  } catch (err: any) {
+    console.warn(`加载主状态文件失败 (${STATE_FILE}):`, err.message);
+    // 尝试加载备份文件
+    try {
+      const bakData = await fsPromises.readFile(STATE_FILE_BAK, 'utf-8');
+      console.log('成功加载备份状态文件:', STATE_FILE_BAK);
+      // 将备份恢复为主文件
+      await fsPromises.copyFile(STATE_FILE_BAK, STATE_FILE);
+      console.log('已从备份恢复状态文件。');
+      const parsedBakData = JSON.parse(bakData);
+      // Basic validation
+      if (parsedBakData && typeof parsedBakData === 'object' && parsedBakData.status && parsedBakData.petTypeId) {
+          return parsedBakData as SavedPetData;
+      } else {
+          console.warn('解析的备份状态文件数据格式无效:', parsedBakData);
+          return null;
+      }
+    } catch (bakErr: any) {
+      console.warn(`加载备份状态文件失败 (${STATE_FILE_BAK}):`, bakErr.message);
+      console.log('无法加载任何状态文件，将使用默认状态。');
+      return null; // 表示加载失败，应使用默认值
+    }
   }
 }
 
-async function savePetState() {
+// 保存状态到文件（原子写入 + 备份）
+async function saveStateToFile(stateToSave: SavedPetData) { // Update parameter type
   try {
-    await fs.promises.writeFile(STATE_FILE, JSON.stringify(petState));
+    // 1. 备份旧文件 (如果存在)
+    try {
+      await fsPromises.rename(STATE_FILE, STATE_FILE_BAK);
+    } catch (renameErr: any) {
+      if (renameErr.code !== 'ENOENT') { // ENOENT means the file didn't exist, which is fine
+        console.warn('备份旧状态文件失败:', renameErr);
+      }
+    }
+
+    // 2. 写入临时文件
+    await fsPromises.writeFile(STATE_FILE_TMP, JSON.stringify(stateToSave, null, 2)); // 添加格式化以便阅读
+
+    // 3. 重命名临时文件为主文件 (原子操作)
+    await fsPromises.rename(STATE_FILE_TMP, STATE_FILE);
+    // console.log('宠物状态已保存:', STATE_FILE); // 可以取消注释以进行调试
+
   } catch (err) {
-    console.error('保存宠物状态失败:', err);
+    console.error('保存宠物状态到文件失败:', err);
+    // 尝试恢复备份（如果存在）？或者只是记录错误
   }
 }
 
-// 状态衰减定时器
-function startStateDecayTimer() {
-  setInterval(() => {
-    // 根据时间衰减状态
-    const hoursSinceInteraction = (Date.now() - petState.lastInteractionTime) / (1000 * 60 * 60);
-    
-    petState.mood = Math.max(0, petState.mood - hoursSinceInteraction * 5);
-    petState.cleanliness = Math.max(0, petState.cleanliness - hoursSinceInteraction * 3);
-    petState.hunger = Math.min(100, petState.hunger + hoursSinceInteraction * 8);
-    petState.energy = Math.max(0, petState.energy - hoursSinceInteraction * 4);
-    
-    // 保存状态并通知渲染进程
-    savePetState();
-    petWindow?.webContents.send('pet-state-update', petState);
-    
-  }, 30 * 60 * 1000); // 每30分钟检查一次
-}
+// 移除状态衰减定时器
+// function startStateDecayTimer() { ... }
 
 // IPC 事件处理
 
@@ -398,26 +428,28 @@ ipcMain.on('save-pet-settings', (event, settings) => {
 })
 
 // 新API实现
+// 处理获取状态请求，加载并返回状态
 ipcMain.handle('get-pet-state', async () => {
-  return petState;
+  return await loadSavedState(); // 返回加载的状态或 null
 });
 
+// 移除 interact-with-pet 中直接修改和保存状态的逻辑
+// 互动逻辑现在完全在渲染进程中处理
 ipcMain.on('interact-with-pet', (event, action) => {
-  switch (action) {
-    case 'feed':
-      petState.hunger = Math.max(0, petState.hunger - 30);
-      petState.mood = Math.min(100, petState.mood + 10);
-      break;
-    case 'pet':
-      petState.mood = Math.min(100, petState.mood + 15);
-      break;
-    case 'clean':
-      petState.cleanliness = Math.min(100, petState.cleanliness + 40);
-      break;
+  // 主进程不再直接修改状态
+  // 可以保留这个通道用于未来可能的、需要在主进程处理的互动逻辑
+  // 或者，如果完全不需要，可以移除这个监听器
+  console.log(`收到互动请求: ${action} (主进程不再处理状态)`);
+  // 注意：不再调用 savePetState() 或发送 pet-state-update
+});
+
+// 新增：处理保存状态请求
+ipcMain.on('save-pet-state', (event, stateToSave) => {
+  if (stateToSave) {
+    saveStateToFile(stateToSave);
+  } else {
+    console.warn('收到空的 save-pet-state 请求，已忽略。');
   }
-  petState.lastInteractionTime = Date.now();
-  savePetState();
-  petWindow?.webContents.send('pet-state-update', petState);
 });
 
 ipcMain.on('update-pet-behavior', (event, behavior) => {
@@ -455,6 +487,78 @@ ipcMain.on('set-mouse-passthrough', (event, enable: boolean) => {
 ipcMain.on('exit-app', () => {
   quitting = true; // 设置标志以允许退出
   app.quit();
+});
+
+// 新增：显示状态详情
+ipcMain.on('show-status-details', () => {
+  console.log('显示宠物状态详情');
+  // TODO: 实现状态详情窗口
+});
+
+// 新增：显示皮肤选择器
+ipcMain.on('show-skin-selector', () => {
+  console.log('显示皮肤选择器');
+  // TODO: 实现皮肤选择窗口
+});
+
+// 新增：显示名称编辑器
+ipcMain.on('show-name-editor', () => {
+  console.log('显示名称编辑器');
+  // TODO: 实现名称编辑窗口
+});
+
+// 新增：拍照功能
+ipcMain.on('take-pet-photo', async () => {
+  if (!petWindow) return;
+  
+  try {
+    // 捕获窗口截图
+    const image = await petWindow.webContents.capturePage();
+    const buffer = image.toPNG();
+    
+    // 创建保存目录
+    const picturesDir = path.join(app.getPath('pictures'), 'desktop-pet');
+    try {
+      await fsPromises.mkdir(picturesDir, { recursive: true });
+    } catch (err) {
+      console.error('创建图片目录失败:', err);
+    }
+    
+    // 生成文件名（当前日期时间）
+    const date = new Date();
+    const formattedDate = date.toISOString().replace(/[:.]/g, '-').replace('T', '_').split('Z')[0];
+    const fileName = `pet_${formattedDate}.png`;
+    const filePath = path.join(picturesDir, fileName);
+    
+    // 保存截图
+    await fsPromises.writeFile(filePath, buffer);
+    
+    // 显示成功消息
+    dialog.showMessageBox(petWindow, {
+      type: 'info',
+      title: '拍照成功',
+      message: `已将宠物照片保存至:\n${filePath}`,
+      buttons: ['确定']
+    });
+    
+    console.log('宠物照片已保存至:', filePath);
+  } catch (error: any) {
+    console.error('拍照失败:', error);
+    dialog.showMessageBox(petWindow, {
+      type: 'error',
+      title: '拍照失败',
+      message: '无法保存宠物照片',
+      detail: error.toString(),
+      buttons: ['确定']
+    });
+  }
+});
+
+// 新增：隐藏宠物窗口
+ipcMain.on('hide-pet-window', () => {
+  if (petWindow) {
+    petWindow.hide();
+  }
 });
 
 // 应用启动初始化

@@ -38,10 +38,14 @@ electron.contextBridge.exposeInMainWorld("desktopPet", {
   savePetSettings: (settings) => {
     electron.ipcRenderer.send("save-pet-settings", settings);
   },
-  // 宠物状态和互动 API
+  // 宠物状态 API
   getPetState: () => {
     return electron.ipcRenderer.invoke("get-pet-state");
   },
+  savePetState: (state) => {
+    electron.ipcRenderer.send("save-pet-state", state);
+  },
+  // 互动 API (主进程不再处理状态，但保留通道可能有用)
   interactWithPet: (action) => {
     electron.ipcRenderer.send("interact-with-pet", action);
   },
@@ -58,6 +62,18 @@ electron.contextBridge.exposeInMainWorld("desktopPet", {
   },
   setMousePassthrough: (enable) => {
     electron.ipcRenderer.send("set-mouse-passthrough", enable);
+  },
+  showStatusDetails: () => {
+    electron.ipcRenderer.send("show-status-details");
+  },
+  showSkinSelector: () => {
+    electron.ipcRenderer.send("show-skin-selector");
+  },
+  showNameEditor: () => {
+    electron.ipcRenderer.send("show-name-editor");
+  },
+  takePetPhoto: () => {
+    electron.ipcRenderer.send("take-pet-photo");
   }
 });
 electron.contextBridge.exposeInMainWorld("windowInfo", {

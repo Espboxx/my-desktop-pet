@@ -1,4 +1,5 @@
-import { ipcRenderer, contextBridge } from 'electron'
+import { ipcRenderer, contextBridge } from 'electron';
+import type { SavedPetData } from '../src/types/petTypes'; // Import the type
 
 // 暴露给渲染进程的API
 contextBridge.exposeInMainWorld('desktopPet', {
@@ -41,11 +42,15 @@ contextBridge.exposeInMainWorld('desktopPet', {
     ipcRenderer.send('save-pet-settings', settings);
   },
   
-  // 宠物状态和互动 API
-  getPetState: () => {
+  // 宠物状态 API
+  getPetState: (): Promise<SavedPetData | null> => { // Use SavedPetData type
     return ipcRenderer.invoke('get-pet-state');
   },
-  interactWithPet: (action: 'feed' | 'pet' | 'clean') => {
+  savePetState: (state: SavedPetData) => { // Use SavedPetData type
+    ipcRenderer.send('save-pet-state', state);
+  },
+  // 互动 API (主进程不再处理状态，但保留通道可能有用)
+  interactWithPet: (action: string) => { // Allow any string action for future flexibility
     ipcRenderer.send('interact-with-pet', action);
   },
   updatePetBehavior: (behavior: {
@@ -65,6 +70,18 @@ contextBridge.exposeInMainWorld('desktopPet', {
   },
   setMousePassthrough: (enable: boolean) => { // 新增：设置鼠标穿透
     ipcRenderer.send('set-mouse-passthrough', enable);
+  },
+  showStatusDetails: () => {
+    ipcRenderer.send('show-status-details');
+  },
+  showSkinSelector: () => {
+    ipcRenderer.send('show-skin-selector');
+  },
+  showNameEditor: () => {
+    ipcRenderer.send('show-name-editor');
+  },
+  takePetPhoto: () => {
+    ipcRenderer.send('take-pet-photo');
   },
 })
 

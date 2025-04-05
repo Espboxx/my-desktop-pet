@@ -1,26 +1,10 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import PetWindow from './components/PetWindow'
-import SettingsWindow from './components/SettingsWindow'
+import PetWindow from './components/PetWindow';
+import SettingsWindow from './components/SettingsWindow';
+import { PetStatusProvider } from './context/PetStatusContext'; // 导入 Provider
 
-declare global {
-  interface Window {
-    desktopPet: {
-      on: (channel: string, callback: (...args: any[]) => void) => void;
-      off: (channel: string) => void;
-      send: (channel: string, ...args: any[]) => void;
-      invoke: (channel: string, ...args: any[]) => Promise<any>;
-      dragPet: (mouseX: number, mouseY: number) => void;
-      openSettings: () => void;
-      setAlwaysOnTop: (flag: boolean) => void;
-      getPetSettings: () => Promise<any>;
-      savePetSettings: (settings: any) => void;
-    };
-    windowInfo: {
-      getCurrentWindow: () => string;
-    };
-  }
-}
+// Removed duplicate global declaration - types should come from electron-env.d.ts
 
 function App() {
   const [windowType, setWindowType] = useState<string>('pet');
@@ -32,10 +16,13 @@ function App() {
   }, []);
 
   return (
-    <div className="app-container">
-      {windowType === 'pet' && <PetWindow />}
-      {windowType === 'settings' && <SettingsWindow />}
-    </div>
+    // 使用 Provider 包裹窗口组件
+    <PetStatusProvider>
+      <div className="app-container">
+        {windowType === 'pet' && <PetWindow />}
+        {windowType === 'settings' && <SettingsWindow />}
+      </div>
+    </PetStatusProvider>
   )
 }
 

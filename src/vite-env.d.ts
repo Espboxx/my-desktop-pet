@@ -13,13 +13,18 @@ export interface DesktopPetAPI {
   setAlwaysOnTop: (flag: boolean) => void;
   getPetSettings: () => Promise<any>; // Consider defining a more specific settings type
   savePetSettings: (settings: any) => void; // Consider defining a more specific settings type
-  getPetState: () => Promise<any>; // Consider defining a more specific state type
-  interactWithPet: (action: 'feed' | 'pet' | 'clean') => void;
+  getPetState: () => Promise<import('../src/types/petTypes').SavedPetData | null>; // Use SavedPetData
+  savePetState: (data: import('../src/types/petTypes').SavedPetData) => void; // Use SavedPetData
+  interactWithPet: (action: string) => void; // Updated action type
   updatePetBehavior: (behavior: any) => void; // Consider defining a more specific behavior type
   adjustPetWindowSize: (expand: boolean) => void; // 新增：调整窗口大小的类型定义
   // onShowContextMenu: (callback: () => void) => () => void; // Remove type again
   exitApp: () => void; // 新增：退出应用程序的类型定义
   setMousePassthrough: (enable: boolean) => void; // 新增：设置鼠标穿透的类型定义
+  showStatusDetails: () => void; // 显示状态详情
+  showSkinSelector: () => void; // 显示皮肤选择器
+  showNameEditor: () => void; // 显示名称编辑器
+  takePetPhoto: () => void; // 拍摄宠物照片
 }
 
 export interface WindowInfoAPI {

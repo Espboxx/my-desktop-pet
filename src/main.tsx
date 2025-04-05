@@ -10,6 +10,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 )
 
 // Use contextBridge
-window.ipcRenderer.on('main-process-message', (_event, message) => {
+window.desktopPet.on('main-process-message', (message) => { // Use the exposed desktopPet API
   console.log(message)
 })

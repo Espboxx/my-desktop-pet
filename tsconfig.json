@@ -20,9 +20,10 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "electron"],
+  "include": ["src", "electron"], // Keep include for reference, but files takes precedence
   "files": [
-    "src/vite-env.d.ts" // Explicitly include the global type definitions
+    "src/vite-env.d.ts", // Keep existing vite env types
+    "electron/electron-env.d.ts" // Explicitly include the electron env types
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -2,20 +2,23 @@
 .settings-window {
   width: 100%;
   height: 100%;
-  background-color: #f8f9fa;
+  background-color: #fdfdff; /* Slightly lighter background */
   display: flex;
   overflow: hidden;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
+  color: #444; /* Slightly softer text color */
+  border-radius: 8px; /* Add rounded corners to the window */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
 }
 
 /* 侧边导航 */
 .settings-nav {
-  width: 160px;
-  background-color: #e9ecef;
-  border-right: 1px solid #ccc;
-  padding: 15px 0;
+  width: 180px; /* Slightly wider nav */
+  background-color: #f1f3f5; /* Lighter nav background */
+  border-right: 1px solid #dee2e6; /* Softer border */
+  padding: 20px 0; /* Increased padding */
   flex-shrink: 0;
+  transition: width 0.2s ease; /* Smooth transition if width changes later */
 }
 
 .settings-nav ul {
@@ -25,34 +28,42 @@
 }
 
 .settings-nav li {
-  padding: 12px 20px;
+  padding: 14px 25px; /* Increased padding */
   font-size: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px; /* Increased gap */
   color: #495057;
-  border-left: 3px solid transparent;
+  border-left: 4px solid transparent; /* Slightly thicker border */
+  transition: background-color 0.2s ease, color 0.2s ease, border-left-color 0.2s ease; /* Add transitions */
 }
 
 .settings-nav li:hover {
-  background-color: #dee2e6;
+  background-color: #e9ecef; /* Slightly darker hover */
+  color: #212529;
 }
 
 .settings-nav li.active {
-  background-color: #ffffff;
-  font-weight: bold;
-  color: #007bff;
-  border-left-color: #007bff;
+  background-color: #ffffff; /* Keep white background for active */
+  font-weight: 600; /* Slightly bolder */
+  color: #0d6efd; /* Bootstrap primary blue */
+  border-left-color: #0d6efd;
 }
 
-.settings-nav .icon-placeholder {
-  display: inline-block;
-  width: 18px;
-  height: 18px;
+/* Styles for react-icons */
+.settings-nav .nav-icon {
+  font-size: 16px; /* Icon size */
+  width: 18px; /* Ensure consistent width */
   text-align: center;
-  font-size: 14px;
-  line-height: 18px;
+  color: inherit; /* Inherit color from parent li */
+  flex-shrink: 0; /* Prevent icon shrinking */
+  margin-right: 2px; /* Small adjustment */
+}
+
+/* Specific color for active icon */
+.settings-nav li.active .nav-icon {
+  color: #0d6efd;
 }
 
 /* 主内容区域 */
@@ -64,10 +75,11 @@
 
 /* 设置页眉 */
 .settings-header {
-  background-color: #ffffff;
-  padding: 10px 20px;
-  font-weight: bold;
-  border-bottom: 1px solid #ccc;
+  background-color: #f8f9fa; /* Lighter header background */
+  padding: 12px 25px; /* Adjusted padding */
+  font-weight: 600; /* Adjusted font weight */
+  font-size: 16px; /* Slightly larger title */
+  border-bottom: 1px solid #dee2e6; /* Softer border */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -75,28 +87,32 @@
 }
 
 .settings-header .close-btn {
-  background: none;
+  background: transparent;
   border: none;
-  font-size: 20px;
+  font-size: 18px; /* Adjusted icon size */
   cursor: pointer;
-  color: #666;
-  padding: 0;
-  width: 24px;
-  height: 24px;
+  color: #6c757d; /* Softer initial color */
+  padding: 5px; /* Add padding for easier clicking */
+  border-radius: 50%; /* Make it round */
+  width: 30px; /* Ensure button size */
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .settings-header .close-btn:hover {
-  color: #333;
+  background-color: #e9ecef; /* Add hover background */
+  color: #212529; /* Darker hover color */
 }
 
 /* 设置内容区域 */
 .settings-content-area {
-  padding: 25px;
+  padding: 30px; /* Increased padding */
   overflow-y: auto;
   flex-grow: 1;
+  background-color: #ffffff; /* White content background */
 }
 
 .settings-section {
@@ -108,7 +124,7 @@
   margin-bottom: 15px;
   border-bottom: 1px solid #eee;
   padding-bottom: 8px;
-  color: #007bff;
+  color: #0d6efd; /* Match active tab color */
   font-weight: 600;
 }
 

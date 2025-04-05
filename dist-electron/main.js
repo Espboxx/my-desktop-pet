@@ -1,8 +1,15 @@
-import { app, ipcMain, globalShortcut, screen, BrowserWindow } from "electron";
+import { app, ipcMain, globalShortcut, screen, BrowserWindow, dialog } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import fs from "node:fs";
+import { promises } from "node:fs";
+import * as stream from "stream";
+if (process.stdout instanceof stream.Writable) {
+  process.stdout.setDefaultEncoding("utf-8");
+}
+if (process.stderr instanceof stream.Writable) {
+  process.stderr.setDefaultEncoding("utf-8");
+}
 createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname, "..");
@@ -94,13 +101,6 @@ app.on("activate", () => {
 app.on("before-quit", () => {
   quitting = true;
 });
-let petState = {
-  mood: 80,
-  cleanliness: 90,
-  hunger: 30,
-  energy: 70,
-  lastInteractionTime: Date.now()
-};
 let petBehavior = {
   activityLevel: "normal",
   moveInterval: 1e4,
@@ -109,11 +109,53 @@ let petBehavior = {
   // 15秒
 };
 const STATE_FILE = path.join(app.getPath("userData"), "pet-state.json");
-async function savePetState() {
+const STATE_FILE_BAK = path.join(app.getPath("userData"), "pet-state.json.bak");
+const STATE_FILE_TMP = path.join(app.getPath("userData"), "pet-state.json.tmp");
+async function loadSavedState() {
   try {
-    await fs.promises.writeFile(STATE_FILE, JSON.stringify(petState));
+    const data = await promises.readFile(STATE_FILE, "utf-8");
+    console.log("成功加载状态文件:", STATE_FILE);
+    const parsedData = JSON.parse(data);
+    if (parsedData && typeof parsedData === "object" && parsedData.status && parsedData.petTypeId) {
+      return parsedData;
+    } else {
+      console.warn("解析的状态文件数据格式无效:", parsedData);
+      return null;
+    }
   } catch (err) {
-    console.error("保存宠物状态失败:", err);
+    console.warn(`加载主状态文件失败 (${STATE_FILE}):`, err.message);
+    try {
+      const bakData = await promises.readFile(STATE_FILE_BAK, "utf-8");
+      console.log("成功加载备份状态文件:", STATE_FILE_BAK);
+      await promises.copyFile(STATE_FILE_BAK, STATE_FILE);
+      console.log("已从备份恢复状态文件。");
+      const parsedBakData = JSON.parse(bakData);
+      if (parsedBakData && typeof parsedBakData === "object" && parsedBakData.status && parsedBakData.petTypeId) {
+        return parsedBakData;
+      } else {
+        console.warn("解析的备份状态文件数据格式无效:", parsedBakData);
+        return null;
+      }
+    } catch (bakErr) {
+      console.warn(`加载备份状态文件失败 (${STATE_FILE_BAK}):`, bakErr.message);
+      console.log("无法加载任何状态文件，将使用默认状态。");
+      return null;
+    }
+  }
+}
+async function saveStateToFile(stateToSave) {
+  try {
+    try {
+      await promises.rename(STATE_FILE, STATE_FILE_BAK);
+    } catch (renameErr) {
+      if (renameErr.code !== "ENOENT") {
+        console.warn("备份旧状态文件失败:", renameErr);
+      }
+    }
+    await promises.writeFile(STATE_FILE_TMP, JSON.stringify(stateToSave, null, 2));
+    await promises.rename(STATE_FILE_TMP, STATE_FILE);
+  } catch (err) {
+    console.error("保存宠物状态到文件失败:", err);
   }
 }
 ipcMain.handle("get-window-position", () => {
@@ -186,24 +228,17 @@ ipcMain.on("save-pet-settings", (event, settings) => {
   }
 });
 ipcMain.handle("get-pet-state", async () => {
-  return petState;
+  return await loadSavedState();
 });
 ipcMain.on("interact-with-pet", (event, action) => {
-  switch (action) {
-    case "feed":
-      petState.hunger = Math.max(0, petState.hunger - 30);
-      petState.mood = Math.min(100, petState.mood + 10);
-      break;
-    case "pet":
-      petState.mood = Math.min(100, petState.mood + 15);
-      break;
-    case "clean":
-      petState.cleanliness = Math.min(100, petState.cleanliness + 40);
-      break;
+  console.log(`收到互动请求: ${action} (主进程不再处理状态)`);
+});
+ipcMain.on("save-pet-state", (event, stateToSave) => {
+  if (stateToSave) {
+    saveStateToFile(stateToSave);
+  } else {
+    console.warn("收到空的 save-pet-state 请求，已忽略。");
   }
-  petState.lastInteractionTime = Date.now();
-  savePetState();
-  petWindow == null ? void 0 : petWindow.webContents.send("pet-state-update", petState);
 });
 ipcMain.on("update-pet-behavior", (event, behavior) => {
   petBehavior = { ...petBehavior, ...behavior };
@@ -235,6 +270,55 @@ ipcMain.on("set-mouse-passthrough", (event, enable) => {
 ipcMain.on("exit-app", () => {
   quitting = true;
   app.quit();
+});
+ipcMain.on("show-status-details", () => {
+  console.log("显示宠物状态详情");
+});
+ipcMain.on("show-skin-selector", () => {
+  console.log("显示皮肤选择器");
+});
+ipcMain.on("show-name-editor", () => {
+  console.log("显示名称编辑器");
+});
+ipcMain.on("take-pet-photo", async () => {
+  if (!petWindow) return;
+  try {
+    const image = await petWindow.webContents.capturePage();
+    const buffer = image.toPNG();
+    const picturesDir = path.join(app.getPath("pictures"), "desktop-pet");
+    try {
+      await promises.mkdir(picturesDir, { recursive: true });
+    } catch (err) {
+      console.error("创建图片目录失败:", err);
+    }
+    const date = /* @__PURE__ */ new Date();
+    const formattedDate = date.toISOString().replace(/[:.]/g, "-").replace("T", "_").split("Z")[0];
+    const fileName = `pet_${formattedDate}.png`;
+    const filePath = path.join(picturesDir, fileName);
+    await promises.writeFile(filePath, buffer);
+    dialog.showMessageBox(petWindow, {
+      type: "info",
+      title: "拍照成功",
+      message: `已将宠物照片保存至:
+${filePath}`,
+      buttons: ["确定"]
+    });
+    console.log("宠物照片已保存至:", filePath);
+  } catch (error) {
+    console.error("拍照失败:", error);
+    dialog.showMessageBox(petWindow, {
+      type: "error",
+      title: "拍照失败",
+      message: "无法保存宠物照片",
+      detail: error.toString(),
+      buttons: ["确定"]
+    });
+  }
+});
+ipcMain.on("hide-pet-window", () => {
+  if (petWindow) {
+    petWindow.hide();
+  }
 });
 app.whenReady().then(() => {
   createPetWindow();
