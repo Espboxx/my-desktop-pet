@@ -1,30 +1,55 @@
-# React + TypeScript + Vite
+# My Desktop Pet
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+这是一个桌面宠物应用程序，旨在为您的桌面带来一些乐趣和互动。
 
-Currently, two official plugins are available:
+## 项目概述
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+该项目使用 Electron、React 和 TypeScript 构建。它在桌面上显示一个可交互的宠物角色。
 
-## Expanding the ESLint configuration
+## 主要功能
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+*   **桌面显示**: 宠物会出现在您的桌面上。
+*   **互动**: 您可以与宠物进行互动（具体互动方式待定）。
+*   **自定义**: （可选）未来可能支持自定义宠物外观或行为。
 
-- Configure the top-level `parserOptions` property like this:
+## 技术栈
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+*   **框架**: Electron, React
+*   **语言**: TypeScript
+*   **构建工具**: Vite
+
+## 安装与运行
+
+```bash
+# 克隆仓库
+git clone <your-repository-url>
+cd my-desktop-pet
+
+# 安装依赖
+npm install
+
+# 启动开发环境
+npm run dev
+
+# 构建应用
+npm run build
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+## 重要声明
+
+**本项目完全由 AI 生成，包括但不限于：**
+
+*   **roocode**
+*   **Google Gemini 2.5**
+*   **Anthropic Claude 3.7**
+*   **DeepSeek V3**
+
+**开发者没有手写一行代码。**
+
+## 贡献
+
+（根据项目进展添加贡献指南）
+
+## 许可证
+
+（根据项目选择合适的许可证）
