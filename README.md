@@ -22,7 +22,7 @@
 
 ```bash
 # 克隆仓库
-git clone <your-repository-url>
+git clone https://github.com/Espboxx/my-desktop-pet
 cd my-desktop-pet
 
 # 安装依赖
@@ -48,8 +48,5 @@ npm run build
 
 ## 贡献
 
-（根据项目进展添加贡献指南）
+AI
 
-## 许可证
-
-（根据项目选择合适的许可证）
