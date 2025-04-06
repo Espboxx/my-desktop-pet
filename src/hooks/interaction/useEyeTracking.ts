@@ -7,6 +7,7 @@ interface UseEyeTrackingProps {
   petRef: React.RefObject<HTMLDivElement>;
   isDragging: boolean; // To stop tracking during drag
   reactionAnimation: string | null; // To stop tracking during reactions
+  petPosition: PetPosition; // Add petPosition prop
 }
 
 interface UseEyeTrackingReturn {
@@ -21,6 +22,7 @@ export function useEyeTracking({
   petRef,
   isDragging,
   reactionAnimation,
+  petPosition, // Destructure petPosition
 }: UseEyeTrackingProps): UseEyeTrackingReturn {
   const [mouseDirection, setMouseDirection] = useState<MouseDirection>('center');
   const [enableGlobalEyeTracking, setEnableGlobalEyeTracking] = useState(true);
@@ -56,8 +58,11 @@ export function useEyeTracking({
           return;
       }
 
-      const petCenterX = petRect.left + petRect.width / 2;
-      const petCenterY = petRect.top + petRect.height / 2;
+      // Use petPosition and offsetWidth/Height for more reliable center calculation
+      const petWidth = petRef.current.offsetWidth;
+      const petHeight = petRef.current.offsetHeight;
+      const petCenterX = petPosition.x + petWidth / 2;
+      const petCenterY = petPosition.y + petHeight / 2;
       const deltaX = mouseX - petCenterX;
       const deltaY = mouseY - petCenterY;
 
@@ -81,23 +86,14 @@ export function useEyeTracking({
       const nearThreshold = petRect.width * INTERACTION_CONSTANTS.NEAR_DISTANCE_MULTIPLIER;
       const isNearby = distance < nearThreshold;
 
-      // Determine if eyes should track
-      // Track if: nearby OR (in view angle AND global tracking enabled) OR forceUpdate is true
-      const shouldTrack = isNearby || (isInViewAngle && enableGlobalEyeTracking) || forceUpdate;
+      // Determine if eyes should track - REMOVED shouldTrack logic.
+      // If execution reaches here, it means global tracking is enabled,
+      // not dragging, and no reaction animation is playing.
+      // Therefore, we should always calculate and potentially update the direction.
 
-      if (!shouldTrack) {
-        // If not tracking and not already centered, maybe center? Or hold last position?
-        // Let's hold the last valid direction for now, unless forced update suggests centering.
-        // If forceUpdate is false here, it means mouse is outside view and not nearby.
-        // Consider if we want eyes to return to center in this case. For now, they hold.
-        // if (mouseDirection !== 'center') setMouseDirection('center');
-        return;
-      }
+const directionThreshold = petRect.width * INTERACTION_CONSTANTS.EYE_DIRECTION_THRESHOLD_MULTIPLIER;
 
-      // Calculate direction based on angle
-      const directionThreshold = petRect.width * INTERACTION_CONSTANTS.EYE_DIRECTION_THRESHOLD_MULTIPLIER;
       let direction: MouseDirection = 'center';
-
       if (Math.abs(deltaX) < directionThreshold && Math.abs(deltaY) < directionThreshold) {
         direction = 'center';
       } else {

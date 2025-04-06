@@ -111,7 +111,7 @@ export function usePetInteraction({
     toggleGlobalEyeTracking,
     updateEyeDirection,
     lastMousePositionRef, // Pass isDragging to useEyeTracking
-  } = useEyeTracking({ petRef, isDragging, reactionAnimation }); // Use isDragging here
+  } = useEyeTracking({ petRef, isDragging, reactionAnimation, petPosition }); // Pass petPosition
 
   const { handleAction } = useActionHandling({
     status,

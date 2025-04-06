@@ -54,7 +54,8 @@ const PetWindow: React.FC = () => {
     mouseDirection, // Get mouse direction
     isDragging, // Renamed from isCurrentlyDragging
     reactionAnimation, // Get reaction animation state
-    setPetPosition // Get the position setter
+    setPetPosition, // Get the position setter
+    enableGlobalEyeTracking // Destructure the eye tracking state
   } = usePetInteraction({ status, setStatus, setCurrentAnimation, initialPosition }); // Pass initialPosition
   // State for pet dimensions
   const [petDimensions, setPetDimensions] = useState({ width: 80, height: 80 }); // Default size
@@ -127,9 +128,11 @@ const PetWindow: React.FC = () => {
     }
 
     // Priority 3: Eye tracking (only when mouse is over pet and no other animation is overriding)
-    if (isMouseOverPet.current && mouseDirection !== 'center') { // isMouseOverPet is used here
+    // Priority 3: Eye tracking (only when global tracking is enabled and no other animation is overriding)
+    // Use enableGlobalEyeTracking state from usePetInteraction hook
+    if (enableGlobalEyeTracking && mouseDirection !== 'center') {
       const lookExpressionKey = `look_${mouseDirection.replace('-', '_')}`;
-      // Ensure the look expression exists, otherwise fallback might be needed, but normal is okay for now
+      // Ensure the look expression exists, otherwise fallback might be needed
       if (currentPetType.expressions[lookExpressionKey]) {
         return currentPetType.expressions[lookExpressionKey];
       }
@@ -403,11 +406,12 @@ const PetWindow: React.FC = () => {
       style={{
         transform: `translate(${petPosition.x}px, ${petPosition.y}px)`
       }}
-      ref={petRef} // Assign petRef to the container
+      // ref={petRef} // REMOVE ref from container
     >
       {/* Pet Element */}
       <div
         className={`pet ${getAnimationClasses()}`}
+        ref={petRef} // ADD ref to the actual pet element
         onMouseDown={handleMouseDown}
         onMouseEnter={wrappedHandleMouseEnter} // Use wrapped handler
         onMouseLeave={wrappedHandleMouseLeave} // Use wrapped handler

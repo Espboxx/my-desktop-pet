@@ -41,7 +41,16 @@ export const PET_TYPES: Record<string, PetType> = {
       hungry: { name: '饿了', emoji: '☀️' },
       sleepy: { name: '困了', emoji: '🌙' },
       level5: { name: '开花', emoji: '🌸', unlockLevel: 5 },
-      level10: { name: '茂盛', emoji: '🌳', unlockLevel: 10 }
+      level10: { name: '茂盛', emoji: '🌳', unlockLevel: 10 },
+      // 添加注视方向表情
+      look_left: { name: '看左', emoji: '🌱👀⬅️' },
+      look_right: { name: '看右', emoji: '🌱👀➡️' },
+      look_up: { name: '看上', emoji: '🌱👀⬆️' },
+      look_down: { name: '看下', emoji: '🌱👀⬇️' },
+      look_up_left: { name: '看左上', emoji: '🌱👀↖️' },
+      look_up_right: { name: '看右上', emoji: '🌱👀↗️' },
+      look_down_left: { name: '看左下', emoji: '🌱👀↙️' },
+      look_down_right: { name: '看右下', emoji: '🌱👀↘️' }
     }
   },
   droplet: {
@@ -56,7 +65,16 @@ export const PET_TYPES: Record<string, PetType> = {
       hungry: { name: '饿了', emoji: '🥤' },
       sleepy: { name: '困了', emoji: '❄️' },
       level5: { name: '彩虹', emoji: '🌈', unlockLevel: 5 },
-      level10: { name: '浪花', emoji: '🌊🌊', unlockLevel: 10 }
+      level10: { name: '浪花', emoji: '🌊🌊', unlockLevel: 10 },
+      // 添加注视方向表情
+      look_left: { name: '看左', emoji: '💧👀⬅️' },
+      look_right: { name: '看右', emoji: '💧👀➡️' },
+      look_up: { name: '看上', emoji: '💧👀⬆️' },
+      look_down: { name: '看下', emoji: '💧👀⬇️' },
+      look_up_left: { name: '看左上', emoji: '💧👀↖️' },
+      look_up_right: { name: '看右上', emoji: '💧👀↗️' },
+      look_down_left: { name: '看左下', emoji: '💧👀↙️' },
+      look_down_right: { name: '看右下', emoji: '💧👀↘️' }
     }
   }
 };
