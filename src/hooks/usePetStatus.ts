@@ -1,9 +1,10 @@
 // Removed /// <reference path="../../electron/electron-env.d.ts" /> as it's included via tsconfig.json
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { PetStatus, InteractionType, Task, TaskGoal, TaskGoalType, Achievement, IdleAnimation, SavedPetData } from '../types/petTypes'; // Remove PetPosition from here
+import { PetStatus, InteractionType, Task, TaskGoal, TaskGoalType, Achievement, IdleAnimation, SavedPetData, Inventory, Item, ItemType } from '../types/petTypes'; // Remove PetPosition from here, Add Inventory, Item, ItemType
 import { PetPosition } from '../hooks/interaction/types'; // Correctly import PetPosition
 import { LEVEL_UNLOCKS, ACHIEVEMENTS as predefinedAchievements, PET_TYPES } from '../constants/petConstants'; // Rename import and add PET_TYPES
 import { gameData } from '../constants/taskData'; // Import task data
+import { ITEMS as predefinedItems } from '../constants/itemData'; // Import item data
 
 // Define animation durations (in ms) - match these with CSS durations
 const IDLE_ANIMATION_DURATIONS: Record<IdleAnimation | string, number> = {
@@ -37,7 +38,8 @@ const defaultInitialStatus: PetStatus = {
     text: '',
     type: 'thought',
     timeout: null
-  }
+  },
+  inventory: {} // Initialize inventory
 };
 
 export default function usePetStatus() {
@@ -86,7 +88,13 @@ export default function usePetStatus() {
             // Load Status
             if (savedData.status && typeof savedData.status === 'object' && 'mood' in savedData.status) {
               // Merge loaded status with defaults
-              setStatus(prev => ({ ...defaultInitialStatus, ...savedData.status }));
+              // Ensure inventory is loaded or defaulted
+              const loadedStatus = {
+                ...defaultInitialStatus,
+                ...savedData.status,
+                inventory: savedData.status.inventory && typeof savedData.status.inventory === 'object' ? savedData.status.inventory : {}
+              };
+              setStatus(loadedStatus);
               console.log('状态加载成功:', savedData.status);
             } else {
               console.log('加载的状态无效或缺失，使用默认状态。');
@@ -298,6 +306,24 @@ export default function usePetStatus() {
                 newlyCompletedTasks.push(taskId);
                 taskNotifications.push(`任务完成: ${task.name}`);
                 newStatus.exp += task.reward.exp;
+
+                // --- Add Item Rewards ---
+                if (task.reward.items && task.reward.items.length > 0) {
+                  const currentInventory = { ...newStatus.inventory }; // Create a mutable copy
+                  task.reward.items.forEach(itemId => {
+                    const item = predefinedItems[itemId]; // Get item details for notification
+                    if (item) {
+                      currentInventory[itemId] = (currentInventory[itemId] || 0) + 1;
+                      taskNotifications.push(`获得物品: ${item.name}`); // Add item notification
+                      console.log(`Item Added: ${item.name} (ID: ${itemId})`);
+                    } else {
+                      console.warn(`Task ${task.id} tried to reward non-existent item: ${itemId}`);
+                    }
+                  });
+                  newStatus.inventory = currentInventory; // Update inventory in newStatus
+                }
+                // --- End Item Rewards ---
+
                 if (task.reward.unlocks) {
                     setNewlyUnlocked(prevUnlocked => [...prevUnlocked, ...task.reward.unlocks!.map(u => `任务解锁: ${u}`)]);
                 }
@@ -486,7 +512,171 @@ export default function usePetStatus() {
     setNewlyUnlocked([]);
   }, []); // setNewlyUnlocked is stable
 
-  // Update low status flags
+  // 添加道具到库存
+  const addItem = useCallback((itemId: string, quantity: number = 1) => {
+    if (!predefinedItems[itemId]) {
+      console.warn(`Attempted to add unknown item: ${itemId}`);
+      return;
+    }
+    setStatus(prev => {
+      const newInventory = { ...prev.inventory };
+      newInventory[itemId] = (newInventory[itemId] || 0) + quantity;
+      console.log(`Added ${quantity}x ${itemId}. New count: ${newInventory[itemId]}`);
+      return { ...prev, inventory: newInventory };
+    });
+  }, []); // Dependencies: setStatus (stable)
+
+  // 从库存移除道具
+  const removeItem = useCallback((itemId: string, quantity: number = 1) => {
+    let actuallyRemoved = 0;
+    setStatus(prev => {
+      const newInventory = { ...prev.inventory };
+      const currentQuantity = newInventory[itemId] || 0;
+
+      if (currentQuantity <= 0) {
+        console.warn(`Attempted to remove item not in inventory: ${itemId}`);
+        return prev; // No change
+      }
+
+      actuallyRemoved = Math.min(quantity, currentQuantity);
+      newInventory[itemId] = currentQuantity - actuallyRemoved;
+
+      if (newInventory[itemId] <= 0) {
+        delete newInventory[itemId]; // Remove item if quantity is zero or less
+      }
+      console.log(`Removed ${actuallyRemoved}x ${itemId}. Remaining: ${newInventory[itemId] || 0}`);
+      return { ...prev, inventory: newInventory };
+    });
+    return actuallyRemoved > 0; // Return true if item was successfully removed
+  }, []); // Dependencies: setStatus (stable)
+
+  // 互动逻辑 (修改以包含道具检查)
+  const interact = useCallback((type: InteractionType, value: number, requiredItemType?: ItemType): boolean => {
+    let itemToConsumeId: string | null = null;
+
+    // --- 1. Check Item Availability (Corrected for Inventory: Record<string, number>) ---
+    if (requiredItemType) {
+      const inventory = statusRef.current.inventory;
+      const availableItems = Object.entries(inventory)
+        // Filter by quantity > 0 and matching item type from predefinedItems
+        .filter(([itemId, quantity]) => quantity > 0 && predefinedItems[itemId]?.type === requiredItemType); // Correctly use quantity
+
+      if (availableItems.length === 0) {
+        console.log(`Interaction '${type}' requires a '${requiredItemType}' item, but none are available.`);
+        // REMOVED showBubble call here
+        return false; // Indicate interaction failed due to missing item
+      }
+      itemToConsumeId = availableItems[0][0]; // Select the first available item ID
+    }
+
+    // --- 2. Check Other Preconditions (e.g., Energy) ---
+    let canPerformAction = true;
+    let energyCost = 0;
+    switch (type) {
+      case 'play':
+        energyCost = 10; // Example energy cost for playing
+        if (statusRef.current.energy < energyCost) {
+          canPerformAction = false;
+          console.log("Interaction 'play' failed: Not enough energy.");
+          // No bubble/notification here; let useActionHandling manage this based on return value
+        }
+        break;
+      // Add other precondition checks here if needed
+      // case 'feed': if (statusRef.current.hunger < 5) { canPerformAction = false; ... } break;
+    }
+
+    if (!canPerformAction) {
+      return false; // Indicate interaction failed due to unmet preconditions
+    }
+
+    // --- 3. If all checks pass, attempt to consume item and update status ---
+    let consumedSuccessfully = !itemToConsumeId; // Assume success if no item needed
+    let statusUpdateAttempted = false;
+
+    setStatus(prev => {
+      let currentInventory = { ...prev.inventory };
+      let currentItemQuantity = 0;
+
+      // Attempt consumption if an item was required and identified
+      if (itemToConsumeId) {
+        currentItemQuantity = currentInventory[itemToConsumeId] || 0; // Get current quantity (number)
+        if (currentItemQuantity > 0) {
+          const newQuantity = currentItemQuantity - 1;
+          if (newQuantity <= 0) {
+            delete currentInventory[itemToConsumeId]; // Remove if zero
+          } else {
+            currentInventory[itemToConsumeId] = newQuantity; // Update quantity (number)
+          }
+          consumedSuccessfully = true;
+          console.log(`Consumed 1x ${itemToConsumeId} for interaction '${type}'. Remaining: ${newQuantity}`);
+        } else {
+          // Item vanished between check and consumption (should be rare, but handle defensively)
+          console.warn(`Concurrency issue? Tried to consume ${itemToConsumeId} but quantity was ${currentItemQuantity}`);
+          consumedSuccessfully = false;
+        }
+      }
+
+      // If consumption failed unexpectedly, abort status update
+      if (!consumedSuccessfully) {
+        statusUpdateAttempted = false;
+        return prev;
+      }
+
+      // Proceed with status update
+      statusUpdateAttempted = true;
+      const newStatus = { ...prev, inventory: currentInventory }; // Start with updated inventory
+      let baseMoodChange = 0;
+      let baseCleanlinessChange = 0;
+      let baseHungerChange = 0;
+      let baseEnergyChange = -energyCost;
+      let baseExpChange = 0;
+
+      switch (type) {
+        case 'feed':
+          baseHungerChange = -value;
+          baseMoodChange = 5;
+          baseExpChange = 2;
+          break;
+        case 'clean':
+          baseCleanlinessChange = value;
+          baseMoodChange = 3;
+          baseExpChange = 1;
+          break;
+        case 'play':
+          baseMoodChange = value;
+          baseExpChange = 3;
+          break;
+        case 'petting':
+          baseMoodChange = 15;
+          baseEnergyChange += 2;
+          baseExpChange = 1;
+          break;
+        default:
+          console.warn(`Unhandled interaction type in status update: ${type}`);
+          break;
+      }
+
+      // Apply calculated changes
+      newStatus.mood = Math.min(100, Math.max(0, prev.mood + baseMoodChange));
+      newStatus.cleanliness = Math.min(100, Math.max(0, prev.cleanliness + baseCleanlinessChange));
+      newStatus.hunger = Math.min(100, Math.max(0, prev.hunger + baseHungerChange));
+      newStatus.energy = Math.min(100, Math.max(0, prev.energy + baseEnergyChange));
+      newStatus.exp = prev.exp + baseExpChange;
+      newStatus.interactionCounts[type] = (newStatus.interactionCounts[type] || 0) + 1;
+
+      return newStatus;
+    });
+
+    if (statusUpdateAttempted) {
+      console.log(`Interacted: ${type}, Value: ${value}${itemToConsumeId ? `, Consumed: ${itemToConsumeId}` : ''}`);
+    }
+
+    // Return true only if preconditions passed AND consumption (if needed) succeeded AND status update was attempted
+    return consumedSuccessfully && statusUpdateAttempted;
+
+  }, [setStatus]); // Removed showBubble dependency
+
+  // Update low status flags (Moved this useEffect block down for clarity, no functional change)
   useEffect(() => {
       const newLowFlags = {
           mood: status.mood < 20,
@@ -496,28 +686,20 @@ export default function usePetStatus() {
       };
       setLowStatusFlags(newLowFlags);
 
-      // 当状态降低到预警值时，触发气泡显示 (Only if no other bubble is active)
+      // Trigger proactive thought bubbles for low status (Only if no other bubble is active)
       if (!status.bubble.active) {
           let warningText = "";
-          if (newLowFlags.mood) {
-              const moodTexts = ["心情不太好...", "有点难过...", "想要被安慰...", "心情低落了..."];
-              warningText = moodTexts[Math.floor(Math.random() * moodTexts.length)];
-          } else if (newLowFlags.hunger) {
-              const hungerTexts = ["好饿啊...", "想吃东西...", "肚子咕咕叫了...", "需要食物..."];
-              warningText = hungerTexts[Math.floor(Math.random() * hungerTexts.length)];
-          } else if (newLowFlags.energy) {
-              const tiredTexts = ["好困...", "需要休息...", "要睡着了...", "精力不足..."];
-              warningText = tiredTexts[Math.floor(Math.random() * tiredTexts.length)];
-          } else if (newLowFlags.cleanliness) {
-              const cleanTexts = ["感觉不太干净...", "需要清洁...", "有点脏了...", "想洗个澡..."];
-              warningText = cleanTexts[Math.floor(Math.random() * cleanTexts.length)];
-          }
+          // Simplified random selection for low status bubbles
+          if (newLowFlags.mood && Math.random() < 0.3) warningText = ["心情不太好...", "有点难过...", "想要被安慰..."][Math.floor(Math.random() * 3)];
+          else if (newLowFlags.hunger && Math.random() < 0.3) warningText = ["好饿啊...", "想吃东西...", "肚子咕咕叫了..."][Math.floor(Math.random() * 3)];
+          else if (newLowFlags.energy && Math.random() < 0.3) warningText = ["好困...", "需要休息...", "要睡着了..."][Math.floor(Math.random() * 3)];
+          else if (newLowFlags.cleanliness && Math.random() < 0.3) warningText = ["感觉不太干净...", "需要清洁...", "有点脏了..."][Math.floor(Math.random() * 3)];
 
           if (warningText) {
               showBubble(warningText, 'thought');
           }
       }
-  }, [status, showBubble]); // Add showBubble dependency
+  }, [status, showBubble]); // Dependencies: status, showBubble
 
   // --- Blink Animation Logic ---
   useEffect(() => {
@@ -690,6 +872,8 @@ export default function usePetStatus() {
     currentIdleAnimation, // Expose current idle animation
     currentPetTypeId, // Expose current pet type ID
     setCurrentPetTypeId, // Expose function to set pet type ID
+    initialPosition, // Expose the loaded initial position
+    interact, // Expose the interact function
     // Add other functions if needed, e.g., manually trigger achievement check
   };
 }

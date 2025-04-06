@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { PetStatus, IdleAnimation } from '../types/petTypes'; // Remove PetPosition import from here
+import { PetStatus, IdleAnimation, InteractionType, ItemType } from '../types/petTypes'; // Remove PetPosition import from here, Add InteractionType, ItemType
 import { PetPosition } from '../hooks/interaction/types'; // Correctly import PetPosition
 import usePetStatus from '../hooks/usePetStatus'; // Import the hook
 
@@ -16,6 +16,8 @@ interface PetStatusContextType {
   currentPetTypeId: string; // Add state for current pet type ID
   setCurrentPetTypeId: (id: string) => void; // Add function to update pet type ID
   initialPosition: PetPosition | null; // Add the loaded initial position
+  // Add the interact function signature
+  interact: (type: InteractionType, value: number, requiredItemType?: ItemType) => boolean;
   // Add other functions returned by usePetStatus if needed by consumers
 }
 

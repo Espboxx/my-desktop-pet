@@ -1,15 +1,8 @@
-#root {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
+/* #root styles are defined in index.css */
 
 /* 应用容器 */
 .app-container {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  position: relative;
+  /* Base layout styles (width, height, position, overflow, display) are defined in index.css */
 }
 
 /* 宠物窗口专用样式 */

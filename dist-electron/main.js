@@ -1,8 +1,8 @@
-import { app, ipcMain, globalShortcut, screen, BrowserWindow, dialog } from "electron";
+import { app, ipcMain, globalShortcut, screen, BrowserWindow, Tray, Menu, dialog } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { promises } from "node:fs";
+import fs, { promises } from "node:fs";
 import * as stream from "stream";
 if (process.stdout instanceof stream.Writable) {
   process.stdout.setDefaultEncoding("utf-8");
@@ -19,34 +19,72 @@ const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
 let petWindow = null;
 let settingsWindow = null;
+let appTray = null;
 let quitting = false;
+const DEFAULT_PET_WIDTH = 300;
 const DEFAULT_PET_HEIGHT = 400;
 const EXPANDED_PET_HEIGHT = 500;
-function createPetWindow() {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+function getIconPath() {
+  try {
+    const iconPaths = [
+      path.join(process.env.APP_ROOT, "public", "electron-vite.svg"),
+      // 优先使用SVG
+      path.join(process.env.APP_ROOT, "public", "electron-vite.animate.svg"),
+      path.join(process.env.APP_ROOT, "public", "pet-icon.png"),
+      path.join(process.env.APP_ROOT, "public", "pet-icon-backup.png")
+    ];
+    for (const iconPath of iconPaths) {
+      if (fs.existsSync(iconPath)) {
+        console.log("使用图标:", iconPath);
+        return iconPath;
+      }
+    }
+    throw new Error("未找到任何有效的图标文件");
+  } catch (error) {
+    console.error("图标加载失败:", error);
+    return "";
+  }
+}
+async function createPetWindow() {
+  const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
+  const savedState = await loadSavedState();
+  let initialX;
+  let initialY;
+  if ((savedState == null ? void 0 : savedState.position) && typeof savedState.position.x === "number" && typeof savedState.position.y === "number") {
+    initialX = Math.max(0, Math.min(savedState.position.x, screenWidth - DEFAULT_PET_WIDTH));
+    initialY = Math.max(0, Math.min(savedState.position.y, screenHeight - DEFAULT_PET_HEIGHT));
+    console.log(`[main.ts] Loaded saved position: x=${initialX}, y=${initialY}`);
+  } else {
+    initialX = screenWidth - DEFAULT_PET_WIDTH;
+    initialY = screenHeight - DEFAULT_PET_HEIGHT;
+    console.log(`[main.ts] No saved position found, using default: x=${initialX}, y=${initialY}`);
+  }
   petWindow = new BrowserWindow({
-    width,
-    // 设置为屏幕宽度
-    height,
-    // 设置为屏幕高度
-    x: 0,
-    // 从屏幕左上角开始
-    y: 0,
-    // 从屏幕左上角开始
+    width: DEFAULT_PET_WIDTH,
+    // Use default width
+    height: DEFAULT_PET_HEIGHT,
+    // Use default height
+    x: Math.round(initialX),
+    // Use calculated X
+    y: Math.round(initialY),
+    // Use calculated Y
     transparent: true,
-    // 设置背景透明
+    // 启用透明背景
     frame: false,
-    resizable: false,
+    // 移除窗口框架以实现完全透明效果
+    resizable: true,
+    // 允许调整大小
+    fullscreen: true,
+    // 程序初始化时全屏显示
     skipTaskbar: true,
-    alwaysOnTop: true,
-    // 保持置顶
+    // 不再跳过任务栏
+    // alwaysOnTop: true, // 不再保持置顶
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs"),
       nodeIntegration: false,
       contextIsolation: true
     }
   });
-  petWindow.setIgnoreMouseEvents(true, { forward: true });
   if (VITE_DEV_SERVER_URL) {
     petWindow.loadURL(`${VITE_DEV_SERVER_URL}?window=pet`);
     petWindow.webContents.openDevTools({ mode: "detach" });
@@ -88,14 +126,63 @@ function createSettingsWindow() {
     settingsWindow = null;
   });
 }
+function createTray() {
+  try {
+    const iconPath = getIconPath();
+    console.log("使用托盘图标路径:", iconPath);
+    if (appTray !== null) {
+      appTray.destroy();
+    }
+    let retryCount = 0;
+    const maxRetries = 3;
+    const createTrayWithRetry = () => {
+      try {
+        const trayIconPath = iconPath || "";
+        appTray = new Tray(trayIconPath);
+        const contextMenu = Menu.buildFromTemplate([
+          {
+            label: "显示宠物",
+            click: async () => petWindow ? petWindow.show() : await createPetWindow()
+            // Ensure createPetWindow is awaited if called
+          },
+          { label: "设置", click: createSettingsWindow },
+          { type: "separator" },
+          { label: "退出", click: () => {
+            quitting = true;
+            app.quit();
+          } }
+        ]);
+        appTray.setToolTip("桌面宠物");
+        appTray.setContextMenu(contextMenu);
+        appTray.on("click", async () => petWindow ? petWindow.show() : await createPetWindow());
+        if (!iconPath) {
+          console.warn("使用默认托盘图标");
+        } else {
+          console.log("托盘图标创建成功");
+        }
+      } catch (error) {
+        if (retryCount < maxRetries) {
+          retryCount++;
+          console.log(`创建托盘图标失败，正在重试 (${retryCount}/${maxRetries})`);
+          setTimeout(createTrayWithRetry, 1e3);
+        } else {
+          console.error("创建托盘图标最终失败:", error);
+        }
+      }
+    };
+    createTrayWithRetry();
+  } catch (error) {
+    console.error("获取图标路径失败:", error);
+  }
+}
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin" || quitting) {
     app.quit();
   }
 });
-app.on("activate", () => {
+app.on("activate", async () => {
   if (petWindow === null) {
-    createPetWindow();
+    await createPetWindow();
   }
 });
 app.on("before-quit", () => {
@@ -230,9 +317,6 @@ ipcMain.on("save-pet-settings", (event, settings) => {
 ipcMain.handle("get-pet-state", async () => {
   return await loadSavedState();
 });
-ipcMain.on("interact-with-pet", (event, action) => {
-  console.log(`收到互动请求: ${action} (主进程不再处理状态)`);
-});
 ipcMain.on("save-pet-state", (event, stateToSave) => {
   if (stateToSave) {
     saveStateToFile(stateToSave);
@@ -284,35 +368,17 @@ ipcMain.on("take-pet-photo", async () => {
   if (!petWindow) return;
   try {
     const image = await petWindow.webContents.capturePage();
-    const buffer = image.toPNG();
-    const picturesDir = path.join(app.getPath("pictures"), "desktop-pet");
-    try {
-      await promises.mkdir(picturesDir, { recursive: true });
-    } catch (err) {
-      console.error("创建图片目录失败:", err);
-    }
-    const date = /* @__PURE__ */ new Date();
-    const formattedDate = date.toISOString().replace(/[:.]/g, "-").replace("T", "_").split("Z")[0];
-    const fileName = `pet_${formattedDate}.png`;
-    const filePath = path.join(picturesDir, fileName);
-    await promises.writeFile(filePath, buffer);
-    dialog.showMessageBox(petWindow, {
-      type: "info",
-      title: "拍照成功",
-      message: `已将宠物照片保存至:
-${filePath}`,
-      buttons: ["确定"]
+    const { filePath } = await dialog.showSaveDialog({
+      title: "保存宠物照片",
+      defaultPath: path.join(app.getPath("pictures"), `pet-photo-${Date.now()}.png`),
+      filters: [{ name: "Images", extensions: ["png"] }]
     });
-    console.log("宠物照片已保存至:", filePath);
+    if (filePath) {
+      await promises.writeFile(filePath, image.toPNG());
+      console.log("宠物照片已保存到:", filePath);
+    }
   } catch (error) {
     console.error("拍照失败:", error);
-    dialog.showMessageBox(petWindow, {
-      type: "error",
-      title: "拍照失败",
-      message: "无法保存宠物照片",
-      detail: error.toString(),
-      buttons: ["确定"]
-    });
   }
 });
 ipcMain.on("hide-pet-window", () => {
@@ -320,19 +386,37 @@ ipcMain.on("hide-pet-window", () => {
     petWindow.hide();
   }
 });
-app.whenReady().then(() => {
-  createPetWindow();
+app.whenReady().then(async () => {
+  await createPetWindow();
+  createTray();
   globalShortcut.register("Alt+P", () => {
-    if (petWindow && petWindow.isVisible()) {
-      petWindow.hide();
-    } else if (petWindow) {
-      petWindow.show();
-    } else {
-      createPetWindow();
+    if (petWindow) {
+      if (petWindow.isVisible()) {
+        petWindow.hide();
+      } else {
+        petWindow.show();
+      }
     }
   });
 });
-app.on("will-quit", () => {
+app.on("will-quit", async () => {
+  if (petWindow) {
+    try {
+      const currentPosition = petWindow.getPosition();
+      const [x, y] = currentPosition;
+      console.log(`[main.ts] Saving position on quit: x=${x}, y=${y}`);
+      const currentState = await loadSavedState();
+      if (currentState) {
+        currentState.position = { x, y };
+        await saveStateToFile(currentState);
+        console.log("[main.ts] Position saved successfully.");
+      } else {
+        console.warn("[main.ts] Could not save position: pet-state.json not found or invalid.");
+      }
+    } catch (error) {
+      console.error("[main.ts] Error saving pet position:", error);
+    }
+  }
   globalShortcut.unregisterAll();
 });
 export {

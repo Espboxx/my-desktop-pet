@@ -5,6 +5,7 @@ import { useSharedPetStatus } from '../context/PetStatusContext'; // Import cont
 import usePetAnimation from '../hooks/usePetAnimation';
 import usePetInteraction from '../hooks/usePetInteraction';
 import useAutonomousMovement from '../hooks/useAutonomousMovement'; // Import the new hook
+import InteractionPanel from './InteractionPanel'; // Import the new panel component
 import '../styles/PetWindow.css';
 
 const PetWindow: React.FC = () => {
@@ -22,10 +23,24 @@ const PetWindow: React.FC = () => {
     isBlinking, // Get blinking state from context
     currentIdleAnimation, // Get current idle animation state from context
     currentPetTypeId, // Get current pet type ID from context
-    initialPosition // Get the loaded initial position
+    initialPosition, // Get the loaded initial position
+    interact // Get the interact function from context
   } = useSharedPetStatus();
-  const [unlockNotification, setUnlockNotification] = useState<string | null>(null); // Notification state
-  
+  const [notificationMessage, setNotificationMessage] = useState<string | null>(null); // General notification state
+  const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Function to display notifications (Defined BEFORE usePetInteraction)
+  const showNotification = useCallback((message: string, duration = 4000) => {
+    setNotificationMessage(message);
+    if (notificationTimeoutRef.current) {
+      clearTimeout(notificationTimeoutRef.current);
+    }
+    notificationTimeoutRef.current = setTimeout(() => {
+      setNotificationMessage(null);
+      notificationTimeoutRef.current = null;
+    }, duration);
+  }, []); // Empty dependency array as it uses state setter and refs
+
   // 气泡位置引用
   const bubblePositionRef = useRef<{top: number, left: number}>({top: -55, left: 35}); // Adjusted bubble position
 
@@ -38,6 +53,65 @@ const PetWindow: React.FC = () => {
     // setLevelUpAnimation // Not used directly in rendering logic below
   } = usePetAnimation();
 
+  // --- Interaction Hook (Called unconditionally) ---
+  // Define showThoughtBubble BEFORE passing it to the hook
+  const showThoughtBubble = useCallback((text: string, duration = 3000) => {
+    if (!petRef.current) return;
+
+    // Clear existing timeout if any
+    if (status.bubble.timeout) {
+      clearTimeout(status.bubble.timeout);
+    }
+
+    // Update status to show bubble
+    setStatus(prev => ({
+      ...prev,
+      bubble: {
+        active: true,
+        text,
+        type: 'thought',
+        timeout: null // Reset timeout ID initially
+      }
+    }));
+
+    // Set new timeout to hide bubble
+    const timeoutId = window.setTimeout(() => {
+      setStatus(prev => {
+        // Only hide if this specific bubble is still active
+        if (prev.bubble.active && prev.bubble.text === text) {
+          return {
+            ...prev,
+            bubble: {
+              ...prev.bubble,
+              active: false,
+              timeout: null
+            }
+          };
+        }
+        return prev; // Otherwise, don't change state
+      });
+    }, duration);
+
+    // Store the new timeout ID in the state
+    setStatus(prev => ({
+      ...prev,
+      bubble: {
+        ...prev.bubble,
+        timeout: timeoutId as unknown as number // Store the ID
+      }
+    }));
+  }, [setStatus, status.bubble.timeout, status.bubble.active, status.bubble.text]); // Add dependencies
+
+  const interactionHookResult = usePetInteraction({
+    status,
+    setStatus,
+    setCurrentAnimation,
+    initialPosition,
+    interact,
+    showNotification, // Pass showNotification here
+    showThoughtBubble // Pass showThoughtBubble here
+  });
+
   const {
     handleMouseDown,
     handleMouseEnter: originalHandleMouseEnter,
@@ -47,7 +121,6 @@ const PetWindow: React.FC = () => {
     petPosition,
     menuPosition,
     showMenu,
-    // setShowMenu, // Not used directly
     menuRef,
     petRef,
     isMouseOverPet, // Keep this as it's used in getExpressionConfig
@@ -56,7 +129,7 @@ const PetWindow: React.FC = () => {
     reactionAnimation, // Get reaction animation state
     setPetPosition, // Get the position setter
     enableGlobalEyeTracking // Destructure the eye tracking state
-  } = usePetInteraction({ status, setStatus, setCurrentAnimation, initialPosition }); // Pass initialPosition
+  } = interactionHookResult;
   // State for pet dimensions
   const [petDimensions, setPetDimensions] = useState({ width: 80, height: 80 }); // Default size
 
@@ -76,11 +149,11 @@ const PetWindow: React.FC = () => {
   }, [petRef]); // Re-run if petRef changes (though unlikely)
 
   // Get screen dimensions (consider resize events for dynamic updates)
-  const [screenDimensions, setScreenDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
+  const [windowDimensions, setWindowDimensions] = useState({ width: window.innerWidth, height: window.innerHeight }); // Renamed state
 
   useEffect(() => {
       const handleResize = () => {
-          setScreenDimensions({ width: window.innerWidth, height: window.innerHeight });
+          setWindowDimensions({ width: window.innerWidth, height: window.innerHeight }); // Use renamed setter
       };
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);
@@ -94,8 +167,8 @@ const PetWindow: React.FC = () => {
     setCurrentAnimation,
     isDragging,
     showMenu,
-    screenWidth: screenDimensions.width,
-    screenHeight: screenDimensions.height,
+    windowWidth: windowDimensions.width,  // Pass window width
+    windowHeight: windowDimensions.height, // Pass window height
     petWidth: petDimensions.width,
     petHeight: petDimensions.height,
   });
@@ -201,35 +274,24 @@ const PetWindow: React.FC = () => {
     return baseClasses.trim();
   };
 
-  // --- Unlock notification logic ---
+  // --- Unlock Notification Effect ---
+  // Effect to show unlock notifications using the general showNotification function
   useEffect(() => {
     if (newlyUnlocked.length > 0) {
-      // Combine unlocks from status hook and potential expression unlocks
-      const allUnlocks = [...newlyUnlocked];
-      // Example: Check for expression unlocks (if expressions have unlock levels)
-      // for (const key in petType.expressions) {
-      //   const expression = petType.expressions[key];
-      //   if (expression.unlockLevel === status.level) {
-      //     allUnlocks.push(`表情: ${expression.name}`);
-      //   }
-      // }
-
-      if (allUnlocks.length > 0) {
-        const notificationMessage = `新解锁: ${allUnlocks.join(', ')}!`;
-        setUnlockNotification(notificationMessage);
-        clearNewlyUnlocked(); // Clear the hook state
-
-        const timer = setTimeout(() => {
-          setUnlockNotification(null);
-        }, 4000); // Display for 4 seconds
-
-        return () => clearTimeout(timer);
-      } else {
-        // If no relevant unlocks found, still clear the hook state
-        clearNewlyUnlocked();
-      }
+      const unlockMsg = `新解锁: ${newlyUnlocked.join(', ')}!`;
+      showNotification(unlockMsg); // Use the general notification function
+      clearNewlyUnlocked(); // Clear the hook state
     }
-  }, [newlyUnlocked, clearNewlyUnlocked, status.level, currentPetType.expressions]); // Added dependencies
+  }, [newlyUnlocked, clearNewlyUnlocked, showNotification]); // Added showNotification dependency
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (notificationTimeoutRef.current) {
+        clearTimeout(notificationTimeoutRef.current);
+      }
+    };
+  }, []); // Keep this cleanup effect
   // --------------------
 
   // --- Wrapped Mouse Handlers ---
@@ -243,41 +305,7 @@ const PetWindow: React.FC = () => {
     setIsHovering(false);
   };
 
-  // 用于显示思考气泡的函数
-  const showThoughtBubble = (text: string, duration = 3000) => {
-    if (!petRef.current) return;
-    
-    // 更新状态以显示气泡
-    setStatus(prev => ({
-      ...prev,
-      bubble: {
-        active: true,
-        text,
-        type: 'thought',
-        timeout: null
-      }
-    }));
-    
-    // 设置自动隐藏气泡的计时器
-    const timeoutId = window.setTimeout(() => {
-      setStatus(prev => ({
-        ...prev,
-        bubble: {
-          ...prev.bubble,
-          active: false
-        }
-      }));
-    }, duration);
-    
-    // 更新超时引用
-    setStatus(prev => ({
-      ...prev,
-      bubble: {
-        ...prev.bubble,
-        timeout: timeoutId as unknown as number
-      }
-    }));
-  };
+  // showThoughtBubble function is now defined earlier and passed to usePetInteraction
   // ---------------------------
 
   // Loading state check moved below all hook calls
@@ -340,9 +368,10 @@ const PetWindow: React.FC = () => {
   }, [status.bubble.active, status.hunger, status.mood, status.energy, status.cleanliness, setStatus]); // 添加依赖项
   // --------------------
 
-  // Show loading state if not loaded yet (Moved here)
+  // --- Loading State Check (AFTER all hooks) ---
   if (!isLoaded) {
-      return <div className="loading-placeholder">加载中...</div>; // Basic loading indicator
+      // Return loading indicator BEFORE using interactionHookResult
+      return <div className="loading-placeholder">加载中...</div>;
   }
   // Helper function to render pet based on model type
   const renderPetModel = (petType: PetType, expression: PetExpression | undefined) => {
@@ -404,8 +433,11 @@ const PetWindow: React.FC = () => {
     <div
       className="pet-container"
       style={{
+        position: 'relative', // Ensure the panel is positioned relative to this container
         transform: `translate(${petPosition.x}px, ${petPosition.y}px)`
       }}
+      onMouseEnter={wrappedHandleMouseEnter} // Use wrapped handler on container
+      onMouseLeave={wrappedHandleMouseLeave} // Use wrapped handler on container
       // ref={petRef} // REMOVE ref from container
     >
       {/* Pet Element */}
@@ -413,8 +445,8 @@ const PetWindow: React.FC = () => {
         className={`pet ${getAnimationClasses()}`}
         ref={petRef} // ADD ref to the actual pet element
         onMouseDown={handleMouseDown}
-        onMouseEnter={wrappedHandleMouseEnter} // Use wrapped handler
-        onMouseLeave={wrappedHandleMouseLeave} // Use wrapped handler
+        // onMouseEnter={wrappedHandleMouseEnter} // REMOVED from here
+        // onMouseLeave={wrappedHandleMouseLeave} // REMOVED from here
         onContextMenu={handleContextMenu}
         style={{ cursor: isDragging ? 'grabbing' : 'grab' }} // Use isDragging
       >
@@ -447,7 +479,10 @@ const PetWindow: React.FC = () => {
           </div>
         )}
       </div>
-      
+
+      {/* Interaction Panel */}
+      <InteractionPanel onInteraction={handleAction} />
+
       {/* (Removed Test Button) */}
         {/* Menu */}
         {showMenu && menuPosition && (
@@ -460,15 +495,9 @@ const PetWindow: React.FC = () => {
           }}
           ref={menuRef}
         >
-          <button onClick={() => handleAction('feed')}>喂食</button>
-          <button onClick={() => handleAction('pet')}>抚摸</button>
-          <button onClick={() => handleAction('play')}>玩耍</button>
-          <button onClick={() => handleAction('clean')}>清洁</button>
-          <button onClick={() => handleAction('sleep')}>睡觉</button>
-          <button onClick={() => handleAction('massage')}>按摩</button>
+          {/* Removed permanent actions: feed, pet, play, clean, sleep, massage, train, learn */}
           <button onClick={() => handleAction('photo')}>拍照</button>
-          {status.level >= 3 && <button onClick={() => handleAction('train')}>训练</button>}
-          {status.level >= 5 && <button onClick={() => handleAction('learn')}>学习</button>}
+          {/* Keep other non-permanent actions if any */}
           <hr />
           <button onClick={() => handleAction('status')}>状态详情</button>
           <button onClick={() => handleAction('skin')}>切换皮肤</button>
@@ -559,10 +588,11 @@ const PetWindow: React.FC = () => {
         </div>
       )}
 
-      {/* Unlock Notification */}
-      {unlockNotification && (
-        <div className="unlock-notification">
-          {unlockNotification}
+      {/* General Notification Display */}
+      {notificationMessage && (
+        <div className="pet-notification"> {/* Use a general class or unlock-notification */}
+          {/* Optionally add an icon based on message type later */}
+          {notificationMessage}
         </div>
       )}
     </div>

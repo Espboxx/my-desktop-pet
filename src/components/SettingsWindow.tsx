@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { FaCog, FaPalette, FaPaw, FaHatWizard, FaTrophy, FaTimes } from 'react-icons/fa'; // 导入图标
+import { FaCog, FaPalette, FaPaw, FaHatWizard, FaTrophy, FaTimes, FaBoxOpen } from 'react-icons/fa'; // 导入图标, 添加 FaBoxOpen
 import '../styles/SettingsWindow.css';
 import GeneralTab from './SettingsTabs/GeneralTab';
 import AppearanceTab from './SettingsTabs/AppearanceTab';
 import PetSelectionTab from './SettingsTabs/PetSelectionTab';
 import AccessoriesTab from './SettingsTabs/AccessoriesTab';
 import TasksAchievementsTab from './SettingsTabs/TasksAchievementsTab';
+import InventoryTab from './SettingsTabs/InventoryTab'; // 导入新的库存标签页组件
 
 const SettingsWindow: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('general');
@@ -54,6 +55,13 @@ const SettingsWindow: React.FC = () => {
           >
             <FaTrophy className="nav-icon" /> 任务/成就
           </li>
+          {/* 新增库存标签 */}
+          <li
+            className={activeTab === 'inventory' ? 'active' : ''}
+            onClick={() => handleTabChange('inventory')}
+          >
+            <FaBoxOpen className="nav-icon" /> 库存
+          </li>
         </ul>
       </nav>
 
@@ -80,6 +88,10 @@ const SettingsWindow: React.FC = () => {
           {/* 新增任务/成就内容区域 */}
           <div style={{ display: activeTab === 'tasks-achievements' ? 'block' : 'none' }}>
             <TasksAchievementsTab />
+          </div>
+          {/* 新增库存内容区域 */}
+          <div style={{ display: activeTab === 'inventory' ? 'block' : 'none' }}>
+            <InventoryTab />
           </div>
         </div>
       </div>

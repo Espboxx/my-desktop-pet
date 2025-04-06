@@ -7,13 +7,15 @@
   /* align-items: center; */
   /* justify-content: center; */
   /* gap: 10px; */
-  width: 100%; /* Or fit-content if needed */
-  height: 100%; /* Or fit-content */
-  padding: 15px; /* Keep padding for spacing */
+   width: auto; /* Auto width to fit content */
+   height: auto; /* Auto height to fit content */
+  padding: 15px 15px 50px 15px; /* T=15, R=15, B=50, L=15 */
   box-sizing: border-box;
   background-color: transparent;
   pointer-events: none; /* Container doesn't block clicks */
   position: relative; /* Crucial for absolute positioning of children */
+  /* 浮动 */
+  /* position: absolute; */
   z-index: 100;
 }
 
@@ -701,4 +703,24 @@ font-size: 12px; /* Slightly larger font for visibility */
   /* Apply the walking animation */
   /* Adjust duration and timing function as needed */
   animation: walk-animation 0.6s ease-in-out infinite alternate;
+}
+
+/* General Notification Display Style */
+.pet-notification {
+  position: absolute; /* Position relative to the pet container's coordinate system, but visually near the pet */
+  /* Adjust positioning relative to the pet element itself if needed */
+  bottom: -35px; /* Position below the pet element */
+  left: 50%; /* Center horizontally relative to the pet element */
+  transform: translateX(-50%);
+  background-color: rgba(40, 40, 40, 0.85); /* Dark semi-transparent background */
+  color: #ffffff; /* White text */
+  padding: 6px 12px; /* Padding */
+  border-radius: 15px; /* Rounded corners */
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 10; /* Ensure it's above the pet but potentially below the menu */
+  white-space: nowrap; /* Prevent wrapping for short messages */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  animation: fadeIn 0.3s ease-out; /* Reuse existing fadeIn animation */
+  pointer-events: none; /* Notification shouldn't block clicks */
 }

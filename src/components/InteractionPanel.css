@@ -1,0 +1,48 @@
+/* src/components/InteractionPanel.css */
+.interaction-panel {
+  display: flex;
+  justify-content: center; /* Center buttons horizontally */
+  align-items: center;
+  padding: 5px;
+  background-color: rgba(240, 240, 240, 0.8); /* Light semi-transparent background */
+  border-top: 1px solid rgba(200, 200, 200, 0.8); /* Subtle top border */
+  pointer-events: auto; /* 确保面板可以接收鼠标事件，覆盖父容器的none设置 */
+  gap: 8px; /* Increased space between buttons */
+  margin-top: 10px; /* Add space above the panel */
+  position: absolute; /* Position relative to the PetWindow */
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 110; /* Ensure it's above the container (z-index 100) and pet */
+  border-bottom-left-radius: 8px; /* Match window corners if needed */
+  border-bottom-right-radius: 8px;
+}
+
+.interaction-button {
+  /* Adjust padding for icon buttons */
+  padding: 8px; /* Equal padding */
+  font-size: 18px; /* Icon size is controlled in JSX, this is fallback/container size */
+  background-color: #e0e0e0;
+  border: 1px solid #cccccc;
+  border-radius: 50%; /* Make buttons circular */
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  /* Set fixed size for circular buttons */
+  width: 36px;
+  height: 36px;
+  display: flex; /* Center icon inside */
+  justify-content: center;
+  align-items: center;
+  line-height: 1; /* Ensure icon vertical alignment */
+  color: #333; /* Icon color */
+}
+
+.interaction-button:hover {
+  background-color: #d0d0d0;
+  transform: scale(1.1); /* Add slight scale effect on hover */
+}
+
+.interaction-button:active {
+  background-color: #c0c0c0;
+  transform: scale(1.05); /* Slightly smaller scale on active */
+}

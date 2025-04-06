@@ -29,7 +29,7 @@ export interface PetType {
 }
 
 // 定义互动类型
-export type InteractionType = 'feed' | 'clean' | 'play' | 'train' | 'learn' | 'petting' | 'special'; // 添加 'petting'
+export type InteractionType = 'feed' | 'clean' | 'play' | 'train' | 'learn' | 'petting' | 'sleep' | 'massage' | 'special'; // 添加 'petting', 'sleep', 'massage'
 
 // 新增：定义待机动画类型 (CSS 类名)
 export type IdleAnimation =
@@ -63,6 +63,8 @@ export interface PetStatus {
     type: 'thought' | 'speech';
     timeout: number | null;
   };
+  // 新增：道具库存
+  inventory: Inventory;
 }
 
 // 定义成就条件类型
@@ -151,3 +153,18 @@ export interface SavedPetData {
   petTypeId: string;
   position?: PetPosition; // Add optional position field
 }
+
+// 定义道具类型
+export type ItemType = 'food' | 'cleaning_supply' | 'toy';
+
+// 定义道具
+export interface Item {
+  id: string; // 唯一标识符，例如 'basic_food', 'soap', 'ball'
+  name: string; // 道具名称，例如 '普通食物', '肥皂', '球'
+  type: ItemType; // 道具类型
+  description: string; // 道具描述
+  // 可以添加其他属性，例如效果强度、稀有度等
+}
+
+// 定义道具库存
+export type Inventory = Record<string, number>; // key: Item ID, value: quantity

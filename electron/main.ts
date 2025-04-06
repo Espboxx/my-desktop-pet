@@ -43,6 +43,7 @@ let appTray: Tray | null = null
 let quitting = false
 
 // 宠物窗口尺寸常量
+const DEFAULT_PET_WIDTH = 300; // Default width
 const DEFAULT_PET_HEIGHT = 400; // Increased default height for vertical layout
 const EXPANDED_PET_HEIGHT = 500; // 展开后的高度（足够显示菜单）
 
@@ -72,19 +73,37 @@ function getIconPath(): string {
 }
 
 // 创建宠物窗口
-function createPetWindow() {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize // 获取屏幕工作区尺寸
+async function createPetWindow() { // Make async
+  const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize // 获取屏幕工作区尺寸
+
+  // Load saved state to get position
+  const savedState = await loadSavedState();
+  let initialX: number;
+  let initialY: number;
+
+  if (savedState?.position && typeof savedState.position.x === 'number' && typeof savedState.position.y === 'number') {
+    // Use saved position, ensuring it's within screen bounds
+    initialX = Math.max(0, Math.min(savedState.position.x, screenWidth - DEFAULT_PET_WIDTH));
+    initialY = Math.max(0, Math.min(savedState.position.y, screenHeight - DEFAULT_PET_HEIGHT));
+    console.log(`[main.ts] Loaded saved position: x=${initialX}, y=${initialY}`);
+  } else {
+    // Default position: bottom right corner
+    initialX = screenWidth - DEFAULT_PET_WIDTH;
+    initialY = screenHeight - DEFAULT_PET_HEIGHT;
+    console.log(`[main.ts] No saved position found, using default: x=${initialX}, y=${initialY}`);
+  }
 
   petWindow = new BrowserWindow({
-    width: width,  // 设置为屏幕宽度
-    height: height, // 设置为屏幕高度
-    x: 0,         // 从屏幕左上角开始
-    y: 0,         // 从屏幕左上角开始
-    transparent: true, // 设置背景透明
-    frame: false,
-    resizable: false,
-    skipTaskbar: true,
-    alwaysOnTop: true, // 保持置顶
+    width: DEFAULT_PET_WIDTH,  // Use default width
+    height: DEFAULT_PET_HEIGHT, // Use default height
+    x: Math.round(initialX), // Use calculated X
+    y: Math.round(initialY), // Use calculated Y
+    transparent: true, // 启用透明背景
+    frame: false,      // 移除窗口框架以实现完全透明效果
+    resizable: true,   // 允许调整大小
+    fullscreen: true,  // 程序初始化时全屏显示
+    skipTaskbar: true, // 不再跳过任务栏
+    // alwaysOnTop: true, // 不再保持置顶
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
       nodeIntegration: false,
@@ -92,25 +111,17 @@ function createPetWindow() {
     },
   })
 
-  // 设置鼠标穿透，允许事件转发到下面的窗口
-  petWindow.setIgnoreMouseEvents(true, { forward: true })
-  
-  // 注释掉禁止窗口右键菜单的代码，允许右键事件传递
-  // petWindow.hookWindowMessage(0x0116, () => {
-  //   petWindow?.setEnabled(false)
-  //   petWindow?.setEnabled(true)
-  //   return true
-  // })
+
 
   if (VITE_DEV_SERVER_URL) {
     petWindow.loadURL(`${VITE_DEV_SERVER_URL}?window=pet`)
     petWindow.webContents.openDevTools({ mode: 'detach' })
   } else {
-    petWindow.loadFile(path.join(RENDERER_DIST, 'index.html'), { 
-      hash: 'pet' 
+    petWindow.loadFile(path.join(RENDERER_DIST, 'index.html'), {
+      hash: 'pet'
     })
   }
-  
+
   petWindow.on('closed', () => {
     petWindow = null
   })
@@ -125,7 +136,7 @@ function createSettingsWindow() {
     settingsWindow.focus()
     return
   }
-  
+
   settingsWindow = new BrowserWindow({
     width: 650,
     height: 500,
@@ -147,7 +158,7 @@ function createSettingsWindow() {
       hash: 'settings'
     })
   }
-  
+
   settingsWindow.on('closed', () => {
     settingsWindow = null
   })
@@ -158,7 +169,7 @@ function createTray() {
   try {
     const iconPath = getIconPath()
     console.log('使用托盘图标路径:', iconPath)
-    
+
     // 如果已有托盘，先销毁它
     if (appTray !== null) {
       appTray.destroy()
@@ -167,29 +178,29 @@ function createTray() {
     // 添加重试逻辑
     let retryCount = 0
     const maxRetries = 3
-    
+
     const createTrayWithRetry = () => {
       try {
         // 如果图标路径为空，使用空字符串创建默认图标
         const trayIconPath = iconPath || '';
         appTray = new Tray(trayIconPath)
-        
+
         // 创建上下文菜单
         const contextMenu = Menu.buildFromTemplate([
           {
             label: '显示宠物',
-            click: () => petWindow ? petWindow.show() : createPetWindow()
+            click: async () => petWindow ? petWindow.show() : await createPetWindow() // Ensure createPetWindow is awaited if called
           },
           { label: '设置', click: createSettingsWindow },
           { type: 'separator' },
           { label: '退出', click: () => { quitting = true; app.quit() } }
         ])
-        
+
         appTray.setToolTip('桌面宠物')
         appTray.setContextMenu(contextMenu)
-        
-        appTray.on('click', () => petWindow ? petWindow.show() : createPetWindow())
-        
+
+        appTray.on('click', async () => petWindow ? petWindow.show() : await createPetWindow()) // Ensure createPetWindow is awaited if called
+
         if (!iconPath) {
           console.warn('使用默认托盘图标')
         } else {
@@ -206,7 +217,7 @@ function createTray() {
         }
       }
     }
-    
+
     createTrayWithRetry()
   } catch (error) {
     console.error('获取图标路径失败:', error)
@@ -223,11 +234,11 @@ app.on('window-all-closed', () => {
   }
 })
 
-app.on('activate', () => {
+app.on('activate', async () => { // Make async
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (petWindow === null) {
-    createPetWindow()
+    await createPetWindow() // Await the async function
   }
 })
 
@@ -319,19 +330,7 @@ async function saveStateToFile(stateToSave: SavedPetData) { // Update parameter 
   }
 }
 
-// 移除状态衰减定时器
-// function startStateDecayTimer() { ... }
 
-// IPC 事件处理
-
-// // 旧的拖动逻辑 (基于增量) - 已被新的绝对定位逻辑取代
-// ipcMain.on('pet-drag', (event, { mouseX, mouseY }) => {
-//   const position = petWindow?.getPosition()
-//   if (position && petWindow) {
-//     const [x, y] = position
-//     petWindow.setPosition(x + mouseX, y + mouseY)
-//   }
-// })
 
 // 新的拖动逻辑 - 获取窗口当前位置
 ipcMain.handle('get-window-position', () => {
@@ -408,17 +407,17 @@ ipcMain.handle('get-pet-settings', async () => {
 ipcMain.on('save-pet-settings', (event, settings) => {
   // 保存设置到配置文件或数据库
   console.log('保存设置:', settings)
-  
+
   // 更新行为配置
   if (settings.activityLevel) {
     petBehavior.activityLevel = settings.activityLevel;
     updateBehaviorBasedOnActivity();
   }
-  
+
   // 应用部分设置到宠物窗口
   if (petWindow) {
     petWindow.setAlwaysOnTop(settings.alwaysOnTop)
-    
+
     // 设置大小和透明度
     petWindow.webContents.send('update-pet-appearance', {
       size: settings.size,
@@ -433,15 +432,7 @@ ipcMain.handle('get-pet-state', async () => {
   return await loadSavedState(); // 返回加载的状态或 null
 });
 
-// 移除 interact-with-pet 中直接修改和保存状态的逻辑
-// 互动逻辑现在完全在渲染进程中处理
-ipcMain.on('interact-with-pet', (event, action) => {
-  // 主进程不再直接修改状态
-  // 可以保留这个通道用于未来可能的、需要在主进程处理的互动逻辑
-  // 或者，如果完全不需要，可以移除这个监听器
-  console.log(`收到互动请求: ${action} (主进程不再处理状态)`);
-  // 注意：不再调用 savePetState() 或发送 pet-state-update
-});
+
 
 // 新增：处理保存状态请求
 ipcMain.on('save-pet-state', (event, stateToSave) => {
@@ -475,7 +466,7 @@ function updateBehaviorBasedOnActivity() {
   petWindow?.webContents.send('update-pet-behavior', petBehavior);
 }
 
-// 新增：处理渲染进程请求切换鼠标穿透状态
+// 处理渲染进程请求切换鼠标穿透状态
 ipcMain.on('set-mouse-passthrough', (event, enable: boolean) => {
   if (petWindow) {
     console.log(`[main.ts] Setting mouse passthrough: ${enable}`);
@@ -498,88 +489,100 @@ ipcMain.on('show-status-details', () => {
 // 新增：显示皮肤选择器
 ipcMain.on('show-skin-selector', () => {
   console.log('显示皮肤选择器');
-  // TODO: 实现皮肤选择窗口
+  // TODO: 实现皮肤选择器窗口
 });
 
 // 新增：显示名称编辑器
 ipcMain.on('show-name-editor', () => {
   console.log('显示名称编辑器');
-  // TODO: 实现名称编辑窗口
+  // TODO: 实现名称编辑器窗口
 });
 
-// 新增：拍照功能
+// 新增：处理拍照请求
 ipcMain.on('take-pet-photo', async () => {
   if (!petWindow) return;
-  
+
   try {
-    // 捕获窗口截图
     const image = await petWindow.webContents.capturePage();
-    const buffer = image.toPNG();
-    
-    // 创建保存目录
-    const picturesDir = path.join(app.getPath('pictures'), 'desktop-pet');
-    try {
-      await fsPromises.mkdir(picturesDir, { recursive: true });
-    } catch (err) {
-      console.error('创建图片目录失败:', err);
+    const { filePath } = await dialog.showSaveDialog({
+      title: '保存宠物照片',
+      defaultPath: path.join(app.getPath('pictures'), `pet-photo-${Date.now()}.png`),
+      filters: [{ name: 'Images', extensions: ['png'] }]
+    });
+
+    if (filePath) {
+      await fsPromises.writeFile(filePath, image.toPNG());
+      console.log('宠物照片已保存到:', filePath);
+      // 可以选择性地显示一个通知
+      // new Notification({ title: '拍照成功', body: `照片已保存到 ${filePath}` }).show();
     }
-    
-    // 生成文件名（当前日期时间）
-    const date = new Date();
-    const formattedDate = date.toISOString().replace(/[:.]/g, '-').replace('T', '_').split('Z')[0];
-    const fileName = `pet_${formattedDate}.png`;
-    const filePath = path.join(picturesDir, fileName);
-    
-    // 保存截图
-    await fsPromises.writeFile(filePath, buffer);
-    
-    // 显示成功消息
-    dialog.showMessageBox(petWindow, {
-      type: 'info',
-      title: '拍照成功',
-      message: `已将宠物照片保存至:\n${filePath}`,
-      buttons: ['确定']
-    });
-    
-    console.log('宠物照片已保存至:', filePath);
-  } catch (error: any) {
+  } catch (error) {
     console.error('拍照失败:', error);
-    dialog.showMessageBox(petWindow, {
-      type: 'error',
-      title: '拍照失败',
-      message: '无法保存宠物照片',
-      detail: error.toString(),
-      buttons: ['确定']
-    });
+    // 可以选择性地显示一个错误通知
+    // new Notification({ title: '拍照失败', body: '无法保存照片。' }).show();
   }
 });
 
-// 新增：隐藏宠物窗口
+// 新增：处理隐藏窗口请求
 ipcMain.on('hide-pet-window', () => {
   if (petWindow) {
     petWindow.hide();
   }
 });
 
-// 应用启动初始化
-app.whenReady().then(() => {
-  // 暂时禁用托盘功能
-  createPetWindow()
-  
-  // 全局快捷键
+// App Ready
+app.whenReady().then(async () => { // Make async
+  // Load state before creating window
+  // const initialState = await loadSavedState(); // Already loaded within createPetWindow
+
+  // 移除状态衰减定时器调用
+  // startStateDecayTimer();
+
+  await createPetWindow() // Await the async function
+  createTray()
+
+  // 注册全局快捷键 (示例)
   globalShortcut.register('Alt+P', () => {
-    if (petWindow && petWindow.isVisible()) {
-      petWindow.hide()
-    } else if (petWindow) {
-      petWindow.show()
-    } else {
-      createPetWindow()
+    if (petWindow) {
+      if (petWindow.isVisible()) {
+        petWindow.hide()
+      } else {
+        petWindow.show()
+      }
     }
   })
-})
+});
 
-// 清理
-app.on('will-quit', () => {
+// App Will Quit
+app.on('will-quit', async () => { // Make async
+  // Save current window position before quitting
+  if (petWindow) {
+    try {
+      const currentPosition = petWindow.getPosition();
+      const [x, y] = currentPosition;
+      console.log(`[main.ts] Saving position on quit: x=${x}, y=${y}`);
+
+      // Load the last known state
+      const currentState = await loadSavedState();
+
+      if (currentState) {
+        // Update the position in the state
+        currentState.position = { x, y };
+        // Save the updated state
+        await saveStateToFile(currentState);
+        console.log('[main.ts] Position saved successfully.');
+      } else {
+        // If no state file exists, maybe create one just with position?
+        // Or simply log that we couldn't save position because state was missing.
+        console.warn('[main.ts] Could not save position: pet-state.json not found or invalid.');
+        // Optionally, create a minimal state file:
+        // await saveStateToFile({ position: { x, y }, status: /* default status? */, petTypeId: /* default type? */ });
+      }
+    } catch (error) {
+      console.error('[main.ts] Error saving pet position:', error);
+    }
+  }
+
+  // Unregister all shortcuts.
   globalShortcut.unregisterAll()
-  // 暂时禁用托盘功能
-})
+});

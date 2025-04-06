@@ -1,0 +1,81 @@
+/* src/styles/InventoryTab.css */
+
+.inventory-tab {
+  padding: 20px;
+  color: #333; /* Darker text for better readability */
+}
+
+.inventory-tab h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #555;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  display: flex; /* Align icon and text */
+  align-items: center; /* Center vertically */
+}
+
+.inventory-tab h2 .icon {
+  margin-right: 10px; /* Space between icon and text */
+  color: #6c757d; /* Icon color */
+}
+
+
+.empty-inventory-message {
+  color: #888;
+  font-style: italic;
+  text-align: center;
+  margin-top: 30px;
+}
+
+.inventory-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.inventory-item {
+  background-color: #f9f9f9; /* Light background for each item */
+  border: 1px solid #eee;
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap; /* Allow wrapping for description */
+  align-items: center; /* Align name and quantity */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+}
+
+.item-name {
+  font-weight: bold;
+  color: #444;
+  flex-grow: 1; /* Take available space */
+  margin-right: 15px; /* Space before quantity */
+}
+
+.item-quantity {
+  font-size: 0.9em;
+  color: #666;
+  background-color: #e9ecef; /* Light grey background for quantity */
+  padding: 3px 8px;
+  border-radius: 10px; /* Rounded badge */
+  white-space: nowrap; /* Prevent quantity from wrapping */
+}
+
+.item-description {
+  font-size: 0.85em;
+  color: #777;
+  margin-top: 8px;
+  margin-bottom: 0;
+  width: 100%; /* Take full width below name/quantity */
+  line-height: 1.4;
+}
+
+.inventory-tip {
+  margin-top: 30px;
+  font-size: 0.9em;
+  color: #6c757d;
+  text-align: center;
+  border-top: 1px dashed #ddd;
+  padding-top: 15px;
+}

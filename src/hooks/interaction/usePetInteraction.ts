@@ -1,6 +1,6 @@
 // src/hooks/interaction/usePetInteraction.ts
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { PetStatus, InteractionType } from '../../types/petTypes';
+import { PetStatus, InteractionType, ItemType } from '../../types/petTypes'; // Add ItemType
 import {
   CoreInteractionProps,
   UsePetInteractionReturn,
@@ -22,8 +22,14 @@ interface UsePetInteractionProps {
   setStatus: React.Dispatch<React.SetStateAction<PetStatus>>;
   setCurrentAnimation: (animation: string | null) => void;
   initialPosition: PetPosition | null; // Add initial position prop
+  // Add function to show notifications
+  showNotification?: (message: string) => void;
+  // Add function to show thought bubbles
+  showThoughtBubble?: (message: string) => void;
   // Add setNewlyUnlocked if needed for notifications
   // setNewlyUnlocked?: React.Dispatch<React.SetStateAction<string[]>>;
+  // Add interact function from usePetStatus hook
+  interact: (type: InteractionType, value: number, requiredItemType?: ItemType) => boolean;
 }
 
 export function usePetInteraction({
@@ -32,6 +38,9 @@ export function usePetInteraction({
   setCurrentAnimation,
   // setNewlyUnlocked,
   initialPosition, // Destructure the new prop
+  interact, // Destructure interact function
+  showNotification, // Destructure showNotification
+  showThoughtBubble, // Destructure showThoughtBubble
 }: UsePetInteractionProps): UsePetInteractionReturn {
 
   // --- Central State and Refs ---
@@ -117,7 +126,10 @@ export function usePetInteraction({
     status,
     setStatus,
     setCurrentAnimation,
+    showNotification, // Pass showNotification down
+    showThoughtBubble, // Pass showThoughtBubble down
     // setNewlyUnlocked,
+    interact, // Pass interact down
   });
 
   const idleHandling = useIdleHandling({ // Pass isDragging to useIdleHandling

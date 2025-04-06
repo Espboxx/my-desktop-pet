@@ -8,8 +8,8 @@ interface UseAutonomousMovementProps {
   isDragging: boolean; // To pause movement when user is dragging
   showMenu: boolean; // To pause movement when menu is open
   // Add other interaction states if needed (e.g., isInteracting)
-  screenWidth: number;
-  screenHeight: number;
+  windowWidth: number;  // Use window dimensions instead of screen
+  windowHeight: number; // Use window dimensions instead of screen
   petWidth: number; // Get pet dimensions to calculate boundaries
   petHeight: number;
 }
@@ -26,8 +26,8 @@ export default function useAutonomousMovement({
   setCurrentAnimation,
   isDragging,
   showMenu,
-  screenWidth,
-  screenHeight,
+  windowWidth,  // Use window dimensions
+  windowHeight, // Use window dimensions
   petWidth,
   petHeight,
 }: UseAutonomousMovementProps) {
@@ -43,9 +43,9 @@ export default function useAutonomousMovement({
 
     // Clamp position within screen bounds, considering pet size and padding
     const minX = EDGE_PADDING;
-    const maxX = screenWidth - petWidth - EDGE_PADDING;
+    const maxX = windowWidth - petWidth - EDGE_PADDING; // Use windowWidth
     const minY = EDGE_PADDING;
-    const maxY = screenHeight - petHeight - EDGE_PADDING;
+    const maxY = windowHeight - petHeight - EDGE_PADDING; // Use windowHeight
 
     newX = Math.max(minX, Math.min(newX, maxX));
     newY = Math.max(minY, Math.min(newY, maxY));
@@ -58,7 +58,7 @@ export default function useAutonomousMovement({
 
 
     return { x: newX, y: newY };
-  }, [petPosition, screenWidth, screenHeight, petWidth, petHeight]);
+  }, [petPosition, windowWidth, windowHeight, petWidth, petHeight]); // Update dependencies
 
   const startMovement = useCallback(() => {
     if (isMovingRef.current || isDragging || showMenu) return; // Don't move if already moving or user interacting
