@@ -127,18 +127,18 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
   maxMood: {
     id: 'maxMood',
     name: '心情爆棚',
-    description: '心情值达到最大 (100)。',
+    description: '心情值达到当前上限。',
     conditions: [
-      { type: 'statusThreshold', status: 'mood', threshold: 100 }
+      { type: 'statusThreshold', status: 'mood', threshold: 100 } // 基础判定值，实际验证将基于maxMood
     ],
     reward: { exp: 80 }
   },
   maxClean: {
     id: 'maxClean',
     name: '一尘不染',
-    description: '清洁度达到最大 (100)。',
+    description: '清洁度达到当前上限。',
     conditions: [
-      { type: 'statusThreshold', status: 'cleanliness', threshold: 100 }
+      { type: 'statusThreshold', status: 'cleanliness', threshold: 100 } // 基础判定值，实际验证将基于maxCleanliness
     ],
     reward: { exp: 80 }
   },

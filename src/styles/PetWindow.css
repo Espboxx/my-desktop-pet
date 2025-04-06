@@ -17,6 +17,11 @@
   /* 浮动 */
   /* position: absolute; */
   z-index: 100;
+  /* 居中定位在窗口 */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 /* Removed rule for .pet-container * as it's no longer needed */
@@ -65,7 +70,7 @@
 /* 状态条 */
 .status-bar {
   position: absolute; /* Position absolutely relative to pet-container */
-  top: 15px; /* Align with top padding of container */
+  top: -10px; /* 向上移动位置 */
   left: 100px; /* Position to the right of the pet (adjust as needed based on pet size/padding) */
   /* bottom: -10px; */ /* Remove bottom positioning */
   /* transform: translateX(-50%); */ /* Remove horizontal centering */

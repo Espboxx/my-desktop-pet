@@ -182,7 +182,30 @@ export default function useMouseHandling({
       if (isDraggingRef.current) {
         const newX = initialPetPosRef.current.x + dx;
         const newY = initialPetPosRef.current.y + dy;
-        setPetPosition({ x: newX, y: newY });
+
+        // 获取宠物元素尺寸
+        const petElement = petRef.current;
+        let petWidth = 80;  // 默认宠物宽度
+        let petHeight = 80; // 默认宠物高度
+        
+        if (petElement) {
+          const rect = petElement.getBoundingClientRect();
+          petWidth = rect.width;
+          petHeight = rect.height;
+        }
+        
+        // 设置边界，包含边缘填充
+        const EDGE_PADDING = 20;
+        const minX = EDGE_PADDING;
+        const maxX = window.innerWidth - petWidth - EDGE_PADDING;
+        const minY = EDGE_PADDING;
+        const maxY = window.innerHeight - petHeight - EDGE_PADDING;
+        
+        // 限制位置在屏幕内
+        const clampedX = Math.max(minX, Math.min(newX, maxX));
+        const clampedY = Math.max(minY, Math.min(newY, maxY));
+        
+        setPetPosition({ x: clampedX, y: clampedY });
       }
     }
     

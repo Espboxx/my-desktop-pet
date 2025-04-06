@@ -46,6 +46,11 @@ export interface PetStatus {
   energy: number;
   exp: number;
   level: number;
+  // 状态值上限
+  maxMood: number;
+  maxCleanliness: number;
+  maxHunger: number;
+  maxEnergy: number;
   // 新增：互动计数
   interactionCounts: Record<InteractionType | string, number>; // 使用 string 以允许未来扩展
   // 新增：已解锁成就

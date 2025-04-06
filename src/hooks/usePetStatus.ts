@@ -28,6 +28,11 @@ const defaultInitialStatus: PetStatus = {
   energy: 80,
   exp: 0,
   level: 1,
+  // 添加状态值上限
+  maxMood: 100,
+  maxCleanliness: 100,
+  maxHunger: 100,
+  maxEnergy: 100,
   interactionCounts: {}, // Initialize new field
   unlockedAchievements: [], // Initialize new field
   activeTasks: [], // Initialize new field
@@ -231,10 +236,10 @@ export default function usePetStatus() {
         // Create a mutable copy of the previous state to work with
         let newStatus: PetStatus = {
           ...prev,
-          mood: Math.floor(Math.max(0, prev.mood - moodDecay)),
-          cleanliness: Math.floor(Math.max(0, prev.cleanliness - cleanlinessDecay)),
-          hunger: Math.floor(Math.min(100, prev.hunger + hungerIncrease)),
-          energy: Math.floor(Math.max(0, prev.energy - energyDecay)),
+          mood: Math.floor(Math.max(0, Math.min(prev.maxMood, prev.mood - moodDecay))),
+          cleanliness: Math.floor(Math.max(0, Math.min(prev.maxCleanliness, prev.cleanliness - cleanlinessDecay))),
+          hunger: Math.floor(Math.min(prev.maxHunger, prev.hunger + hungerIncrease)),
+          energy: Math.floor(Math.max(0, Math.min(prev.maxEnergy, prev.energy - energyDecay))),
           exp: prev.exp + 1 // Experience always increases slightly
         };
 
@@ -249,6 +254,19 @@ export default function usePetStatus() {
           newStatus.exp -= expToNextLevel;
           newStatus.level += 1;
           const newLevel = newStatus.level;
+          
+          // 状态值上限提升（每升一级增加5点上限）
+          const statusLimitIncrease = 5;
+          newStatus.maxMood += statusLimitIncrease;
+          newStatus.maxCleanliness += statusLimitIncrease;
+          newStatus.maxHunger += statusLimitIncrease;
+          newStatus.maxEnergy += statusLimitIncrease;
+          
+          // 提示玩家状态值上限已提升
+          const statusUpgradeMsg = `状态值上限提升! 心情:${newStatus.maxMood} 清洁:${newStatus.maxCleanliness} 饥饿:${newStatus.maxHunger} 能量:${newStatus.maxEnergy}`;
+          setNewlyUnlocked(prevUnlocked => [...prevUnlocked, statusUpgradeMsg]);
+          
+          // 解锁项检查
           const unlockedItems: string[] = [];
           for (const [levelStr, items] of Object.entries(LEVEL_UNLOCKS)) {
              const level = Number(levelStr);
@@ -262,6 +280,8 @@ export default function usePetStatus() {
           } else {
              console.log(`Level Up! Reached level ${newLevel}.`);
           }
+          
+          console.log(statusUpgradeMsg); // 在控制台也显示状态值上限提升信息
         }
 
         // --- Task Check (Status-based goals) ---
@@ -360,8 +380,19 @@ export default function usePetStatus() {
               case 'statusThreshold':
                 if (condition.status && condition.threshold !== undefined && condition.status in newStatus) {
                   const statusValue = newStatus[condition.status as keyof PetStatus];
-                  if (typeof statusValue === 'number' && statusValue >= condition.threshold) {
-                    conditionMet = true;
+                  // 处理动态上限的状态值检查
+                  if (typeof statusValue === 'number') {
+                    // 特殊处理"maxMood"和"maxClean"成就，它们需要检查状态是否达到当前上限
+                    if (achievement.id === 'maxMood' && condition.status === 'mood') {
+                      // 检查心情是否达到当前上限
+                      conditionMet = statusValue >= newStatus.maxMood;
+                    } else if (achievement.id === 'maxClean' && condition.status === 'cleanliness') {
+                      // 检查清洁度是否达到当前上限
+                      conditionMet = statusValue >= newStatus.maxCleanliness;
+                    } else {
+                      // 其他常规阈值检查
+                      conditionMet = statusValue >= condition.threshold;
+                    }
                   }
                 }
                 break;
@@ -420,15 +451,78 @@ export default function usePetStatus() {
         // --- Apply Special Events ---
         // Mood Boost
         if (!specialEventOccurred && Math.random() < 0.01) {
-          eventMessage = "Special Event: Mood Boost!";
-          newStatus.mood = Math.floor(Math.min(100, newStatus.mood + 50));
+          eventMessage = "特殊事件: 心情提升!";
+          newStatus.mood = Math.floor(Math.min(newStatus.maxMood, newStatus.mood + 50));
           specialEventOccurred = true;
         }
+        
+        // 宠物自学习 - 宠物自己学习获得经验
+        if (!specialEventOccurred && Math.random() < 0.02) {
+          const expGain = 10 + Math.floor(Math.random() * 15); // 获得10-24点经验值
+          eventMessage = `特殊事件: 宠物自学习! 获得${expGain}点经验`;
+          newStatus.exp += expGain;
+          newStatus.energy = Math.floor(Math.max(0, newStatus.energy - 10)); // 消耗一些能量
+          specialEventOccurred = true;
+        }
+        
+        // 健身事件 - 宠物锻炼身体获得经验和能量
+        if (!specialEventOccurred && Math.random() < 0.015 && newStatus.energy > 30) {
+          const expGain = 8 + Math.floor(Math.random() * 10); // 获得8-17点经验值
+          eventMessage = `特殊事件: 宠物健身! 获得${expGain}点经验`;
+          newStatus.exp += expGain;
+          newStatus.energy = Math.floor(Math.max(0, newStatus.energy - 15)); // 消耗能量
+          newStatus.maxEnergy += 1; // 小幅提升能量上限
+          specialEventOccurred = true;
+        }
+        
+        // 发现宝藏 - 宠物发现宝物获得经验和可能获得物品
+        if (!specialEventOccurred && Math.random() < 0.01) {
+          const expGain = 15 + Math.floor(Math.random() * 20); // 获得15-34点经验值
+          eventMessage = `特殊事件: 发现宝藏! 获得${expGain}点经验`;
+          newStatus.exp += expGain;
+          
+          // 随机获得一些物品的机会 (20%几率)
+          if (Math.random() < 0.2) {
+            // 获取所有可用物品的ID
+            const allItemIds = Object.keys(predefinedItems);
+            if (allItemIds.length > 0) {
+              // 随机选择一个物品
+              const randomItemId = allItemIds[Math.floor(Math.random() * allItemIds.length)];
+              const item = predefinedItems[randomItemId];
+              if (item) {
+                // 添加物品到库存
+                const newInventory = { ...newStatus.inventory };
+                newInventory[randomItemId] = (newInventory[randomItemId] || 0) + 1;
+                newStatus.inventory = newInventory;
+                eventMessage += ` 和物品: ${item.name}`;
+              }
+            }
+          }
+          specialEventOccurred = true;
+        }
+        
+        // 与其他宠物互动 - 宠物遇到朋友获得经验和心情
+        if (!specialEventOccurred && Math.random() < 0.015) {
+          const expGain = 12 + Math.floor(Math.random() * 8); // 获得12-19点经验值
+          eventMessage = `特殊事件: 与其他宠物互动! 获得${expGain}点经验`;
+          newStatus.exp += expGain;
+          newStatus.mood = Math.floor(Math.min(newStatus.maxMood, newStatus.mood + 20)); // 提升心情
+          specialEventOccurred = true;
+        }
+        
+        // 灵感迸发 - 宠物突然有灵感获得经验
+        if (!specialEventOccurred && Math.random() < 0.02) {
+          const expGain = 18 + Math.floor(Math.random() * 12); // 获得18-29点经验值
+          eventMessage = `特殊事件: 灵感迸发! 获得${expGain}点经验`;
+          newStatus.exp += expGain;
+          specialEventOccurred = true;
+        }
+        
         // Sickness
         const SICKNESS_THRESHOLD = 15;
         const SICKNESS_CHANCE = 0.05;
         if (!specialEventOccurred && newStatus.cleanliness < SICKNESS_THRESHOLD && Math.random() < SICKNESS_CHANCE) {
-          eventMessage = "Special Event: Pet got sick!";
+          eventMessage = "特殊事件: 宠物生病了!";
           newStatus.mood = Math.floor(Math.max(0, newStatus.mood - 30));
           newStatus.energy = Math.floor(Math.max(0, newStatus.energy - 40));
           specialEventOccurred = true;
@@ -436,6 +530,12 @@ export default function usePetStatus() {
 
         if (specialEventOccurred) {
             console.log(eventMessage);
+            // 保存事件消息，以便在setStatus回调外显示
+            const eventMessageToShow = eventMessage;
+            // 在setStatus完成后通过气泡显示事件
+            setTimeout(() => {
+                showBubble(eventMessageToShow, 'thought', 5000); // 显示5秒钟
+            }, 100);
         }
 
         // --- Final Return ---
@@ -657,10 +757,10 @@ export default function usePetStatus() {
       }
 
       // Apply calculated changes
-      newStatus.mood = Math.min(100, Math.max(0, prev.mood + baseMoodChange));
-      newStatus.cleanliness = Math.min(100, Math.max(0, prev.cleanliness + baseCleanlinessChange));
-      newStatus.hunger = Math.min(100, Math.max(0, prev.hunger + baseHungerChange));
-      newStatus.energy = Math.min(100, Math.max(0, prev.energy + baseEnergyChange));
+      newStatus.mood = Math.min(prev.maxMood, Math.max(0, prev.mood + baseMoodChange));
+      newStatus.cleanliness = Math.min(prev.maxCleanliness, Math.max(0, prev.cleanliness + baseCleanlinessChange));
+      newStatus.hunger = Math.min(prev.maxHunger, Math.max(0, prev.hunger + baseHungerChange));
+      newStatus.energy = Math.min(prev.maxEnergy, Math.max(0, prev.energy + baseEnergyChange));
       newStatus.exp = prev.exp + baseExpChange;
       newStatus.interactionCounts[type] = (newStatus.interactionCounts[type] || 0) + 1;
 

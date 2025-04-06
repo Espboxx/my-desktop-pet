@@ -150,14 +150,42 @@ const PetWindow: React.FC = () => {
 
   // Get screen dimensions (consider resize events for dynamic updates)
   const [windowDimensions, setWindowDimensions] = useState({ width: window.innerWidth, height: window.innerHeight }); // Renamed state
+useEffect(() => {
+    const handleResize = () => {
+        setWindowDimensions({ width: window.innerWidth, height: window.innerHeight }); // Use renamed setter
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+}, []);
 
-  useEffect(() => {
-      const handleResize = () => {
-          setWindowDimensions({ width: window.innerWidth, height: window.innerHeight }); // Use renamed setter
-      };
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-  }, []);
+// 当窗口大小改变时，确保宠物不会超出屏幕边界
+useEffect(() => {
+    // 获取宠物元素尺寸
+    if (petRef.current) {
+        const rect = petRef.current.getBoundingClientRect();
+        const petWidth = rect.width;
+        const petHeight = rect.height;
+        
+        // 设置边界，包含边缘填充
+        const EDGE_PADDING = 20;
+        const minX = EDGE_PADDING;
+        const maxX = windowDimensions.width - petWidth - EDGE_PADDING;
+        const minY = EDGE_PADDING;
+        const maxY = windowDimensions.height - petHeight - EDGE_PADDING;
+        
+        // 检查当前位置是否超出边界并调整
+        if (petPosition.x < minX || petPosition.x > maxX ||
+            petPosition.y < minY || petPosition.y > maxY) {
+            
+            // 限制位置在屏幕内
+            const clampedX = Math.max(minX, Math.min(petPosition.x, maxX));
+            const clampedY = Math.max(minY, Math.min(petPosition.y, maxY));
+            
+            setPetPosition({ x: clampedX, y: clampedY });
+        }
+    }
+}, [windowDimensions, petPosition, setPetPosition]);
+
 
 
   // Initialize autonomous movement hook
@@ -433,8 +461,10 @@ const PetWindow: React.FC = () => {
     <div
       className="pet-container"
       style={{
-        position: 'relative', // Ensure the panel is positioned relative to this container
-        transform: `translate(${petPosition.x}px, ${petPosition.y}px)`
+        // 当宠物位置不是初始位置时，使用transform移动宠物
+        ...(petPosition.x !== window.innerWidth / 2 || petPosition.y !== window.innerHeight / 2
+          ? { transform: `translate(${petPosition.x - window.innerWidth / 2}px, ${petPosition.y - window.innerHeight / 2}px)` }
+          : {})
       }}
       onMouseEnter={wrappedHandleMouseEnter} // Use wrapped handler on container
       onMouseLeave={wrappedHandleMouseLeave} // Use wrapped handler on container
