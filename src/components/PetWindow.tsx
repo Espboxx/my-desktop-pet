@@ -5,6 +5,8 @@ import { useSharedPetStatus } from '../context/PetStatusContext'; // Import cont
 import usePetAnimation from '../hooks/usePetAnimation';
 import usePetInteraction from '../hooks/usePetInteraction';
 import useAutonomousMovement from '../hooks/useAutonomousMovement'; // Import the new hook
+import useMouseChasing from '../hooks/interaction/useMouseChasing'; // 导入鼠标追逐钩子
+import useReactionAnimations from '../hooks/interaction/useReactionAnimations'; // 直接导入反应动画钩子
 import InteractionPanel from './InteractionPanel'; // Import the new panel component
 import '../styles/PetWindow.css';
 
@@ -199,6 +201,27 @@ useEffect(() => {
     windowHeight: windowDimensions.height, // Pass window height
     petWidth: petDimensions.width,
     petHeight: petDimensions.height,
+  });
+
+  // 直接使用useReactionAnimations获取鼠标相关引用
+  const { mouseSpeed, mousePosHistory } = useReactionAnimations({
+    petRef,
+    isMouseOverPet: { current: false }, // 简化的实现，这个值不太重要
+    isDraggingRef: { current: isDragging }, // 将布尔值转换为ref形式
+    setCurrentAnimation: () => {}, // 简化的实现，我们不使用这个函数
+  });
+  
+  // 初始化鼠标追逐hook
+  useMouseChasing({
+    petRef,
+    petPosition,
+    setPetPosition,
+    mouseSpeed,
+    mousePosHistory,
+    isDraggingRef: { current: isDragging }, // 使用布尔值转换为ref形式
+    setCurrentAnimation,
+    windowWidth: windowDimensions.width,
+    windowHeight: windowDimensions.height,
   });
 
   // Load settings (Simplified, assuming settings might be part of initial state loading now)

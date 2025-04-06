@@ -728,4 +728,15 @@ font-size: 12px; /* Slightly larger font for visibility */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow */
   animation: fadeIn 0.3s ease-out; /* Reuse existing fadeIn animation */
   pointer-events: none; /* Notification shouldn't block clicks */
+  
+  /* 追逐鼠标动画 */
+  @keyframes chase-animation {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-3px) rotate(-5deg); } /* 向左倾斜并轻微上升 */
+    75% { transform: translateY(-3px) rotate(5deg); } /* 向右倾斜并轻微上升 */
+  }
+  
+  .chase-animation {
+    animation: chase-animation 0.8s ease-in-out;
+  }
 }
