@@ -3,7 +3,6 @@ import React from 'react';
 interface PetContextMenuProps {
   showMenu: boolean;
   menuPosition: { top: number; left: number } | null;
-  petPosition: { x: number; y: number }; // Need pet's absolute position
   menuRef: React.RefObject<HTMLDivElement>;
   handleAction: (action: string) => void;
 }
@@ -11,7 +10,6 @@ interface PetContextMenuProps {
 const PetContextMenu: React.FC<PetContextMenuProps> = ({
   showMenu,
   menuPosition,
-  petPosition,
   menuRef,
   handleAction,
 }) => {
@@ -19,13 +17,13 @@ const PetContextMenu: React.FC<PetContextMenuProps> = ({
     return null;
   }
 
-  // Calculate position relative to the pet container/window if needed,
-  // or keep absolute positioning depending on CSS setup.
-  // Here, we calculate relative to the pet's position within its container.
+  // 使用 fixed 定位，直接使用屏幕坐标
+  // menuPosition 已经包含了正确的屏幕坐标，不需要额外计算
   const style = {
-    top: menuPosition.top - petPosition.y,
-    left: menuPosition.left - petPosition.x,
-    position: 'absolute' as React.CSSProperties['position'], // Ensure the menu is positioned correctly with correct type
+    top: menuPosition.top,
+    left: menuPosition.left,
+    position: 'fixed' as React.CSSProperties['position'], // 使用 fixed 定位确保菜单相对于屏幕定位
+    zIndex: 1000, // 确保菜单在最上层
   };
 
   return (

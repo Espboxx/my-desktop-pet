@@ -35,22 +35,31 @@ export function useContextMenuHandling({
     let top = mouseY;
     let left = mouseX;
 
-    // Adjust if menu goes off-screen (initial check)
-    if (left + menuWidth > windowWidth) left = windowWidth - menuWidth;
-    if (top + menuHeight > windowHeight) top = windowHeight - menuHeight;
-    if (left < 0) left = 0;
-    if (top < 0) top = 0;
+    // 添加小偏移，避免菜单直接覆盖鼠标指针
+    const offset = 5;
+    top += offset;
+    left += offset;
 
-    // Add small offset
-    top += 2;
-    left += 2;
+    // 智能边界检测和位置调整
+    // 优先向右下方显示，如果空间不够则向左上方调整
 
-    // Final check after offset to ensure it's still within bounds
-    if (left + menuWidth > windowWidth) left = windowWidth - menuWidth;
-    if (top + menuHeight > windowHeight) top = windowHeight - menuHeight;
-    if (left < 0) left = 0;
-    if (top < 0) top = 0;
+    // 检查右边界，如果超出则向左偏移
+    if (left + menuWidth > windowWidth) {
+      left = mouseX - menuWidth - offset; // 向左显示
+    }
 
+    // 检查下边界，如果超出则向上偏移
+    if (top + menuHeight > windowHeight) {
+      top = mouseY - menuHeight - offset; // 向上显示
+    }
+
+    // 确保菜单不会超出屏幕边界
+    if (left < 0) left = 5; // 留一点边距
+    if (top < 0) top = 5;   // 留一点边距
+
+    // 最终检查，确保菜单完全在屏幕内
+    if (left + menuWidth > windowWidth) left = windowWidth - menuWidth - 5;
+    if (top + menuHeight > windowHeight) top = windowHeight - menuHeight - 5;
 
     return { top, left };
   }, []); // menuRef dependency is implicit via .current access

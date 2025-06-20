@@ -384,24 +384,24 @@
 
 /* Menu (previously context menu) */
 .pet-menu {
-  position: absolute; /* Position absolutely relative to pet-container */
-  /* Positioning is now handled inline via style prop in PetWindow.tsx */
-  /* top: 105%; */
-  /* left: 50%; */
-  /* transform: translateX(-50%); */
+  position: fixed; /* 使用 fixed 定位，相对于屏幕定位 */
+  /* 位置现在通过内联样式在 PetContextMenu.tsx 中设置 */
   background-color: #ffffff; /* White background */
   border: 2px solid #e2e8f0; /* Lighter border */
   border-radius: 10px; /* Softer radius */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow for popup */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); /* 增强阴影效果，使菜单更突出 */
   padding: 8px; /* Keep padding */
   display: flex; /* Use flexbox for menu items */
   flex-direction: column; /* Stack items vertically */
   width: fit-content; /* Make menu width fit content */
   gap: 6px; /* Keep gap */
   min-width: 120px; /* Set a min-width to prevent empty menu */
-  z-index: 1000; /* Higher z-index to ensure it's on top */
+  max-width: 200px; /* 设置最大宽度，防止菜单过宽 */
+  z-index: 9999; /* 更高的 z-index 确保菜单在最上层 */
   animation: fadeIn 0.15s ease-out; /* Add a subtle fade-in */
   pointer-events: all; /* Ensure menu itself is interactive */
+  backdrop-filter: blur(8px); /* 添加毛玻璃效果 */
+  -webkit-backdrop-filter: blur(8px); /* Safari 兼容性 */
   /* -webkit-app-region: no-drag; */ /* 移除 */
 }
 

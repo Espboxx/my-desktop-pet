@@ -528,7 +528,6 @@ useEffect(() => {
       <PetContextMenu
         showMenu={showMenu}
         menuPosition={menuPosition}
-        petPosition={petPosition}
         menuRef={menuRef}
         handleAction={handleAction}
       />
