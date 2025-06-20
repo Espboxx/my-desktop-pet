@@ -322,3 +322,28 @@ input:checked + .slider:before {
   background-color: transparent;
   font-size: 24px;
 }
+
+/* 宠物选择预览样式 */
+.pet-selection-preview {
+  transition: all 0.2s ease;
+}
+
+.grid-item:hover .pet-selection-preview {
+  transform: scale(1.1);
+}
+
+.grid-item.selected .pet-selection-preview {
+  filter: drop-shadow(0 0 8px rgba(33, 150, 243, 0.6));
+}
+
+/* 图像预览容器样式优化 */
+.grid-item .item-preview {
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 45px;
+  margin-bottom: 8px;
+  border-radius: 50%;
+  overflow: hidden;
+}

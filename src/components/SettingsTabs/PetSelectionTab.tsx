@@ -2,6 +2,7 @@ import React from 'react';
 import { useSharedPetStatus } from '../../context/PetStatusContext'; // Import context hook
 import { PET_TYPES } from '../../constants/petConstants'; // Import pet types constant
 import { PetType } from '../../types/petTypes'; // Import PetType for casting
+import PetModel from '../Pet/PetModel'; // Import PetModel component
 
 const PetSelectionTab: React.FC = () => {
   const { currentPetTypeId, setCurrentPetTypeId } = useSharedPetStatus(); // Get state and setter from context
@@ -21,9 +22,14 @@ const PetSelectionTab: React.FC = () => {
                 className={`grid-item ${currentPetTypeId === pet.id ? 'selected' : ''}`} // Use currentPetTypeId for selection
                 onClick={() => setCurrentPetTypeId(pet.id)} // Use setCurrentPetTypeId on click
               >
-                {/* Basic preview - can be enhanced later based on modelType */}
+                {/* Enhanced preview using PetModel component */}
                 <div className="item-preview">
-                  {pet.modelType === 'emoji' ? <span>{pet.expressions.normal?.emoji || '?'}</span> : <span>{pet.id.substring(0,1).toUpperCase()}</span>}
+                  <PetModel
+                    petType={pet}
+                    expression={pet.expressions.normal}
+                    size={48}
+                    className="pet-selection-preview"
+                  />
                 </div>
                 <div className="item-name">{pet.name}</div>
               </div>

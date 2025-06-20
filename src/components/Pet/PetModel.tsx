@@ -1,23 +1,107 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { PetType, PetExpression } from '../../types/petTypes';
+import { useAutoFallback } from '../../hooks/useCompatibility';
+import './PetModel.css';
 
 interface PetModelProps {
   petType: PetType;
   expression: PetExpression | undefined;
+  size?: number; // 可选的尺寸参数
+  className?: string; // 可选的CSS类名
 }
 
-const PetModel: React.FC<PetModelProps> = ({ petType, expression }) => {
+const PetModel: React.FC<PetModelProps> = ({ petType, expression, size = 64, className = '' }) => {
+  const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+
+  // 使用自动回退检查
+  const { shouldUseFallback, fallbackReason, fallbackPetType } = useAutoFallback(petType);
+
+  const handleImageLoad = useCallback(() => {
+    setImageLoading(false);
+    setImageError(false);
+  }, []);
+
+  const handleImageError = useCallback(() => {
+    setImageLoading(false);
+    setImageError(true);
+  }, []);
+
   if (!expression) {
     // Fallback if expression is somehow undefined
-    return <span>?</span>;
+    return <span className={className} title="表情未定义">?</span>;
   }
 
-  switch (petType.modelType) {
+  // 使用回退的宠物类型（如果需要）
+  const effectivePetType = shouldUseFallback && fallbackPetType ? fallbackPetType : petType;
+
+  switch (effectivePetType.modelType) {
     case 'image':
-      // Prefer expression-specific image, fallback to base image
+      // Prefer expression-specific image, fallback to base image, then to emoji
       const imageUrl = expression.imageUrl || petType.baseImageUrl;
-      // Add a class for potential specific styling
-      return imageUrl ? <img src={imageUrl} alt={expression.name || petType.name} className="pet-image" /> : <span>🖼️</span>; // Fallback emoji
+
+      if (!imageUrl || imageError || shouldUseFallback) {
+        // Fallback to emoji if no image URL, image failed to load, or compatibility issues
+        const fallbackTitle = shouldUseFallback
+          ? `${expression.name} (兼容性回退: ${fallbackReason})`
+          : `${expression.name} (图像加载失败，使用emoji回退)`;
+
+        return (
+          <span
+            className={`pet-emoji-fallback ${className}`}
+            style={{
+              fontSize: `${size * 0.75}px`,
+              width: size,
+              height: size,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              backgroundColor: effectivePetType.color || 'transparent',
+              border: effectivePetType.borderColor ? `2px solid ${effectivePetType.borderColor}` : 'none'
+            }}
+            title={fallbackTitle}
+          >
+            {expression.emoji || '❓'}
+          </span>
+        );
+      }
+
+      return (
+        <div className={`pet-image-container ${className}`} style={{ width: size, height: size }}>
+          {imageLoading && (
+            <div
+              className="pet-image-loading"
+              style={{
+                width: size,
+                height: size,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: `${size * 0.3}px`,
+                backgroundColor: effectivePetType.color || 'transparent',
+                border: effectivePetType.borderColor ? `2px solid ${effectivePetType.borderColor}` : 'none'
+              }}
+            >
+              ⏳
+            </div>
+          )}
+          <img
+            src={imageUrl}
+            alt={expression.name || petType.name}
+            className={`pet-image ${imageLoading ? 'loading' : ''}`}
+            style={{
+              width: size,
+              height: size,
+              objectFit: 'contain',
+              display: imageLoading ? 'none' : 'block'
+            }}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            title={expression.name}
+          />
+        </div>
+      );
 
     case 'spritesheet':
       if (petType.spritesheetUrl && petType.spriteWidth && petType.spriteHeight && expression.spriteFrame !== undefined) {

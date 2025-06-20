@@ -1,0 +1,251 @@
+/* 兼容性状态组件样式 */
+
+.compatibility-status {
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.compatibility-status.excellent {
+  background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+  border: 1px solid #4caf50;
+  color: #2e7d32;
+}
+
+.compatibility-status.good {
+  background: linear-gradient(135deg, #fff3e0, #ffcc02);
+  border: 1px solid #ff9800;
+  color: #e65100;
+}
+
+.compatibility-status.fair {
+  background: linear-gradient(135deg, #fff8e1, #ffecb3);
+  border: 1px solid #ffc107;
+  color: #f57c00;
+}
+
+.compatibility-status.poor {
+  background: linear-gradient(135deg, #ffebee, #ffcdd2);
+  border: 1px solid #f44336;
+  color: #c62828;
+}
+
+.compatibility-status.checking {
+  background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+  border: 1px solid #9c27b0;
+  color: #7b1fa2;
+}
+
+.compatibility-status.error {
+  background: linear-gradient(135deg, #fce4ec, #f8bbd9);
+  border: 1px solid #e91e63;
+  color: #ad1457;
+}
+
+.status-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.status-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.status-text {
+  flex-grow: 1;
+}
+
+.status-score {
+  font-size: 12px;
+  opacity: 0.8;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 2px 6px;
+  border-radius: 12px;
+}
+
+.issues-indicator {
+  background: #ff5722;
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.expand-icon {
+  font-size: 12px;
+  opacity: 0.6;
+  transition: transform 0.2s ease;
+}
+
+.compatibility-status:hover .expand-icon {
+  opacity: 1;
+}
+
+.status-details {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.status-details h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: inherit;
+}
+
+.feature-list {
+  margin-bottom: 16px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.feature-status {
+  width: 20px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.feature-status.supported {
+  color: #4caf50;
+}
+
+.feature-status.unsupported {
+  color: #f44336;
+}
+
+.recommendations,
+.performance-recommendations,
+.fallbacks {
+  margin-bottom: 16px;
+}
+
+.recommendations ul,
+.performance-recommendations ul,
+.fallbacks ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+.recommendations li,
+.performance-recommendations li,
+.fallbacks li {
+  margin-bottom: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* 小屏幕适配 */
+@media (max-width: 768px) {
+  .compatibility-status {
+    padding: 10px;
+    margin: 6px 0;
+  }
+  
+  .status-summary {
+    gap: 6px;
+  }
+  
+  .status-icon {
+    font-size: 14px;
+  }
+  
+  .status-text {
+    font-size: 14px;
+  }
+  
+  .status-score {
+    font-size: 11px;
+  }
+  
+  .status-details {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+  
+  .status-details h4 {
+    font-size: 13px;
+  }
+  
+  .feature-item {
+    font-size: 12px;
+  }
+  
+  .recommendations li,
+  .performance-recommendations li,
+  .fallbacks li {
+    font-size: 11px;
+  }
+}
+
+/* 紧凑模式 */
+.compatibility-status.compact {
+  padding: 8px;
+  margin: 4px 0;
+}
+
+.compatibility-status.compact .status-summary {
+  gap: 6px;
+}
+
+.compatibility-status.compact .status-icon {
+  font-size: 14px;
+}
+
+.compatibility-status.compact .status-text {
+  font-size: 13px;
+}
+
+.compatibility-status.compact .status-score {
+  font-size: 10px;
+}
+
+/* 悬停效果 */
+.compatibility-status:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.compatibility-status:active {
+  transform: translateY(0);
+}
+
+/* 无点击模式 */
+.compatibility-status.no-click {
+  cursor: default;
+}
+
+.compatibility-status.no-click:hover {
+  transform: none;
+  box-shadow: none;
+}

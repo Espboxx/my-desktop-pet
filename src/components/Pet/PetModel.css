@@ -1,0 +1,128 @@
+/* PetModel 组件样式 */
+
+.pet-image-container {
+  position: relative;
+  display: inline-block;
+  border-radius: 50%;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.pet-image {
+  border-radius: 50%;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.pet-image.loading {
+  opacity: 0;
+}
+
+.pet-image:hover {
+  transform: scale(1.05);
+}
+
+.pet-image-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  backdrop-filter: blur(2px);
+  color: #666;
+  z-index: 1;
+}
+
+.pet-emoji-fallback {
+  display: inline-block;
+  text-align: center;
+  line-height: 1;
+  transition: transform 0.2s ease;
+  user-select: none;
+}
+
+.pet-emoji-fallback:hover {
+  transform: scale(1.05);
+}
+
+.pet-sprite {
+  transition: transform 0.2s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.pet-sprite:hover {
+  transform: scale(1.05);
+}
+
+.pet-svg {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.pet-svg:hover {
+  transform: scale(1.05);
+}
+
+.pet-svg svg {
+  border-radius: 50%;
+}
+
+/* 响应式尺寸 */
+@media (max-width: 768px) {
+  .pet-image-container,
+  .pet-image,
+  .pet-sprite,
+  .pet-svg {
+    transform: scale(0.9);
+  }
+  
+  .pet-image-container:hover,
+  .pet-image:hover,
+  .pet-sprite:hover,
+  .pet-svg:hover,
+  .pet-emoji-fallback:hover {
+    transform: scale(0.95);
+  }
+}
+
+/* 动画效果 */
+@keyframes petImageFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.pet-image-container {
+  animation: petImageFadeIn 0.3s ease-out;
+}
+
+/* 错误状态样式 */
+.pet-image-error {
+  background: linear-gradient(45deg, #ffebee, #ffcdd2);
+  border: 2px dashed #f44336;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f44336;
+  font-size: 24px;
+}
+
+/* 加载状态动画 */
+@keyframes petImageLoading {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+.pet-image-loading {
+  animation: petImageLoading 1.5s ease-in-out infinite;
+}

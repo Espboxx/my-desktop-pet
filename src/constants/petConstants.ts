@@ -1,80 +1,64 @@
 import { PetType, Achievement } from '../types/petTypes'; // Import Achievement type
+import { generateDefaultPetPlaceholders, generateDropletPetPlaceholders } from '../utils/placeholderImageGenerator';
+
+// 生成占位符图像
+const defaultPlaceholders = generateDefaultPetPlaceholders();
+const dropletPlaceholders = generateDropletPetPlaceholders();
 
 export const PET_TYPES: Record<string, PetType> = {
   default: {
     id: 'default', // Added ID
-    modelType: 'emoji', // Added modelType
+    modelType: 'image', // Changed to image modelType
     name: '默认宠物',
     color: '#ffcc80',
     borderColor: '#e65100',
+    baseImageUrl: '/src/assets/pets/default/base.png',
     expressions: {
-      normal: { name: '正常', emoji: '😊' },
-      happy: { name: '开心', emoji: '😄' },
-      hungry: { name: '饿了', emoji: '🍕' },
-      sleepy: { name: '困了', emoji: '😴' },
-      sick: { name: '生病了', emoji: '🤢' },
-      level5: { name: '骄傲', emoji: '😎', unlockLevel: 5 },
-      level10: { name: '酷炫', emoji: '🤩', unlockLevel: 10 },
-      level15: { name: '大佬', emoji: '🦸', unlockLevel: 15 },
+      normal: { name: '正常', emoji: '😊', imageUrl: defaultPlaceholders.normal },
+      happy: { name: '开心', emoji: '😄', imageUrl: defaultPlaceholders.happy },
+      hungry: { name: '饿了', emoji: '🍕', imageUrl: defaultPlaceholders.hungry },
+      sleepy: { name: '困了', emoji: '😴', imageUrl: defaultPlaceholders.sleepy },
+      sick: { name: '生病了', emoji: '🤢', imageUrl: defaultPlaceholders.sick },
+      level5: { name: '骄傲', emoji: '😎', unlockLevel: 5, imageUrl: defaultPlaceholders.level5 },
+      level10: { name: '酷炫', emoji: '🤩', unlockLevel: 10, imageUrl: defaultPlaceholders.level10 },
+      level15: { name: '大佬', emoji: '🦸', unlockLevel: 15, imageUrl: defaultPlaceholders.level15 },
       // 注视方向表情
-      look_left: { name: '看左', emoji: '👀⬅️' },
-      look_right: { name: '看右', emoji: '👀➡️' },
-      look_up: { name: '看上', emoji: '👀⬆️' },
-      look_down: { name: '看下', emoji: '👀⬇️' },
-      look_up_left: { name: '看左上', emoji: '👀↖️' },
-      look_up_right: { name: '看右上', emoji: '👀↗️' },
-      look_down_left: { name: '看左下', emoji: '👀↙️' },
-      look_down_right: { name: '看右下', emoji: '👀↘️' },
+      look_left: { name: '看左', emoji: '👀⬅️', imageUrl: defaultPlaceholders.look_left },
+      look_right: { name: '看右', emoji: '👀➡️', imageUrl: defaultPlaceholders.look_right },
+      look_up: { name: '看上', emoji: '👀⬆️', imageUrl: defaultPlaceholders.look_up },
+      look_down: { name: '看下', emoji: '👀⬇️', imageUrl: defaultPlaceholders.look_down },
+      look_up_left: { name: '看左上', emoji: '👀↖️', imageUrl: defaultPlaceholders.look_up_left },
+      look_up_right: { name: '看右上', emoji: '👀↗️', imageUrl: defaultPlaceholders.look_up_right },
+      look_down_left: { name: '看左下', emoji: '👀↙️', imageUrl: defaultPlaceholders.look_down_left },
+      look_down_right: { name: '看右下', emoji: '👀↘️', imageUrl: defaultPlaceholders.look_down_right },
       // 新增：特殊待机动画表情
-      idleSpecial: { name: '特殊待机', emoji: '✨' } // 假设这是玩乐大师解锁的
+      idleSpecial: { name: '特殊待机', emoji: '✨', imageUrl: defaultPlaceholders.normal } // 使用normal作为临时图像
     }
   },
-  leafy: {
-    id: 'leafy', // Added ID
-    modelType: 'emoji', // Added modelType
-    name: '小叶子',
-    color: '#a5d6a7',
-    borderColor: '#2e7d32',
-    expressions: {
-      normal: { name: '正常', emoji: '🌱' },
-      happy: { name: '开心', emoji: '🌿' },
-      hungry: { name: '饿了', emoji: '☀️' },
-      sleepy: { name: '困了', emoji: '🌙' },
-      level5: { name: '开花', emoji: '🌸', unlockLevel: 5 },
-      level10: { name: '茂盛', emoji: '🌳', unlockLevel: 10 },
-      // 添加注视方向表情
-      look_left: { name: '看左', emoji: '🌱👀⬅️' },
-      look_right: { name: '看右', emoji: '🌱👀➡️' },
-      look_up: { name: '看上', emoji: '🌱👀⬆️' },
-      look_down: { name: '看下', emoji: '🌱👀⬇️' },
-      look_up_left: { name: '看左上', emoji: '🌱👀↖️' },
-      look_up_right: { name: '看右上', emoji: '🌱👀↗️' },
-      look_down_left: { name: '看左下', emoji: '🌱👀↙️' },
-      look_down_right: { name: '看右下', emoji: '🌱👀↘️' }
-    }
-  },
+  // leafy宠物类型已移除，专注于default和droplet的2D图像系统
   droplet: {
     id: 'droplet', // Added ID
-    modelType: 'emoji', // Added modelType
+    modelType: 'image', // Changed to image modelType
     name: '水滴滴',
     color: '#90caf9',
     borderColor: '#1565c0',
+    baseImageUrl: '/src/assets/pets/droplet/base.png',
     expressions: {
-      normal: { name: '正常', emoji: '💧' },
-      happy: { name: '开心', emoji: '🌊' },
-      hungry: { name: '饿了', emoji: '🥤' },
-      sleepy: { name: '困了', emoji: '❄️' },
-      level5: { name: '彩虹', emoji: '🌈', unlockLevel: 5 },
-      level10: { name: '浪花', emoji: '🌊🌊', unlockLevel: 10 },
+      normal: { name: '正常', emoji: '💧', imageUrl: dropletPlaceholders.normal },
+      happy: { name: '开心', emoji: '🌊', imageUrl: dropletPlaceholders.happy },
+      hungry: { name: '饿了', emoji: '🥤', imageUrl: dropletPlaceholders.hungry },
+      sleepy: { name: '困了', emoji: '❄️', imageUrl: dropletPlaceholders.sleepy },
+      level5: { name: '彩虹', emoji: '🌈', unlockLevel: 5, imageUrl: dropletPlaceholders.level5 },
+      level10: { name: '浪花', emoji: '🌊🌊', unlockLevel: 10, imageUrl: dropletPlaceholders.level10 },
       // 添加注视方向表情
-      look_left: { name: '看左', emoji: '💧👀⬅️' },
-      look_right: { name: '看右', emoji: '💧👀➡️' },
-      look_up: { name: '看上', emoji: '💧👀⬆️' },
-      look_down: { name: '看下', emoji: '💧👀⬇️' },
-      look_up_left: { name: '看左上', emoji: '💧👀↖️' },
-      look_up_right: { name: '看右上', emoji: '💧👀↗️' },
-      look_down_left: { name: '看左下', emoji: '💧👀↙️' },
-      look_down_right: { name: '看右下', emoji: '💧👀↘️' }
+      look_left: { name: '看左', emoji: '💧👀⬅️', imageUrl: dropletPlaceholders.look_left },
+      look_right: { name: '看右', emoji: '💧👀➡️', imageUrl: dropletPlaceholders.look_right },
+      look_up: { name: '看上', emoji: '💧👀⬆️', imageUrl: dropletPlaceholders.look_up },
+      look_down: { name: '看下', emoji: '💧👀⬇️', imageUrl: dropletPlaceholders.look_down },
+      look_up_left: { name: '看左上', emoji: '💧👀↖️', imageUrl: dropletPlaceholders.look_up_left },
+      look_up_right: { name: '看右上', emoji: '💧👀↗️', imageUrl: dropletPlaceholders.look_up_right },
+      look_down_left: { name: '看左下', emoji: '💧👀↙️', imageUrl: dropletPlaceholders.look_down_left },
+      look_down_right: { name: '看右下', emoji: '💧👀↘️', imageUrl: dropletPlaceholders.look_down_right }
     }
   }
 };

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaCog, FaPalette, FaPaw, FaHatWizard, FaTrophy, FaTimes, FaBoxOpen } from 'react-icons/fa'; // 导入图标, 添加 FaBoxOpen
+import { FaCog, FaPalette, FaPaw, FaHatWizard, FaTrophy, FaTimes, FaBoxOpen, FaImage } from 'react-icons/fa'; // 导入图标, 添加 FaBoxOpen, FaImage
 import '../styles/SettingsWindow.css';
 import GeneralTab from './SettingsTabs/GeneralTab';
 import AppearanceTab from './SettingsTabs/AppearanceTab';
@@ -7,6 +7,8 @@ import PetSelectionTab from './SettingsTabs/PetSelectionTab';
 import AccessoriesTab from './SettingsTabs/AccessoriesTab';
 import TasksAchievementsTab from './SettingsTabs/TasksAchievementsTab';
 import InventoryTab from './SettingsTabs/InventoryTab'; // 导入新的库存标签页组件
+import ImageManagementTab from './SettingsTabs/ImageManagementTab'; // 导入图像管理标签页组件
+import ImageSystemTest from './ImageSystemTest'; // 导入图像系统测试组件
 
 const SettingsWindow: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('general');
@@ -62,6 +64,22 @@ const SettingsWindow: React.FC = () => {
           >
             <FaBoxOpen className="nav-icon" /> 库存
           </li>
+          {/* 新增图像管理标签 */}
+          <li
+            className={activeTab === 'image-management' ? 'active' : ''}
+            onClick={() => handleTabChange('image-management')}
+          >
+            <FaImage className="nav-icon" /> 图像管理
+          </li>
+          {/* 开发环境调试标签 */}
+          {process.env.NODE_ENV === 'development' && (
+            <li
+              className={activeTab === 'debug' ? 'active' : ''}
+              onClick={() => handleTabChange('debug')}
+            >
+              <FaCog className="nav-icon" /> 调试
+            </li>
+          )}
         </ul>
       </nav>
 
@@ -93,6 +111,16 @@ const SettingsWindow: React.FC = () => {
           <div style={{ display: activeTab === 'inventory' ? 'block' : 'none' }}>
             <InventoryTab />
           </div>
+          {/* 新增图像管理内容区域 */}
+          <div style={{ display: activeTab === 'image-management' ? 'block' : 'none' }}>
+            <ImageManagementTab />
+          </div>
+          {/* 开发环境调试内容区域 */}
+          {process.env.NODE_ENV === 'development' && (
+            <div style={{ display: activeTab === 'debug' ? 'block' : 'none' }}>
+              <ImageSystemTest />
+            </div>
+          )}
         </div>
       </div>
     </div>

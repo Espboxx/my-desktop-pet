@@ -21,6 +21,7 @@ import { usePerformanceMonitor } from '../hooks/core/usePerformanceMonitor'; // 
 import { useErrorHandler } from './ErrorBoundary'; // Import error handler
 import { PERFORMANCE_CONFIG, isPerformanceMonitoringEnabled, isHapticFeedbackEnabled } from '../config/performanceConfig'; // Import performance config
 import { autoRunDragTests } from '../utils/dragTestHelper'; // Import drag test helper
+import { useImagePreloader } from '../hooks/useImagePreloader'; // Import image preloader
 import '../styles/PetWindow.css';
 import '../styles/InteractionEnhancements.css'; // 导入交互增强样式
 
@@ -54,6 +55,9 @@ const PetWindow: React.FC = () => {
     interact // Get the interact function from context
   } = useSharedPetStatus();
   const { showBubble } = useBubbleService(); // Get bubble service function
+
+  // 图像预加载 (性能优化)
+  const imagePreloader = useImagePreloader(currentPetTypeId);
 
   // 触觉反馈 (直接使用配置，避免useMemo问题)
   const hapticFeedback = useHapticFeedback({
