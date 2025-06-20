@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode } from 'react';
 import { PetStatus, IdleAnimation, InteractionType, ItemType } from '../types/petTypes'; // Remove PetPosition import from here, Add InteractionType, ItemType
 import { PetPosition } from '../hooks/interaction/types'; // Correctly import PetPosition
-import usePetStatus from '../hooks/usePetStatus'; // Import the hook
+import usePetStatus from '../hooks/core/usePetStatus'; // Corrected import path
 
 // Define the shape of the context data
 interface PetStatusContextType {

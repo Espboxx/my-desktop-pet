@@ -77,7 +77,9 @@ export function useContextMenuHandling({
           setMenuPosition(null);
           // Re-enable passthrough only if mouse is not over the pet anymore
           if (!isMouseOverPet.current) {
-            window.desktopPet.setMousePassthrough(true);
+            if (window.desktopPet?.setMousePassthrough) {
+              window.desktopPet.setMousePassthrough(true);
+            }
           }
         }
       }

@@ -67,7 +67,7 @@ export default function useMouseChasing({
     (mouseX: number, mouseY: number): boolean => {
       if (!petRef.current) return false;
 
-      const petRect = petRef.current.getBoundingClientRect();
+      // const petRect = petRef.current.getBoundingClientRect(); // Unused
       const petCenterX = petPosition.x;
       const petCenterY = petPosition.y;
 

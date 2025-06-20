@@ -43,6 +43,7 @@ export function useDragHandling({
   const dragStartMousePos = useRef<{ clientX: number, clientY: number } | null>(null);
   const initialPetPosRef = useRef<PetPosition | null>(null);
   const mouseDownButtonRef = useRef<number | null>(null); // Use Ref for button state
+  const animationFrameRef = useRef<number | null>(null); // Ref for requestAnimationFrame
 
   const handleMouseDownForDrag = useCallback((e: React.MouseEvent) => {
     // Only handle left clicks for dragging
@@ -55,7 +56,9 @@ export function useDragHandling({
       clearReaction(); // Stop any ongoing reaction
 
       // Listeners will be added by the main hook orchestrating mouse events
-      window.desktopPet.setMousePassthrough(false); // Disable passthrough during potential drag
+      if (window.desktopPet?.setMousePassthrough) {
+        window.desktopPet.setMousePassthrough(false); // Disable passthrough during potential drag
+      }
     }
      // Don't preventDefault/stopPropagation here, let the main handler do it
   }, [clearReaction, isMouseOverPet, petPosition]); // Dependencies
@@ -82,12 +85,16 @@ export function useDragHandling({
         }
       }
 
-      // If dragging, update position
+      // If dragging, schedule a position update
       if (isDraggingRef.current) {
-        const newX = initialPetPosRef.current.x + dx;
-        const newY = initialPetPosRef.current.y + dy;
-        // Update position via the passed function
-        setPetPositionExternally({ x: newX, y: newY });
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+        animationFrameRef.current = requestAnimationFrame(() => {
+          const newX = initialPetPosRef.current!.x + dx;
+          const newY = initialPetPosRef.current!.y + dy;
+          setPetPositionExternally({ x: newX, y: newY });
+        });
       }
     }
     // Prevent default browser drag behavior might be needed here or in the main handler
@@ -102,6 +109,12 @@ export function useDragHandling({
 
       const wasDragging = isDraggingRef.current;
       const wasClick = !wasDragging;
+
+      // Cancel any pending animation frame on mouse up
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
 
       // Reset internal dragging state
       isDraggingRef.current = false;
@@ -127,15 +140,21 @@ export function useDragHandling({
 
         // Decide passthrough based on final state
         if (!isOverPetNow && !showMenu) {
-          window.desktopPet.setMousePassthrough(true);
+          if (window.desktopPet?.setMousePassthrough) {
+            window.desktopPet.setMousePassthrough(true);
+          }
         } else {
-          window.desktopPet.setMousePassthrough(false); // Keep non-passthrough if over pet or menu shown
+          if (window.desktopPet?.setMousePassthrough) {
+            window.desktopPet.setMousePassthrough(false); // Keep non-passthrough if over pet or menu shown
+          }
         }
       } else {
          // If it wasn't a drag, it was a click.
          // The main hook or mouse handling hook will decide what action to take (e.g., 'pet')
          // Ensure passthrough is off after a click on the pet
-         window.desktopPet.setMousePassthrough(false);
+         if (window.desktopPet?.setMousePassthrough) {
+           window.desktopPet.setMousePassthrough(false);
+         }
          isMouseOverPet.current = true; // Confirm mouse is over pet after click
       }
 

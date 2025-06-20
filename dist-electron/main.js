@@ -1,5 +1,4 @@
 import { app, ipcMain, globalShortcut, screen, BrowserWindow, Tray, Menu, dialog } from "electron";
-import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import fs, { promises } from "node:fs";
@@ -10,7 +9,6 @@ if (process.stdout instanceof stream.Writable) {
 if (process.stderr instanceof stream.Writable) {
   process.stderr.setDefaultEncoding("utf-8");
 }
-createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname, "..");
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
@@ -21,17 +19,16 @@ let petWindow = null;
 let settingsWindow = null;
 let appTray = null;
 let quitting = false;
-const DEFAULT_PET_WIDTH = 300;
 const DEFAULT_PET_HEIGHT = 400;
 const EXPANDED_PET_HEIGHT = 500;
 function getIconPath() {
   try {
     const iconPaths = [
-      path.join(process.env.APP_ROOT, "public", "electron-vite.svg"),
-      // 优先使用SVG
-      path.join(process.env.APP_ROOT, "public", "electron-vite.animate.svg"),
+      path.join(process.env.APP_ROOT, "public", "pet-icon-backup.png"),
+      // 优先使用备份 PNG
       path.join(process.env.APP_ROOT, "public", "pet-icon.png"),
-      path.join(process.env.APP_ROOT, "public", "pet-icon-backup.png")
+      path.join(process.env.APP_ROOT, "public", "electron-vite.svg"),
+      path.join(process.env.APP_ROOT, "public", "electron-vite.animate.svg")
     ];
     for (const iconPath of iconPaths) {
       if (fs.existsSync(iconPath)) {
@@ -47,38 +44,19 @@ function getIconPath() {
 }
 async function createPetWindow() {
   const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
-  const savedState = await loadSavedState();
-  let initialX;
-  let initialY;
-  if ((savedState == null ? void 0 : savedState.position) && typeof savedState.position.x === "number" && typeof savedState.position.y === "number") {
-    initialX = Math.max(0, Math.min(savedState.position.x, screenWidth - DEFAULT_PET_WIDTH));
-    initialY = Math.max(0, Math.min(savedState.position.y, screenHeight - DEFAULT_PET_HEIGHT));
-    console.log(`[main.ts] Loaded saved position: x=${initialX}, y=${initialY}`);
-  } else {
-    initialX = screenWidth - DEFAULT_PET_WIDTH;
-    initialY = screenHeight - DEFAULT_PET_HEIGHT;
-    console.log(`[main.ts] No saved position found, using default: x=${initialX}, y=${initialY}`);
-  }
   petWindow = new BrowserWindow({
-    width: DEFAULT_PET_WIDTH,
-    // Use default width
-    height: DEFAULT_PET_HEIGHT,
-    // Use default height
-    x: Math.round(initialX),
-    // Use calculated X
-    y: Math.round(initialY),
-    // Use calculated Y
+    width: screenWidth,
+    height: screenHeight,
+    x: 0,
+    y: 0,
     transparent: true,
-    // 启用透明背景
     frame: false,
-    // 移除窗口框架以实现完全透明效果
-    resizable: true,
-    // 允许调整大小
-    fullscreen: true,
-    // 程序初始化时全屏显示
+    resizable: false,
+    // Window is a canvas, should not be resizable
+    // movable: false,   // Removing this. While we don't want the user to move it, setting it to false can interfere with mouse events. The pet's internal movement will handle positioning.
+    // fullscreen: true, // This is the property that causes issues on macOS
     skipTaskbar: true,
-    // 不再跳过任务栏
-    // alwaysOnTop: true, // 不再保持置顶
+    alwaysOnTop: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs"),
       nodeIntegration: false,
@@ -248,21 +226,7 @@ async function saveStateToFile(stateToSave) {
 ipcMain.handle("get-window-position", () => {
   return petWindow == null ? void 0 : petWindow.getPosition();
 });
-ipcMain.on("set-pet-position", (event, { x, y }) => {
-  if (petWindow) {
-    console.log(`[main.ts] Received set-pet-position: x=${x}, y=${y}`);
-    const roundedX = Math.round(x);
-    const roundedY = Math.round(y);
-    if (isNaN(roundedX) || isNaN(roundedY)) {
-      console.error(`[main.ts] Invalid coordinates received: x=${x}, y=${y}. Aborting setPosition.`);
-      return;
-    }
-    petWindow.setPosition(roundedX, roundedY);
-    const currentPosition = petWindow.getPosition();
-    console.log(`[main.ts] Window position set to: x=${currentPosition[0]}, y=${currentPosition[1]}`);
-  }
-});
-ipcMain.on("adjust-pet-window-size", (event, expand) => {
+ipcMain.on("adjust-pet-window-size", (_, expand) => {
   if (!petWindow) return;
   try {
     const currentBounds = petWindow.getBounds();
@@ -283,7 +247,7 @@ ipcMain.on("adjust-pet-window-size", (event, expand) => {
 ipcMain.on("open-settings", () => {
   createSettingsWindow();
 });
-ipcMain.on("set-always-on-top", (event, flag) => {
+ipcMain.on("set-always-on-top", (_, flag) => {
   if (petWindow) {
     petWindow.setAlwaysOnTop(flag);
   }
@@ -300,7 +264,7 @@ ipcMain.handle("get-pet-settings", async () => {
     opacity: 100
   };
 });
-ipcMain.on("save-pet-settings", (event, settings) => {
+ipcMain.on("save-pet-settings", (_, settings) => {
   console.log("保存设置:", settings);
   if (settings.activityLevel) {
     petBehavior.activityLevel = settings.activityLevel;
@@ -317,14 +281,14 @@ ipcMain.on("save-pet-settings", (event, settings) => {
 ipcMain.handle("get-pet-state", async () => {
   return await loadSavedState();
 });
-ipcMain.on("save-pet-state", (event, stateToSave) => {
+ipcMain.on("save-pet-state", (_, stateToSave) => {
   if (stateToSave) {
     saveStateToFile(stateToSave);
   } else {
     console.warn("收到空的 save-pet-state 请求，已忽略。");
   }
 });
-ipcMain.on("update-pet-behavior", (event, behavior) => {
+ipcMain.on("update-pet-behavior", (_, behavior) => {
   petBehavior = { ...petBehavior, ...behavior };
   updateBehaviorBasedOnActivity();
 });
@@ -345,7 +309,7 @@ function updateBehaviorBasedOnActivity() {
   }
   petWindow == null ? void 0 : petWindow.webContents.send("update-pet-behavior", petBehavior);
 }
-ipcMain.on("set-mouse-passthrough", (event, enable) => {
+ipcMain.on("set-mouse-passthrough", (_, enable) => {
   if (petWindow) {
     console.log(`[main.ts] Setting mouse passthrough: ${enable}`);
     petWindow.setIgnoreMouseEvents(enable, { forward: true });
@@ -400,23 +364,6 @@ app.whenReady().then(async () => {
   });
 });
 app.on("will-quit", async () => {
-  if (petWindow) {
-    try {
-      const currentPosition = petWindow.getPosition();
-      const [x, y] = currentPosition;
-      console.log(`[main.ts] Saving position on quit: x=${x}, y=${y}`);
-      const currentState = await loadSavedState();
-      if (currentState) {
-        currentState.position = { x, y };
-        await saveStateToFile(currentState);
-        console.log("[main.ts] Position saved successfully.");
-      } else {
-        console.warn("[main.ts] Could not save position: pet-state.json not found or invalid.");
-      }
-    } catch (error) {
-      console.error("[main.ts] Error saving pet position:", error);
-    }
-  }
   globalShortcut.unregisterAll();
 });
 export {

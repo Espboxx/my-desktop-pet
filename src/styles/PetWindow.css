@@ -68,29 +68,42 @@
 }
 
 /* 状态条 */
-.status-bar {
-  position: absolute; /* Position absolutely relative to pet-container */
-  top: -10px; /* 向上移动位置 */
-  left: 100px; /* Position to the right of the pet (adjust as needed based on pet size/padding) */
-  /* bottom: -10px; */ /* Remove bottom positioning */
-  /* transform: translateX(-50%); */ /* Remove horizontal centering */
-  /* top: -80px; */ /* Remove */
-  /* left: 0; */ /* Remove */
-  width: 150px; /* Default width for full view */
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  /* z-index: 5; */ /* Remove */
+/* New container for UI elements that follow the pet */
+.pet-ui-container {
+  position: absolute;
+  top: 90%; /* 稍微向下移动，给宠物更多空间 */
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  /* -webkit-app-region: no-drag; */ /* 移除 */
-  overflow: hidden; /* Hide overflowing content during transition */
-  transition: width 0.3s ease-in-out, padding 0.3s ease-in-out, background-color 0.3s ease-in-out, opacity 0.3s ease-in-out; /* Add transitions, including opacity */
-  opacity: 1; /* Always visible */
-  pointer-events: auto; /* Allow interaction if needed, e.g., clicking on status bar elements in future */
+  align-items: center;
+  gap: 8px; /* 增加间距，让布局更透气 */
+  width: max-content;
+  z-index: 120; /* 确保UI元素在最上层 */
+  pointer-events: none; /* 容器本身不拦截事件 */
+}
+
+.status-bar {
+  position: relative;
+  width: 180px; /* 稍微增加宽度，让内容更舒适 */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9)); /* 渐变背景 */
+  border: 1px solid rgba(226, 232, 240, 0.8); /* 更柔和的边框 */
+  border-radius: 12px; /* 更圆润的边角 */
+  padding: 10px 12px; /* 增加内边距 */
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5); /* 多层阴影和内发光 */
+  backdrop-filter: blur(8px); /* 毛玻璃效果 */
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* 增加间距 */
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 更平滑的过渡 */
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0); /* 为动画做准备 */
 }
 
 /* Remove the hover rule as the bar is always visible now */
@@ -111,8 +124,10 @@
 /* Styles for the simplified status bar (when not hovering) */
 .status-bar.simple {
   width: auto; /* Auto width to fit content */
-  padding: 4px 8px; /* Smaller padding */
-  background-color: rgba(255, 255, 255, 0.8); /* Slightly more transparent */
+  padding: 6px 12px; /* 调整简化模式的内边距 */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(248, 250, 252, 0.75)); /* 保持渐变但更透明 */
+  backdrop-filter: blur(6px); /* 减少毛玻璃效果 */
+  transform: scale(0.95); /* 稍微缩小简化模式 */
 }
 
 /* Hide all items except the simple level display in simple mode */
@@ -124,6 +139,9 @@
 .status-bar.simple .status-item.simple-level {
   display: flex; /* Ensure it's displayed */
   justify-content: center; /* Center the level text */
+  align-items: center; /* 垂直居中 */
+  gap: 4px; /* 图标和文字间距 */
+  padding: 2px 6px; /* 内边距 */
 }
 
 .status-bar.simple .status-label,
@@ -139,64 +157,115 @@
 .status-item {
   display: flex;
   align-items: center;
-  gap: 5px; /* 稍微减小间隙 */
+  gap: 8px; /* 增加间隙 */
   justify-content: space-between; /* 让元素分布在两端 */
   opacity: 1; /* Default opacity */
   max-height: 50px; /* Default max-height, adjust if needed */
   overflow: hidden; /* Hide content if it overflows during transition */
-  transition: opacity 0.3s ease-in-out, max-height 0.3s ease-in-out; /* Add transitions */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 更平滑的过渡 */
+  padding: 2px 0; /* 添加垂直内边距 */
+  border-radius: 6px; /* 圆角 */
 }
 
 .status-label {
-  font-size: 12px;
-  width: 30px; /* 保持标签宽度 */
-  color: #555;
+  font-size: 11px;
+  font-weight: 500; /* 稍微加粗 */
+  width: 48px; /* 增加宽度以容纳图标 */
+  color: #64748b; /* 更现代的颜色 */
   flex-shrink: 0; /* 防止标签收缩 */
+  text-align: left; /* 左对齐 */
+  display: flex; /* 使用flex布局 */
+  align-items: center; /* 垂直居中 */
+  gap: 3px; /* 图标和文字间距 */
+}
+
+/* 状态图标样式 */
+.status-icon {
+  font-size: 12px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1)); /* 轻微阴影 */
+}
+
+/* 状态警告图标 */
+.status-warning {
+  font-size: 14px;
+  margin-left: 4px;
+  animation: pulse-warning 1.5s infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
 }
 
 .status-meter {
   flex-grow: 1; /* 让进度条占据剩余空间 */
-  height: 12px;
-  background-color: #eee;
-  border-radius: 6px;
+  height: 14px; /* 稍微增加高度 */
+  background: linear-gradient(to right, #f1f5f9, #e2e8f0); /* 渐变背景 */
+  border-radius: 8px; /* 更圆润 */
   overflow: hidden;
-  margin: 0 5px; /* 在进度条左右添加一些边距 */
+  margin: 0 6px; /* 增加边距 */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1); /* 内阴影增加深度 */
+  position: relative; /* 为伪元素做准备 */
 }
 
 .status-meter-fill {
   height: 100%;
-  border-radius: 6px;
-  transition: width 0.5s ease, background-color 0.3s ease; /* Add transition for background color */
+  border-radius: 8px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease; /* 更平滑的过渡 */
+  position: relative;
+  overflow: hidden;
+}
+
+/* 为进度条添加光泽效果 */
+.status-meter-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
 }
 
 .status-meter-fill.mood {
-  background-color: #ff6b6b;
+  background: linear-gradient(135deg, #ff6b6b, #ff5252); /* 渐变红色 */
 }
 
 .status-meter-fill.cleanliness {
-  background-color: #4ecdc4;
+  background: linear-gradient(135deg, #4ecdc4, #26a69a); /* 渐变青色 */
 }
 
 .status-meter-fill.hunger {
-  background-color: #ffd166;
+  background: linear-gradient(135deg, #ffd166, #ffb74d); /* 渐变黄色 */
 }
 
 .status-meter-fill.energy {
-  background-color: #06d6a0;
+  background: linear-gradient(135deg, #06d6a0, #00bfa5); /* 渐变绿色 */
 }
 
 .status-meter-fill.exp {
-  background-color: #9b59b6; /* Added purple color for EXP bar */
+  background: linear-gradient(135deg, #9b59b6, #8e24aa); /* 渐变紫色 */
 }
 
 /* 新增：状态数值样式 */
 .status-value {
   font-size: 11px; /* 稍小一点的字体 */
-  font-weight: bold;
-  color: #333;
-  min-width: 25px; /* 保证至少有一定宽度 */
+  font-weight: 600; /* 更粗的字体 */
+  color: #475569; /* 更现代的颜色 */
+  min-width: 28px; /* 稍微增加宽度 */
   text-align: right; /* 右对齐 */
   flex-shrink: 0; /* 防止数值收缩 */
+  background: rgba(255, 255, 255, 0.5); /* 半透明背景 */
+  padding: 2px 4px; /* 内边距 */
+  border-radius: 4px; /* 圆角 */
+  backdrop-filter: blur(2px); /* 轻微毛玻璃效果 */
 }
 
 /* Specific style for EXP value to ensure it fits */

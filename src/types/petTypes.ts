@@ -71,6 +71,13 @@ export interface PetStatus {
   // 新增：道具库存
   inventory: Inventory;
 }
+// 定义气泡状态类型 (与 PetStatus.bubble 结构一致)
+export interface PetBubbleState {
+  active: boolean;
+  text: string;
+  type: 'thought' | 'speech'; // 可以扩展为 'notification' 等
+  timeout: number | null;
+}
 
 // 定义成就条件类型
 export type AchievementConditionType =

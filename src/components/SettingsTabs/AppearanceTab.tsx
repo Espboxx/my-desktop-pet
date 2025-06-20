@@ -1,5 +1,5 @@
 import React from 'react';
-import useSettings from '../../hooks/useSettings';
+import useSettings from '../../hooks/settings/useSettings'; // Corrected import path
 
 const AppearanceTab: React.FC = () => {
   const { settings, updateSetting } = useSettings();

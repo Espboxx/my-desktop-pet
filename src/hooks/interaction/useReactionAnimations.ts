@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { MouseHistoryPoint } from './types';
 import { INTERACTION_CONSTANTS } from './constants';
 
@@ -29,7 +29,7 @@ export default function useReactionAnimations({
   petRef,
   isMouseOverPet,
   isDraggingRef,
-  setCurrentAnimation,
+  // setCurrentAnimation, // Unused
 }: UseReactionAnimationsProps): UseReactionAnimationsReturn {
   const [reactionAnimation, setReactionAnimation] = useState<string | null>(null);
   
@@ -48,7 +48,7 @@ export default function useReactionAnimations({
   // 引用常量
   const {
     FAST_MOVE_THRESHOLD,
-    HOVER_DETECT_DURATION,
+    // HOVER_DETECT_DURATION, // Unused
     REACTION_ANIMATION_DURATION,
     FAST_REACTION_ANIMATION_DURATION,
     PET_DETECTION_DURATION,
@@ -114,10 +114,11 @@ export default function useReactionAnimations({
     return { isCircle, isClockwise };
   }, []);
 
-  // 处理鼠标悬停进入
+  // 处理鼠标悬停进入 (Unused function)
+  /*
   const handleMouseEnterReaction = useCallback(() => {
     clearReaction(); // 清除之前的反应状态
-    
+
     // 开始悬停检测
     hoverDetectTimeoutRef.current = setTimeout(() => {
       // 只有在鼠标仍然悬停，没有拖动，速度较低且没有其他反应时才触发倾斜头部
@@ -130,6 +131,7 @@ export default function useReactionAnimations({
       hoverDetectTimeoutRef.current = null; // 计时器结束
     }, HOVER_DETECT_DURATION);
   }, [FAST_MOVE_THRESHOLD, HOVER_DETECT_DURATION, REACTION_ANIMATION_DURATION, clearReaction, isDraggingRef, isMouseOverPet, reactionAnimation]);
+  */
 
   // 处理反应
   const handleReaction = useCallback((e: MouseEvent) => {
@@ -206,7 +208,7 @@ export default function useReactionAnimations({
     }
 
     // 处理鼠标速度和快速移动反应
-    let isReactingFast = false;
+    // let isReactingFast = false; // Unused
 
     if (mousePosHistory.current.length > 1) {
       const firstPos = mousePosHistory.current[0];
@@ -220,7 +222,7 @@ export default function useReactionAnimations({
         mouseSpeed.current = distance / dt; // 像素每秒
 
         if (mouseSpeed.current > FAST_MOVE_THRESHOLD && !reactionAnimation) {
-          isReactingFast = true; // 设置标志
+          // isReactingFast = true; // 设置标志 - Unused
           // 如果快速移动则清除悬停检测
           if (hoverDetectTimeoutRef.current) {
             clearTimeout(hoverDetectTimeoutRef.current);
@@ -274,6 +276,13 @@ export default function useReactionAnimations({
       }
     }, IDLE_ANIMATION_DELAY);
   }, [IDLE_ANIMATION_DELAY, REACTION_ANIMATION_DURATION, clearReaction, isDraggingRef, reactionAnimation]);
+
+  // 清理所有定时器在组件卸载时
+  useEffect(() => {
+    return () => {
+      clearReaction(); // 这会清理所有相关的定时器
+    };
+  }, [clearReaction]);
 
   return {
     reactionAnimation,

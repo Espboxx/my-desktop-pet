@@ -16,9 +16,10 @@ import {
 
 interface InteractionPanelProps {
   onInteraction: (type: InteractionType) => void;
+  style?: React.CSSProperties; // Allow style prop
 }
 
-const InteractionPanel: React.FC<InteractionPanelProps> = ({ onInteraction }) => {
+const InteractionPanel: React.FC<InteractionPanelProps> = ({ onInteraction, style }) => {
   const permanentInteractions: InteractionType[] = [
     'feed',
     'petting',
@@ -44,7 +45,7 @@ const InteractionPanel: React.FC<InteractionPanelProps> = ({ onInteraction }) =>
   };
 
   return (
-    <div className="interaction-panel">
+    <div className="interaction-panel" style={style}>
       {permanentInteractions.map((type) => {
         const details = interactionDetails[type];
         const IconComponent = details.icon;

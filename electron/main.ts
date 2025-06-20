@@ -1,5 +1,5 @@
 import { app, BrowserWindow, ipcMain, screen, globalShortcut, Tray, Menu, dialog } from 'electron'
-import { createRequire } from 'node:module'
+// import { createRequire } from 'node:module' // Unused
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
@@ -16,7 +16,7 @@ if (process.stderr instanceof stream.Writable) {
 }
 
 
-const require = createRequire(import.meta.url)
+// const require = createRequire(import.meta.url) // Unused
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // The built directory structure
@@ -43,7 +43,7 @@ let appTray: Tray | null = null
 let quitting = false
 
 // 宠物窗口尺寸常量
-const DEFAULT_PET_WIDTH = 300; // Default width
+// const DEFAULT_PET_WIDTH = 300; // Default width - Unused
 const DEFAULT_PET_HEIGHT = 400; // Increased default height for vertical layout
 const EXPANDED_PET_HEIGHT = 500; // 展开后的高度（足够显示菜单）
 
@@ -51,10 +51,10 @@ const EXPANDED_PET_HEIGHT = 500; // 展开后的高度（足够显示菜单）
 function getIconPath(): string {
   try {
     const iconPaths = [
-      path.join(process.env.APP_ROOT!, 'public', 'electron-vite.svg'), // 优先使用SVG
-      path.join(process.env.APP_ROOT!, 'public', 'electron-vite.animate.svg'),
+      path.join(process.env.APP_ROOT!, 'public', 'pet-icon-backup.png'), // 优先使用备份 PNG
       path.join(process.env.APP_ROOT!, 'public', 'pet-icon.png'),
-      path.join(process.env.APP_ROOT!, 'public', 'pet-icon-backup.png')
+      path.join(process.env.APP_ROOT!, 'public', 'electron-vite.svg'),
+      path.join(process.env.APP_ROOT!, 'public', 'electron-vite.animate.svg')
     ];
 
     for (const iconPath of iconPaths) {
@@ -74,36 +74,20 @@ function getIconPath(): string {
 
 // 创建宠物窗口
 async function createPetWindow() { // Make async
-  const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize // 获取屏幕工作区尺寸
-
-  // Load saved state to get position
-  const savedState = await loadSavedState();
-  let initialX: number;
-  let initialY: number;
-
-  if (savedState?.position && typeof savedState.position.x === 'number' && typeof savedState.position.y === 'number') {
-    // Use saved position, ensuring it's within screen bounds
-    initialX = Math.max(0, Math.min(savedState.position.x, screenWidth - DEFAULT_PET_WIDTH));
-    initialY = Math.max(0, Math.min(savedState.position.y, screenHeight - DEFAULT_PET_HEIGHT));
-    console.log(`[main.ts] Loaded saved position: x=${initialX}, y=${initialY}`);
-  } else {
-    // Default position: bottom right corner
-    initialX = screenWidth - DEFAULT_PET_WIDTH;
-    initialY = screenHeight - DEFAULT_PET_HEIGHT;
-    console.log(`[main.ts] No saved position found, using default: x=${initialX}, y=${initialY}`);
-  }
+  const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
 
   petWindow = new BrowserWindow({
-    width: DEFAULT_PET_WIDTH,  // Use default width
-    height: DEFAULT_PET_HEIGHT, // Use default height
-    x: Math.round(initialX), // Use calculated X
-    y: Math.round(initialY), // Use calculated Y
-    transparent: true, // 启用透明背景
-    frame: false,      // 移除窗口框架以实现完全透明效果
-    resizable: true,   // 允许调整大小
-    fullscreen: true,  // 程序初始化时全屏显示
-    skipTaskbar: true, // 不再跳过任务栏
-    // alwaysOnTop: true, // 不再保持置顶
+    width: screenWidth,
+    height: screenHeight,
+    x: 0,
+    y: 0,
+    transparent: true,
+    frame: false,
+    resizable: false, // Window is a canvas, should not be resizable
+    // movable: false,   // Removing this. While we don't want the user to move it, setting it to false can interfere with mouse events. The pet's internal movement will handle positioning.
+    // fullscreen: true, // This is the property that causes issues on macOS
+    skipTaskbar: true,
+    alwaysOnTop: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
       nodeIntegration: false,
@@ -337,26 +321,12 @@ ipcMain.handle('get-window-position', () => {
   return petWindow?.getPosition();
 });
 
-// 新的拖动逻辑 - 设置窗口绝对位置
-ipcMain.on('set-pet-position', (event, { x, y }: { x: number, y: number }) => {
-  if (petWindow) {
-    console.log(`[main.ts] Received set-pet-position: x=${x}, y=${y}`); // 添加日志：记录收到的坐标
-    const roundedX = Math.round(x);
-    const roundedY = Math.round(y);
-    // 添加一些边界检查或限制（可选） - 简单的 NaN 检查
-    if (isNaN(roundedX) || isNaN(roundedY)) {
-      console.error(`[main.ts] Invalid coordinates received: x=${x}, y=${y}. Aborting setPosition.`);
-      return;
-    }
-    petWindow.setPosition(roundedX, roundedY);
-    // 添加日志：记录设置后的实际位置
-    const currentPosition = petWindow.getPosition();
-    console.log(`[main.ts] Window position set to: x=${currentPosition[0]}, y=${currentPosition[1]}`);
-  }
-});
+// The 'set-pet-position' IPC call is now obsolete.
+// The renderer process will handle the pet's position internally via CSS transforms.
+// ipcMain.on('set-pet-position', ...);
 
 // 监听渲染进程的窗口大小调整请求
-ipcMain.on('adjust-pet-window-size', (event, expand: boolean) => {
+ipcMain.on('adjust-pet-window-size', (_, expand: boolean) => {
   if (!petWindow) return;
 
   try {
@@ -384,7 +354,7 @@ ipcMain.on('open-settings', () => {
   createSettingsWindow()
 })
 
-ipcMain.on('set-always-on-top', (event, flag) => {
+ipcMain.on('set-always-on-top', (_, flag) => {
   if (petWindow) {
     petWindow.setAlwaysOnTop(flag)
   }
@@ -404,7 +374,7 @@ ipcMain.handle('get-pet-settings', async () => {
   }
 })
 
-ipcMain.on('save-pet-settings', (event, settings) => {
+ipcMain.on('save-pet-settings', (_, settings) => {
   // 保存设置到配置文件或数据库
   console.log('保存设置:', settings)
 
@@ -435,7 +405,7 @@ ipcMain.handle('get-pet-state', async () => {
 
 
 // 新增：处理保存状态请求
-ipcMain.on('save-pet-state', (event, stateToSave) => {
+ipcMain.on('save-pet-state', (_, stateToSave) => {
   if (stateToSave) {
     saveStateToFile(stateToSave);
   } else {
@@ -443,7 +413,7 @@ ipcMain.on('save-pet-state', (event, stateToSave) => {
   }
 });
 
-ipcMain.on('update-pet-behavior', (event, behavior) => {
+ipcMain.on('update-pet-behavior', (_, behavior) => {
   petBehavior = { ...petBehavior, ...behavior };
   updateBehaviorBasedOnActivity();
 });
@@ -467,7 +437,7 @@ function updateBehaviorBasedOnActivity() {
 }
 
 // 处理渲染进程请求切换鼠标穿透状态
-ipcMain.on('set-mouse-passthrough', (event, enable: boolean) => {
+ipcMain.on('set-mouse-passthrough', (_, enable: boolean) => {
   if (petWindow) {
     console.log(`[main.ts] Setting mouse passthrough: ${enable}`);
     petWindow.setIgnoreMouseEvents(enable, { forward: true });
@@ -556,32 +526,12 @@ app.whenReady().then(async () => { // Make async
 // App Will Quit
 app.on('will-quit', async () => { // Make async
   // Save current window position before quitting
-  if (petWindow) {
-    try {
-      const currentPosition = petWindow.getPosition();
-      const [x, y] = currentPosition;
-      console.log(`[main.ts] Saving position on quit: x=${x}, y=${y}`);
-
-      // Load the last known state
-      const currentState = await loadSavedState();
-
-      if (currentState) {
-        // Update the position in the state
-        currentState.position = { x, y };
-        // Save the updated state
-        await saveStateToFile(currentState);
-        console.log('[main.ts] Position saved successfully.');
-      } else {
-        // If no state file exists, maybe create one just with position?
-        // Or simply log that we couldn't save position because state was missing.
-        console.warn('[main.ts] Could not save position: pet-state.json not found or invalid.');
-        // Optionally, create a minimal state file:
-        // await saveStateToFile({ position: { x, y }, status: /* default status? */, petTypeId: /* default type? */ });
-      }
-    } catch (error) {
-      console.error('[main.ts] Error saving pet position:', error);
-    }
-  }
+  // The window position is now fixed and screen-sized.
+  // The pet's position *within* the window is handled and saved by the renderer process.
+  // Therefore, saving the window position on quit is no longer necessary.
+  // if (petWindow) {
+  //   ...
+  // }
 
   // Unregister all shortcuts.
   globalShortcut.unregisterAll()

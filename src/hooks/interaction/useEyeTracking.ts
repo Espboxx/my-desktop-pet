@@ -27,7 +27,7 @@ export function useEyeTracking({
   const [mouseDirection, setMouseDirection] = useState<MouseDirection>('center');
   const [enableGlobalEyeTracking, setEnableGlobalEyeTracking] = useState(true);
   const lastMousePositionRef = useRef<{ x: number, y: number } | null>(null);
-  const eyeViewAngle = useRef(INTERACTION_CONSTANTS.EYE_VIEW_ANGLE); // Use constant
+  // const eyeViewAngle = useRef(INTERACTION_CONSTANTS.EYE_VIEW_ANGLE); // Unused
 
   const toggleGlobalEyeTracking = useCallback((enabled: boolean) => {
     setEnableGlobalEyeTracking(enabled);
@@ -37,7 +37,7 @@ export function useEyeTracking({
     // }
   }, []);
 
-  const updateEyeDirection = useCallback((mouseX: number, mouseY: number, forceUpdate = false) => {
+  const updateEyeDirection = useCallback((mouseX: number, mouseY: number, _forceUpdate = false) => {
     // Store last known position regardless of tracking state
     lastMousePositionRef.current = { x: mouseX, y: mouseY };
 
@@ -68,10 +68,10 @@ export function useEyeTracking({
 
       // Calculate angle and distance
       const angle = Math.atan2(deltaY, deltaX);
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      // const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY); // Unused
 
       // Calculate view angle in radians
-      const viewAngleRad = (eyeViewAngle.current * Math.PI) / 180;
+      // const viewAngleRad = (eyeViewAngle.current * Math.PI) / 180; // Unused
       const facingAngle = 0; // Assume pet faces right (0 radians)
 
       // Calculate angle difference and normalize
@@ -80,11 +80,11 @@ export function useEyeTracking({
       while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
 
       // Check if within view angle
-      const isInViewAngle = Math.abs(angleDiff) <= viewAngleRad / 2;
+      // const isInViewAngle = Math.abs(angleDiff) <= viewAngleRad / 2; // Unused
 
       // Check if nearby
-      const nearThreshold = petRect.width * INTERACTION_CONSTANTS.NEAR_DISTANCE_MULTIPLIER;
-      const isNearby = distance < nearThreshold;
+      // const nearThreshold = petRect.width * INTERACTION_CONSTANTS.NEAR_DISTANCE_MULTIPLIER; // Unused
+      // const isNearby = distance < nearThreshold; // Unused
 
       // Determine if eyes should track - REMOVED shouldTrack logic.
       // If execution reaches here, it means global tracking is enabled,

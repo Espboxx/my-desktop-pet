@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { PetPosition, MouseHistoryPoint } from './types';
+import { PetPosition } from './types';
 import { INTERACTION_CONSTANTS } from './constants';
 import { MutableRefObject } from 'react';
 
@@ -61,19 +61,23 @@ export default function useMouseHandling({
   const REACTION_ANIMATION_DURATION = INTERACTION_CONSTANTS.REACTION_ANIMATION_DURATION;
   
   // 鼠标进入处理
-  const handleMouseEnter = useCallback((e: React.MouseEvent) => {
+  const handleMouseEnter = useCallback((_e: React.MouseEvent) => {
     isMouseOverPet.current = true;
-    window.desktopPet.setMousePassthrough(false);
+    if (window.desktopPet?.setMousePassthrough) {
+      window.desktopPet.setMousePassthrough(false);
+    }
     clearReaction(); // 清除之前的反应状态
   }, [clearReaction, isMouseOverPet]);
   
   // 鼠标离开处理
-  const handleMouseLeave = useCallback((e: React.MouseEvent) => {
+  const handleMouseLeave = useCallback((_e: React.MouseEvent) => {
     isMouseOverPet.current = false;
     clearReaction(); // 清除反应和计时器
-    
+
     if (!isDraggingRef.current && !showMenu) {
-      window.desktopPet.setMousePassthrough(true);
+      if (window.desktopPet?.setMousePassthrough) {
+        window.desktopPet.setMousePassthrough(true);
+      }
     }
   }, [clearReaction, isMouseOverPet, showMenu]);
   
@@ -251,7 +255,9 @@ export default function useMouseHandling({
 
       if (wasClick) {
         handleAction('pet'); // 将点击视为"抚摸"交互
-        window.desktopPet.setMousePassthrough(false); // 点击后保持非穿透
+        if (window.desktopPet?.setMousePassthrough) {
+          window.desktopPet.setMousePassthrough(false); // 点击后保持非穿透
+        }
         isMouseOverPet.current = true; // 确保标记正确
         clearReaction(); // 清除点击时的任何残留反应
       } else {
@@ -274,9 +280,13 @@ export default function useMouseHandling({
 
         // 根据鼠标位置和菜单状态决定是否启用鼠标穿透
         if (!isOverPetNow && !showMenu) {
-          window.desktopPet.setMousePassthrough(true);
+          if (window.desktopPet?.setMousePassthrough) {
+            window.desktopPet.setMousePassthrough(true);
+          }
         } else if (isOverPetNow) {
-          window.desktopPet.setMousePassthrough(false); // 确保在宠物上时非穿透
+          if (window.desktopPet?.setMousePassthrough) {
+            window.desktopPet.setMousePassthrough(false); // 确保在宠物上时非穿透
+          }
         }
       }
 

@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { PetPosition } from './interaction/types'; // Correct import path for PetPosition
+import { useEffect, useRef, useCallback } from 'react';
+import { PetPosition } from '../interaction/types'; // Correct import path for PetPosition
 
 interface UseAutonomousMovementProps {
   petPosition: PetPosition;

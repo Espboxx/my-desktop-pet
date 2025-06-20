@@ -1,6 +1,6 @@
 import React from 'react';
 import { ACCESSORY_OPTIONS, PET_OPTIONS } from '../../constants/settingsConstants';
-import useSettings from '../../hooks/useSettings';
+import useSettings from '../../hooks/settings/useSettings'; // Corrected import path
 
 const AccessoriesTab: React.FC = () => {
   const { settings, updateSetting } = useSettings();

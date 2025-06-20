@@ -1,0 +1,285 @@
+/* 优化的菜单布局样式 */
+.optimized-menu-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none; /* 容器本身不拦截事件 */
+}
+
+/* 主状态容器 */
+.main-status-container {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.08),
+    0 4px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+  pointer-events: auto;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 展开动画 */
+.optimized-menu-layout.expand .main-status-container {
+  transform: scale(1.02) translateY(-2px);
+  box-shadow: 
+    0 12px 32px rgba(0, 0, 0, 0.12),
+    0 6px 12px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* 收缩动画 */
+.optimized-menu-layout.collapse .main-status-container {
+  transform: scale(0.98) translateY(1px);
+}
+
+/* 详细状态视图 */
+.detailed-status-view {
+  padding: 16px;
+  min-width: 220px;
+}
+
+/* 等级和经验区域 */
+.level-exp-section {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.level-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.level-icon {
+  font-size: 18px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.level-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* 经验条容器 */
+.exp-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exp-bar {
+  flex: 1;
+  height: 8px;
+  background: linear-gradient(to right, #f1f5f9, #e2e8f0);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.exp-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.exp-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 2s infinite;
+}
+
+.exp-text {
+  font-size: 10px;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+/* 状态网格 */
+.status-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.status-item.warning {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  animation: warning-pulse 2s infinite;
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-icon {
+  font-size: 14px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+}
+
+.status-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.status-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(226, 232, 240, 0.5);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.status-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.status-value {
+  font-size: 10px;
+  font-weight: 600;
+  color: #475569;
+  min-width: 20px;
+  text-align: right;
+}
+
+/* 简化状态视图 */
+.simple-status-view {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.simple-level {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.simple-level .level-icon {
+  font-size: 16px;
+}
+
+.simple-level .level-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.urgent-indicator {
+  font-size: 14px;
+  animation: urgent-blink 1.5s infinite;
+}
+
+/* 迷你状态指示器 */
+.mini-status-indicators {
+  display: flex;
+  gap: 3px;
+  align-items: end;
+}
+
+.mini-indicator {
+  width: 4px;
+  height: 16px;
+  background: rgba(226, 232, 240, 0.5);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.mini-indicator.warning {
+  animation: mini-warning 1.5s infinite;
+}
+
+.mini-fill {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  border-radius: 2px;
+  transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 交互区域 */
+.interaction-section {
+  pointer-events: auto;
+}
+
+/* 动画 */
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+@keyframes warning-pulse {
+  0%, 100% { 
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
+  }
+  50% { 
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+}
+
+@keyframes urgent-blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+@keyframes mini-warning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .detailed-status-view {
+    min-width: 180px;
+    padding: 12px;
+  }
+  
+  .status-grid {
+    gap: 6px;
+  }
+  
+  .status-item {
+    padding: 6px;
+  }
+}

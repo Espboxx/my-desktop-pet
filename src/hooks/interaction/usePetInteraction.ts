@@ -2,10 +2,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { PetStatus, InteractionType, ItemType } from '../../types/petTypes'; // Add ItemType
 import {
-  CoreInteractionProps,
   UsePetInteractionReturn,
   PetPosition,
-  MouseDirection,
   // Import other necessary types from './types' if needed
 } from './types';
 import { useDragHandling } from './useDragHandling';
@@ -14,7 +12,7 @@ import { useEyeTracking } from './useEyeTracking';
 import { useInteractionDetection } from './useInteractionDetection';
 import { useActionHandling } from './useActionHandling';
 import { useIdleHandling } from './useIdleHandling';
-import { INTERACTION_CONSTANTS } from './constants'; // Might need some constants here
+// import { INTERACTION_CONSTANTS } from './constants'; // Unused
 
 // Define the props expected by the main hook
 interface UsePetInteractionProps {
@@ -104,7 +102,7 @@ export function usePetInteraction({
     petRef,
     showMenu,
     longPressTimeoutRef, // Pass the ref from interactionDetection
-    onDragEnd: (finalPosition, wasClick) => {
+    onDragEnd: (_finalPosition, wasClick) => {
         // Logic after drag ends, e.g., trigger 'pet' action if it was a click
         if (wasClick) {
             // handleAction('pet'); // Call handleAction directly if it was a click
@@ -172,7 +170,9 @@ export function usePetInteraction({
 
   const handleMouseEnter = useCallback((e: React.MouseEvent) => {
     isMouseOverPet.current = true;
-    window.desktopPet.setMousePassthrough(false);
+    if (window.desktopPet?.setMousePassthrough) {
+      window.desktopPet.setMousePassthrough(false);
+    }
     // Reset idle timer on interaction
     idleHandling.resetIdleTimer();
     // Delegate to detection hook
@@ -190,7 +190,9 @@ export function usePetInteraction({
 
     // Only enable passthrough if not dragging and menu isn't shown // Use isDragging here
     if (!isDragging && !showMenu) { // Use isDragging here
-      window.desktopPet.setMousePassthrough(true);
+      if (window.desktopPet?.setMousePassthrough) {
+        window.desktopPet.setMousePassthrough(true);
+      }
     }
   }, [interactionDetection.handleMouseLeaveForDetection, isDragging, showMenu, idleHandling.resetIdleTimer]); // Use isDragging in dependency array
 

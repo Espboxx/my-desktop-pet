@@ -1,11 +1,4 @@
-// Import the hooks we created
-import { useActionHandling } from './useActionHandling';
-import { useContextMenuHandling } from './useContextMenuHandling';
-import { useDragHandling } from './useDragHandling';
-import { useEyeTracking } from './useEyeTracking';
-import { useIdleHandling } from './useIdleHandling';
-import { useInteractionDetection } from './useInteractionDetection';
-import { usePetInteraction } from './usePetInteraction'; // Import the main hook
+// Re-export hooks directly without importing them first
 
 // Export individual hooks (named exports)
 export { useActionHandling } from './useActionHandling';

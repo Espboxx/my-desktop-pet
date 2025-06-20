@@ -3,46 +3,77 @@
   display: flex;
   justify-content: center; /* Center buttons horizontally */
   align-items: center;
-  padding: 5px;
-  background-color: rgba(240, 240, 240, 0.8); /* Light semi-transparent background */
-  border-top: 1px solid rgba(200, 200, 200, 0.8); /* Subtle top border */
-  pointer-events: auto; /* 确保面板可以接收鼠标事件，覆盖父容器的none设置 */
-  gap: 8px; /* Increased space between buttons */
-  margin-top: 10px; /* Add space above the panel */
-  position: absolute; /* Position relative to the PetWindow */
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 110; /* Ensure it's above the container (z-index 100) and pet */
-  border-bottom-left-radius: 8px; /* Match window corners if needed */
-  border-bottom-right-radius: 8px;
+  padding: 8px 12px; /* 增加内边距 */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.85)); /* 渐变背景 */
+  border: 1px solid rgba(226, 232, 240, 0.6); /* 柔和边框 */
+  border-radius: 16px; /* 更圆润的边角 */
+  backdrop-filter: blur(10px); /* 毛玻璃效果 */
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5); /* 多层阴影 */
+  pointer-events: auto;
+  gap: 6px; /* 稍微减少间距，让按钮更紧凑 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 更平滑的过渡 */
+  transform: translateY(0); /* 重置初始位置 */
 }
 
 .interaction-button {
-  /* Adjust padding for icon buttons */
-  padding: 8px; /* Equal padding */
-  font-size: 18px; /* Icon size is controlled in JSX, this is fallback/container size */
-  background-color: #e0e0e0;
-  border: 1px solid #cccccc;
-  border-radius: 50%; /* Make buttons circular */
+  padding: 0; /* 移除内边距，使用固定尺寸 */
+  font-size: 16px; /* 图标大小 */
+  background: linear-gradient(135deg, #ffffff, #f8fafc); /* 渐变背景 */
+  border: 1px solid rgba(226, 232, 240, 0.8); /* 柔和边框 */
+  border-radius: 50%; /* 圆形按钮 */
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  /* Set fixed size for circular buttons */
-  width: 36px;
-  height: 36px;
-  display: flex; /* Center icon inside */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* 平滑过渡 */
+  width: 40px; /* 稍微增大按钮 */
+  height: 40px;
+  display: flex;
   justify-content: center;
   align-items: center;
-  line-height: 1; /* Ensure icon vertical alignment */
-  color: #333; /* Icon color */
+  line-height: 1;
+  color: #64748b; /* 现代化图标颜色 */
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04); /* 轻微阴影 */
+  position: relative; /* 为伪元素做准备 */
+  overflow: hidden; /* 隐藏溢出的效果 */
 }
 
+/* 悬停效果 */
 .interaction-button:hover {
-  background-color: #d0d0d0;
-  transform: scale(1.1); /* Add slight scale effect on hover */
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0); /* 悬停时的渐变 */
+  transform: scale(1.08) translateY(-1px); /* 缩放和轻微上移 */
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.08); /* 增强阴影 */
+  color: #475569; /* 悬停时图标颜色变深 */
 }
 
+/* 点击效果 */
 .interaction-button:active {
-  background-color: #c0c0c0;
-  transform: scale(1.05); /* Slightly smaller scale on active */
+  background: linear-gradient(135deg, #e2e8f0, #cbd5e1); /* 点击时的渐变 */
+  transform: scale(1.02) translateY(0); /* 轻微缩放 */
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.08),
+    inset 0 1px 2px rgba(0, 0, 0, 0.1); /* 内阴影表示按下 */
+}
+
+/* 按钮波纹效果 */
+.interaction-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(100, 116, 139, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.interaction-button:active::before {
+  width: 100%;
+  height: 100%;
 }

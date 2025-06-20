@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 import { PetStatus } from '../../types/petTypes';
+import { useBubbleService } from '../../services/bubble/BubbleContext'; // Import bubble service hook
+
+// 定义低状态标志的类型
+export type LowStatusFlags = Record<'mood' | 'cleanliness' | 'hunger' | 'energy', boolean>;
 
 /**
  * 状态警告hook
@@ -7,10 +11,11 @@ import { PetStatus } from '../../types/petTypes';
  */
 export function useStatusWarnings(
   status: PetStatus,
-  showBubble: (text: string, type: 'thought' | 'speech', duration?: number) => void
+  // showBubble: (text: string, type: 'thought' | 'speech', duration?: number) => void // Removed parameter
 ) {
+  const { showBubble, bubbles } = useBubbleService(); // Get bubble service functions and state
   // 显式定义低状态标志的键
-  const [lowStatusFlags, setLowStatusFlags] = useState<Record<'mood' | 'cleanliness' | 'hunger' | 'energy', boolean>>({
+  const [lowStatusFlags, setLowStatusFlags] = useState<LowStatusFlags>({
     mood: false,
     cleanliness: false,
     hunger: false, // 高时发出饥饿警告
@@ -28,7 +33,8 @@ export function useStatusWarnings(
     setLowStatusFlags(newLowFlags);
 
     // 为低状态触发主动思考气泡（仅当没有其他气泡活动时）
-    if (!status.bubble.active) {
+    // Only show warning if no other bubble is active (using service state)
+    if (bubbles.length === 0) {
       let warningText = "";
       // 低状态气泡的简化随机选择
       if (newLowFlags.mood && Math.random() < 0.3) warningText = ["心情不太好...", "有点难过...", "想要被安慰..."][Math.floor(Math.random() * 3)];
@@ -37,10 +43,11 @@ export function useStatusWarnings(
       else if (newLowFlags.cleanliness && Math.random() < 0.3) warningText = ["感觉不太干净...", "需要清洁...", "有点脏了..."][Math.floor(Math.random() * 3)];
 
       if (warningText) {
-        showBubble(warningText, 'thought');
+        // Use the bubble service to show a warning bubble
+        showBubble(warningText, 'warning', 3000); // Show for 3 seconds
       }
     }
-  }, [status, showBubble]); // 依赖: status, showBubble
+  }, [status, showBubble, bubbles]); // Dependencies: status, showBubble (from context), bubbles (from context)
 
   return { lowStatusFlags };
 }

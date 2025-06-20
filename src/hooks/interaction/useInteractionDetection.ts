@@ -1,6 +1,6 @@
 // src/hooks/interaction/useInteractionDetection.ts
-import { useRef, useCallback } from 'react';
-import { MouseHistoryPoint, PetPosition } from './types'; // Assuming PetPosition might be needed for circle detection center
+import { useRef, useCallback, useEffect } from 'react';
+import { MouseHistoryPoint } from './types';
 import { INTERACTION_CONSTANTS } from './constants';
 
 interface UseInteractionDetectionProps {
@@ -50,6 +50,12 @@ export function useInteractionDetection({
   const hoverDetectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reactionTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Use a shared reaction timeout ref
 
+  // 新增：悬停累积时间相关的refs
+  const totalHoverTimeRef = useRef(0);
+  const hoverStartTimeRef = useRef<number | null>(null);
+  const hoverAnimationTriggeredRef = useRef(false);
+  const hoverUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   // --- Helper Functions ---
   const internalClearReaction = useCallback(() => {
     if (reactionTimeoutRef.current) {
@@ -64,8 +70,10 @@ export function useInteractionDetection({
     // Clear timeouts specific to detection
     if (hoverDetectTimeoutRef.current) clearTimeout(hoverDetectTimeoutRef.current);
     if (longPressTimeoutRef.current) clearTimeout(longPressTimeoutRef.current);
+    if (hoverUpdateIntervalRef.current) clearTimeout(hoverUpdateIntervalRef.current);
     hoverDetectTimeoutRef.current = null;
     longPressTimeoutRef.current = null;
+    hoverUpdateIntervalRef.current = null;
 
     // Reset detection point arrays and speed
     mousePosHistoryRef.current = [];
@@ -73,12 +81,39 @@ export function useInteractionDetection({
     circleDetectionPointsRef.current = [];
     petDetectionPointsRef.current = [];
 
+    // 重置悬停累积时间相关状态
+    totalHoverTimeRef.current = 0;
+    hoverStartTimeRef.current = null;
+    hoverAnimationTriggeredRef.current = false;
+
     // Don't reset lastClickTimeRef here, needed across leave/enter for double click
 
     // Clear any active reaction animation using the main clear function
     clearReaction(); // Call the main clearReaction passed from parent
 
   }, [clearReaction]); // Dependency on the main clearReaction
+
+  // 悬停时间更新函数
+  const updateHoverTime = useCallback(() => {
+    if (hoverStartTimeRef.current === null) return;
+
+    const now = Date.now();
+    const sessionTime = now - hoverStartTimeRef.current;
+    totalHoverTimeRef.current += sessionTime;
+    hoverStartTimeRef.current = now; // 重置开始时间以便下次计算
+
+    // 检查是否达到触发阈值
+    if (totalHoverTimeRef.current >= INTERACTION_CONSTANTS.HOVER_ANIMATION_THRESHOLD &&
+        !hoverAnimationTriggeredRef.current &&
+        !reactionAnimation &&
+        !isDraggingRef.current) {
+
+      hoverAnimationTriggeredRef.current = true;
+      setReactionAnimation('tilt-head');
+      if (reactionTimeoutRef.current) clearTimeout(reactionTimeoutRef.current);
+      reactionTimeoutRef.current = setTimeout(internalClearReaction, INTERACTION_CONSTANTS.REACTION_ANIMATION_DURATION);
+    }
+  }, [reactionAnimation, isDraggingRef, setReactionAnimation, internalClearReaction]);
 
   // --- Detection Logic ---
 
@@ -146,7 +181,15 @@ export function useInteractionDetection({
     if (isDraggingRef.current) {
       // Clear potential detection states if dragging starts mid-detection
       if (hoverDetectTimeoutRef.current) clearTimeout(hoverDetectTimeoutRef.current);
+      if (hoverUpdateIntervalRef.current) clearTimeout(hoverUpdateIntervalRef.current);
       hoverDetectTimeoutRef.current = null;
+      hoverUpdateIntervalRef.current = null;
+
+      // 重置悬停相关状态
+      totalHoverTimeRef.current = 0;
+      hoverStartTimeRef.current = null;
+      hoverAnimationTriggeredRef.current = false;
+
       circleDetectionPointsRef.current = [];
       petDetectionPointsRef.current = [];
       mousePosHistoryRef.current = [];
@@ -192,6 +235,24 @@ export function useInteractionDetection({
     if (mouseSpeedRef.current > 50 && hoverDetectTimeoutRef.current) {
       clearTimeout(hoverDetectTimeoutRef.current);
       hoverDetectTimeoutRef.current = null;
+    }
+
+    // 悬停时间累积逻辑
+    if (mouseSpeedRef.current < INTERACTION_CONSTANTS.FAST_MOVE_THRESHOLD / 3) {
+      // 鼠标速度较低，可以累积悬停时间
+      if (hoverStartTimeRef.current === null) {
+        // 开始新的悬停会话
+        hoverStartTimeRef.current = now;
+      } else {
+        // 更新累积时间
+        updateHoverTime();
+      }
+    } else {
+      // 鼠标移动过快，暂停累积时间
+      if (hoverStartTimeRef.current !== null) {
+        updateHoverTime(); // 保存当前会话的时间
+        hoverStartTimeRef.current = null; // 暂停累积
+      }
     }
 
     // Don't process further detections if a fast reaction just triggered
@@ -245,7 +306,7 @@ export function useInteractionDetection({
 
   }, [isDraggingRef, reactionAnimation, setReactionAnimation, internalClearReaction, petRef, detectCircularMotion]);
 
-  const handleMouseUpForDetection = useCallback((e: MouseEvent) => {
+  const handleMouseUpForDetection = useCallback((_e: MouseEvent) => {
     // Clear long press timeout on any mouse up (if it hasn't fired)
     if (longPressTimeoutRef.current) {
       clearTimeout(longPressTimeoutRef.current);
@@ -254,27 +315,52 @@ export function useInteractionDetection({
     // Other up-related logic (like click action) is handled by drag/main hook
   }, []);
 
-  const handleMouseEnterForDetection = useCallback((e: React.MouseEvent) => {
-    resetDetectionStates(); // Reset states on enter
+  const handleMouseEnterForDetection = useCallback((_e: React.MouseEvent) => {
+    // 只重置非悬停相关的检测状态
+    if (hoverDetectTimeoutRef.current) clearTimeout(hoverDetectTimeoutRef.current);
+    if (longPressTimeoutRef.current) clearTimeout(longPressTimeoutRef.current);
+    hoverDetectTimeoutRef.current = null;
+    longPressTimeoutRef.current = null;
 
-    // --- Hover Detection ---
-    if (hoverDetectTimeoutRef.current) clearTimeout(hoverDetectTimeoutRef.current); // Clear previous just in case
-    hoverDetectTimeoutRef.current = setTimeout(() => {
-      // Check conditions again inside timeout: still over, not dragging, low speed, no reaction
-      if (petRef.current /* check isMouseOverPet ref from parent? */ && !isDraggingRef.current && mouseSpeedRef.current < INTERACTION_CONSTANTS.FAST_MOVE_THRESHOLD / 3 && !reactionAnimation) {
-        setReactionAnimation('tilt-head');
-        if (reactionTimeoutRef.current) clearTimeout(reactionTimeoutRef.current);
-        reactionTimeoutRef.current = setTimeout(internalClearReaction, INTERACTION_CONSTANTS.REACTION_ANIMATION_DURATION);
+    // 重置其他检测状态，但保留悬停累积时间
+    mousePosHistoryRef.current = [];
+    mouseSpeedRef.current = 0;
+    circleDetectionPointsRef.current = [];
+    petDetectionPointsRef.current = [];
+
+    // 如果还没有开始悬停会话，开始新的会话
+    if (hoverStartTimeRef.current === null) {
+      hoverStartTimeRef.current = Date.now();
+    }
+
+    // 设置定期更新悬停时间的间隔
+    if (hoverUpdateIntervalRef.current) clearTimeout(hoverUpdateIntervalRef.current);
+    hoverUpdateIntervalRef.current = setInterval(() => {
+      if (hoverStartTimeRef.current !== null && !isDraggingRef.current) {
+        updateHoverTime();
       }
-      hoverDetectTimeoutRef.current = null;
     }, INTERACTION_CONSTANTS.HOVER_DETECT_DURATION);
 
-  }, [resetDetectionStates, petRef, isDraggingRef, reactionAnimation, setReactionAnimation, internalClearReaction]);
+  }, [isDraggingRef, updateHoverTime]);
 
-  const handleMouseLeaveForDetection = useCallback((e: React.MouseEvent) => {
+  const handleMouseLeaveForDetection = useCallback((_e: React.MouseEvent) => {
+    // 在重置状态前，如果有悬停动画正在播放，清除它
+    if (hoverAnimationTriggeredRef.current && reactionAnimation === 'tilt-head') {
+      internalClearReaction();
+    }
+
     resetDetectionStates(); // Reset everything on leave
-  }, [resetDetectionStates]);
+  }, [resetDetectionStates, reactionAnimation, internalClearReaction]);
 
+  // 清理effect，确保组件卸载时清理所有定时器
+  useEffect(() => {
+    return () => {
+      if (hoverDetectTimeoutRef.current) clearTimeout(hoverDetectTimeoutRef.current);
+      if (longPressTimeoutRef.current) clearTimeout(longPressTimeoutRef.current);
+      if (hoverUpdateIntervalRef.current) clearTimeout(hoverUpdateIntervalRef.current);
+      if (reactionTimeoutRef.current) clearTimeout(reactionTimeoutRef.current);
+    };
+  }, []);
 
   return {
     mousePosHistoryRef,

@@ -1,8 +1,8 @@
 // src/hooks/interaction/useActionHandling.ts
 import { useCallback } from 'react';
-import { PetStatus, InteractionType, Task, Achievement, ItemType } from '../../types/petTypes'; // Add ItemType
-import { ACHIEVEMENTS as predefinedAchievements } from '../../constants/petConstants'; // Import predefined achievements
-import { gameData } from '../../constants/taskData'; // Import task data
+import { PetStatus, InteractionType, ItemType } from '../../types/petTypes';
+// import { ACHIEVEMENTS as predefinedAchievements } from '../../constants/petConstants'; // Unused
+// import { gameData } from '../../constants/taskData'; // Unused
 import { ANIMATION_GROUPS } from './constants'; // Import animation groups from local constants
 
 interface UseActionHandlingProps {
@@ -69,7 +69,7 @@ export function useActionHandling({
         // Handle actions requiring items
         const requiredItemType = itemActions[action as InteractionType]!;
         let interactionValue = 0;
-        let notificationMessage = ''; // Variable for notification message
+        // let notificationMessage = ''; // Unused variable
         let thoughtMessage = ''; // Variable for thought bubble message
 
         switch (action) {
