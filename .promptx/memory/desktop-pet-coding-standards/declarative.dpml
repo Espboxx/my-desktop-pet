@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<memory>
+  <item id="mem_1755264986539_kimmi9nzl" time="2025/08/15 21:36">
+    <content>
+      桌面宠物项目核心架构模式：
+      1. Hook分层架构：core(基础) → pet(业务) → interaction(交互)，usePetStatus作为主Hook聚合所有子功能
+      2. 组件设计模式：SettingsWindow容器组件管理标签页，各Tab组件专注UI展示，通过useSharedPetStatus获取全局状态
+      3. 状态管理模式：PetStatus接口定义完整状态，PetStatusContext提供全局状态，通过setStatus统一更新
+      4. 文件组织约定：Hook按功能分类在src/hooks/{category}/，组件有对应CSS文件，类型集中在petTypes.ts
+    </content>
+    <tags>#其他</tags>
+  </item>
+  <item id="mem_1755265001688_j3hk85mnr" time="2025/08/15 21:36">
+    <content>
+      桌面宠物项目编码规范要求：
+      1. 命名约定：组件PascalCase(SettingsWindow)，Hook use前缀(usePetStatus)，文件名与导出名一致，常量UPPER_SNAKE_CASE
+      2. 导入顺序：React相关 → 第三方库(react-icons) → 项目内部 → 类型定义，各组间空行分隔
+      3. TypeScript严格：所有接口在petTypes.ts定义，避免any类型，函数参数返回值明确类型
+      4. 性能优化：React.memo包装组件，useMemo缓存计算，useCallback缓存事件处理，高频事件防抖节流
+    </content>
+    <tags>#其他</tags>
+  </item>
+  <item id="mem_1755265017274_q9zwxd19k" time="2025/08/15 21:36">
+    <content>
+      桌面宠物项目技术约束和限制：
+      1. Electron双进程架构：主进程(electron/main.ts)负责系统集成，渲染进程负责UI，严格分离，IPC通信有性能限制
+      2. React Hook规则：只能在函数组件顶层调用，不能在循环条件语句中使用，依赖数组必须正确设置
+      3. 性能基线：60fps渲染性能，组件渲染&lt;16ms，内存增长&lt;10MB，用户交互响应&lt;100ms
+      4. 跨平台兼容：Windows、macOS、Linux平台API差异，需要行为一致性保障
+    </content>
+    <tags>#最佳实践</tags>
+  </item>
+  <item id="mem_1755265032158_vle1xg14t" time="2025/08/15 21:37">
+    <content>
+      桌面宠物项目关键代码模式示例：
+      1. Hook集成模式：usePetStatus主Hook通过useStateLoader、useStatusDecay、useLevelingSystem等子Hook组合功能
+      2. 组件标签页模式：SettingsWindow通过activeTab状态控制display样式显示不同Tab组件，避免组件卸载
+      3. Context消费模式：useSharedPetStatus获取PetStatusContext状态，throw error确保在Provider内使用
+      4. 状态引用模式：useRef保存状态引用(statusRef.current = status)，避免闭包陷阱，在回调中访问最新状态
+    </content>
+    <tags>#其他</tags>
+  </item>
+</memory>

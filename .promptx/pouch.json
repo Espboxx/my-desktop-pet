@@ -1,0 +1,69 @@
+{
+  "currentState": "memory_saved",
+  "stateHistory": [
+    {
+      "from": "initial",
+      "command": "init",
+      "timestamp": "2025-08-15T13:24:10.348Z",
+      "args": [
+        {
+          "workingDirectory": "d:\\code\\my-desktop-pet",
+          "ideType": "cursor"
+        }
+      ]
+    },
+    {
+      "from": "initialized",
+      "command": "action",
+      "timestamp": "2025-08-15T13:24:18.977Z",
+      "args": [
+        "nuwa"
+      ]
+    },
+    {
+      "from": "role_activated_with_memory",
+      "command": "remember",
+      "timestamp": "2025-08-15T13:36:26.534Z",
+      "args": [
+        "desktop-pet-coding-standards",
+        "桌面宠物项目核心架构模式：\n1. Hook分层架构：core(基础) → pet(业务) → interaction(交互)，usePetStatus作为主Hook聚合所有子功能\n2. 组件设计模式：SettingsWindow容器组件管理标签页，各Tab组件专注UI展示，通过useSharedPetStatus获取全局状态\n3. 状态管理模式：PetStatus接口定义完整状态，PetStatusContext提供全局状态，通过setStatus统一更新\n4. 文件组织约定：Hook按功能分类在src/hooks/{category}/，组件有对应CSS文件，类型集中在petTypes.ts",
+        "--tags",
+        "架构模式 Hook设计 状态管理 文件组织"
+      ]
+    },
+    {
+      "from": "memory_saved",
+      "command": "remember",
+      "timestamp": "2025-08-15T13:36:41.686Z",
+      "args": [
+        "desktop-pet-coding-standards",
+        "桌面宠物项目编码规范要求：\n1. 命名约定：组件PascalCase(SettingsWindow)，Hook use前缀(usePetStatus)，文件名与导出名一致，常量UPPER_SNAKE_CASE\n2. 导入顺序：React相关 → 第三方库(react-icons) → 项目内部 → 类型定义，各组间空行分隔\n3. TypeScript严格：所有接口在petTypes.ts定义，避免any类型，函数参数返回值明确类型\n4. 性能优化：React.memo包装组件，useMemo缓存计算，useCallback缓存事件处理，高频事件防抖节流",
+        "--tags",
+        "编码规范 命名约定 TypeScript 性能优化"
+      ]
+    },
+    {
+      "from": "memory_saved",
+      "command": "remember",
+      "timestamp": "2025-08-15T13:36:57.272Z",
+      "args": [
+        "desktop-pet-coding-standards",
+        "桌面宠物项目技术约束和限制：\n1. Electron双进程架构：主进程(electron/main.ts)负责系统集成，渲染进程负责UI，严格分离，IPC通信有性能限制\n2. React Hook规则：只能在函数组件顶层调用，不能在循环条件语句中使用，依赖数组必须正确设置\n3. 性能基线：60fps渲染性能，组件渲染<16ms，内存增长<10MB，用户交互响应<100ms\n4. 跨平台兼容：Windows、macOS、Linux平台API差异，需要行为一致性保障",
+        "--tags",
+        "技术约束 Electron架构 性能要求 跨平台"
+      ]
+    },
+    {
+      "from": "memory_saved",
+      "command": "remember",
+      "timestamp": "2025-08-15T13:37:12.157Z",
+      "args": [
+        "desktop-pet-coding-standards",
+        "桌面宠物项目关键代码模式示例：\n1. Hook集成模式：usePetStatus主Hook通过useStateLoader、useStatusDecay、useLevelingSystem等子Hook组合功能\n2. 组件标签页模式：SettingsWindow通过activeTab状态控制display样式显示不同Tab组件，避免组件卸载\n3. Context消费模式：useSharedPetStatus获取PetStatusContext状态，throw error确保在Provider内使用\n4. 状态引用模式：useRef保存状态引用(statusRef.current = status)，避免闭包陷阱，在回调中访问最新状态",
+        "--tags",
+        "代码模式 Hook集成 组件设计 Context使用"
+      ]
+    }
+  ],
+  "lastUpdated": "2025-08-15T13:37:12.160Z"
+}
