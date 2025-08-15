@@ -170,8 +170,10 @@ export function usePetInteraction({
 
   const handleMouseEnter = useCallback((e: React.MouseEvent) => {
     isMouseOverPet.current = true;
+    // 确保鼠标进入时禁用穿透 - 修复首次点击隐藏问题
     if (window.desktopPet?.setMousePassthrough) {
       window.desktopPet.setMousePassthrough(false);
+      console.log('[usePetInteraction] 鼠标进入，设置穿透: false');
     }
     // Reset idle timer on interaction
     idleHandling.resetIdleTimer();

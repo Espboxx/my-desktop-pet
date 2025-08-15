@@ -110,6 +110,14 @@ async function createPetWindow() { // Make async
     petWindow = null
   })
 
+  // 确保窗口初始状态允许鼠标交互 - 修复首次点击隐藏问题
+  petWindow.webContents.once('did-finish-load', () => {
+    if (petWindow) {
+      console.log('[main.ts] 页面加载完成，设置初始鼠标穿透状态: false');
+      petWindow.setIgnoreMouseEvents(false, { forward: true });
+    }
+  });
+
   // Remove the context-menu listener again
   // petWindow.webContents.on('context-menu', (event) => { ... })
 }

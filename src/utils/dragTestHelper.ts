@@ -24,16 +24,44 @@ export function testDragFunctionality(): DragTestResult {
       };
     }
 
-    // 检查事件监听器
-    const hasMouseDown = petElement.onmousedown !== null;
-    const hasMouseMove = petElement.onmousemove !== null;
-    const hasMouseUp = petElement.onmouseup !== null;
+    // 检查React合成事件监听器
+    // React使用合成事件系统，需要检查React内部的事件监听器
+    const reactFiberKey = Object.keys(petElement).find(key => key.startsWith('__reactFiber'));
+    const reactPropsKey = Object.keys(petElement).find(key => key.startsWith('__reactProps'));
+
+    let hasMouseDown = false;
+    let hasMouseMove = false;
+    let hasMouseUp = false;
+
+    // 检查React props中的事件处理器
+    if (reactPropsKey && (petElement as any)[reactPropsKey]) {
+      const props = (petElement as any)[reactPropsKey];
+      hasMouseDown = typeof props.onMouseDown === 'function';
+      hasMouseMove = typeof props.onMouseMove === 'function';
+      hasMouseUp = typeof props.onMouseUp === 'function';
+    }
+
+    // 如果React props检查失败，尝试检查原生事件监听器
+    if (!hasMouseDown) {
+      hasMouseDown = petElement.onmousedown !== null;
+    }
+    if (!hasMouseMove) {
+      hasMouseMove = petElement.onmousemove !== null;
+    }
+    if (!hasMouseUp) {
+      hasMouseUp = petElement.onmouseup !== null;
+    }
 
     if (!hasMouseDown) {
       return {
         success: false,
         message: '缺少mousedown事件监听器',
-        details: { element: petElement }
+        details: {
+          element: petElement,
+          reactFiberKey,
+          reactPropsKey,
+          hasReactProps: !!reactPropsKey
+        }
       };
     }
 
@@ -70,7 +98,10 @@ export function testDragFunctionality(): DragTestResult {
         top,
         hasMouseDown,
         hasMouseMove,
-        hasMouseUp
+        hasMouseUp,
+        reactFiberKey,
+        reactPropsKey,
+        hasReactProps: !!reactPropsKey
       }
     };
 

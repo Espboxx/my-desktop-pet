@@ -151,9 +151,10 @@ export function useDragHandling({
       } else {
          // If it wasn't a drag, it was a click.
          // The main hook or mouse handling hook will decide what action to take (e.g., 'pet')
-         // Ensure passthrough is off after a click on the pet
+         // Ensure passthrough is off after a click on the pet - 修复首次点击隐藏问题
          if (window.desktopPet?.setMousePassthrough) {
            window.desktopPet.setMousePassthrough(false);
+           console.log('[useDragHandling] 点击后设置鼠标穿透: false');
          }
          isMouseOverPet.current = true; // Confirm mouse is over pet after click
       }

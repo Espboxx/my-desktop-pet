@@ -4,14 +4,105 @@
   "metadata": {
     "version": "2.0.0",
     "description": "project 级资源注册表",
-    "createdAt": "2025-08-15T13:24:10.361Z",
-    "updatedAt": "2025-08-15T13:24:10.362Z",
-    "resourceCount": 0
+    "createdAt": "2025-08-15T13:41:48.675Z",
+    "updatedAt": "2025-08-15T13:41:48.678Z",
+    "resourceCount": 6
   },
-  "resources": [],
+  "resources": [
+    {
+      "id": "desktop-pet-coding-standards",
+      "source": "project",
+      "protocol": "role",
+      "name": "Desktop Pet Coding Standards 角色",
+      "description": "专业角色，提供特定领域的专业能力",
+      "reference": "@project://.promptx/resource/role/desktop-pet-coding-standards/desktop-pet-coding-standards.role.md",
+      "metadata": {
+        "createdAt": "2025-08-15T13:41:48.676Z",
+        "updatedAt": "2025-08-15T13:41:48.676Z",
+        "scannedAt": "2025-08-15T13:41:48.676Z",
+        "path": "role/desktop-pet-coding-standards/desktop-pet-coding-standards.role.md"
+      }
+    },
+    {
+      "id": "coding-standards-workflow",
+      "source": "project",
+      "protocol": "execution",
+      "name": "Coding Standards Workflow 执行模式",
+      "description": "执行模式，定义具体的行为模式",
+      "reference": "@project://.promptx/resource/role/desktop-pet-coding-standards/execution/coding-standards-workflow.execution.md",
+      "metadata": {
+        "createdAt": "2025-08-15T13:41:48.676Z",
+        "updatedAt": "2025-08-15T13:41:48.676Z",
+        "scannedAt": "2025-08-15T13:41:48.676Z",
+        "path": "role/desktop-pet-coding-standards/execution/coding-standards-workflow.execution.md"
+      }
+    },
+    {
+      "id": "coding-standards-thinking",
+      "source": "project",
+      "protocol": "thought",
+      "name": "Coding Standards Thinking 思维模式",
+      "description": "思维模式，指导AI的思考方式",
+      "reference": "@project://.promptx/resource/role/desktop-pet-coding-standards/thought/coding-standards-thinking.thought.md",
+      "metadata": {
+        "createdAt": "2025-08-15T13:41:48.677Z",
+        "updatedAt": "2025-08-15T13:41:48.677Z",
+        "scannedAt": "2025-08-15T13:41:48.677Z",
+        "path": "role/desktop-pet-coding-standards/thought/coding-standards-thinking.thought.md"
+      }
+    },
+    {
+      "id": "electron-desktop-developer",
+      "source": "project",
+      "protocol": "role",
+      "name": "Electron Desktop Developer 角色",
+      "description": "专业角色，提供特定领域的专业能力",
+      "reference": "@project://.promptx/resource/role/electron-desktop-developer/electron-desktop-developer.role.md",
+      "metadata": {
+        "createdAt": "2025-08-15T13:41:48.677Z",
+        "updatedAt": "2025-08-15T13:41:48.677Z",
+        "scannedAt": "2025-08-15T13:41:48.677Z",
+        "path": "role/electron-desktop-developer/electron-desktop-developer.role.md"
+      }
+    },
+    {
+      "id": "electron-development-workflow",
+      "source": "project",
+      "protocol": "execution",
+      "name": "Electron Development Workflow 执行模式",
+      "description": "执行模式，定义具体的行为模式",
+      "reference": "@project://.promptx/resource/role/electron-desktop-developer/execution/electron-development-workflow.execution.md",
+      "metadata": {
+        "createdAt": "2025-08-15T13:41:48.678Z",
+        "updatedAt": "2025-08-15T13:41:48.678Z",
+        "scannedAt": "2025-08-15T13:41:48.678Z",
+        "path": "role/electron-desktop-developer/execution/electron-development-workflow.execution.md"
+      }
+    },
+    {
+      "id": "desktop-app-thinking",
+      "source": "project",
+      "protocol": "thought",
+      "name": "Desktop App Thinking 思维模式",
+      "description": "思维模式，指导AI的思考方式",
+      "reference": "@project://.promptx/resource/role/electron-desktop-developer/thought/desktop-app-thinking.thought.md",
+      "metadata": {
+        "createdAt": "2025-08-15T13:41:48.678Z",
+        "updatedAt": "2025-08-15T13:41:48.678Z",
+        "scannedAt": "2025-08-15T13:41:48.678Z",
+        "path": "role/electron-desktop-developer/thought/desktop-app-thinking.thought.md"
+      }
+    }
+  ],
   "stats": {
-    "totalResources": 0,
-    "byProtocol": {},
-    "bySource": {}
+    "totalResources": 6,
+    "byProtocol": {
+      "role": 2,
+      "execution": 2,
+      "thought": 2
+    },
+    "bySource": {
+      "project": 6
+    }
   }
 }

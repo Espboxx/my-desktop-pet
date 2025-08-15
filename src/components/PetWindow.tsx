@@ -22,6 +22,8 @@ import { useErrorHandler } from './ErrorBoundary'; // Import error handler
 import { PERFORMANCE_CONFIG, isPerformanceMonitoringEnabled, isHapticFeedbackEnabled } from '../config/performanceConfig'; // Import performance config
 import { autoRunDragTests } from '../utils/dragTestHelper'; // Import drag test helper
 import { useImagePreloader } from '../hooks/useImagePreloader'; // Import image preloader
+import '../utils/manualDragTest'; // Import manual drag test tool
+import '../utils/firstClickTestHelper'; // Import first click test tool
 import '../styles/PetWindow.css';
 import '../styles/InteractionEnhancements.css'; // 导入交互增强样式
 
@@ -126,6 +128,9 @@ const PetWindow: React.FC = () => {
   } = interactionHookResult;
   // State for pet dimensions
   const [petDimensions, setPetDimensions] = useState({ width: 80, height: 80 }); // Default size
+
+  // 首次交互保护状态 - 修复首次点击隐藏问题
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   // Effect to get pet dimensions after mount/update
   useEffect(() => {
@@ -265,6 +270,15 @@ useEffect(() => {
     }
   }, [smoothMovement.isMoving, isDragging, setPetPosition]); // 移除smoothMovement.position依赖
 
+  // 初始化鼠标穿透状态 - 修复首次点击隐藏问题
+  useEffect(() => {
+    if (isLoaded && window.desktopPet?.setMousePassthrough) {
+      // 确保初始状态为非穿透，允许用户交互
+      window.desktopPet.setMousePassthrough(false);
+      console.log('[PetWindow] 初始化鼠标穿透状态: false');
+    }
+  }, [isLoaded]);
+
   // 开发环境拖拽测试
   useEffect(() => {
     if (process.env.NODE_ENV === 'development' && isLoaded) {
@@ -395,6 +409,16 @@ useEffect(() => {
   // --- Enhanced Mouse Handlers (集成交互反馈，优化触觉反馈) ---
   const wrappedHandleMouseEnter = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     try {
+      // 首次交互保护 - 修复首次点击隐藏问题
+      if (!hasInteracted) {
+        setHasInteracted(true);
+        // 确保首次交互时鼠标穿透状态正确
+        if (window.desktopPet?.setMousePassthrough) {
+          window.desktopPet.setMousePassthrough(false);
+          console.log('[PetWindow] 首次交互，确保穿透状态: false');
+        }
+      }
+
       originalHandleMouseEnter(e);
       feedbackHandlers.onMouseEnter(e);
       // 更新isMouseOverPetRef
@@ -404,7 +428,7 @@ useEffect(() => {
     } catch (error) {
       captureError(error as Error);
     }
-  }, [originalHandleMouseEnter, feedbackHandlers, hapticFeedback, captureError]);
+  }, [originalHandleMouseEnter, feedbackHandlers, hapticFeedback, captureError, hasInteracted]);
 
   const wrappedHandleMouseLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     try {
@@ -420,6 +444,16 @@ useEffect(() => {
   // 增强的鼠标按下处理
   const enhancedHandleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     try {
+      // 首次交互保护 - 修复首次点击隐藏问题
+      if (!hasInteracted) {
+        setHasInteracted(true);
+        // 确保首次点击时鼠标穿透状态正确
+        if (window.desktopPet?.setMousePassthrough) {
+          window.desktopPet.setMousePassthrough(false);
+          console.log('[PetWindow] 首次点击，确保穿透状态: false');
+        }
+      }
+
       // 首先记录用户交互（这会自动激活触觉反馈）
       hapticFeedback.recordUserInteraction();
 
@@ -436,7 +470,7 @@ useEffect(() => {
     } catch (error) {
       captureError(error as Error);
     }
-  }, [handleMouseDown, feedbackHandlers, interactionState.interactionIntensity, hapticFeedback, captureError]);
+  }, [handleMouseDown, feedbackHandlers, interactionState.interactionIntensity, hapticFeedback, captureError, hasInteracted]);
 
   // 增强的鼠标移动处理 (结合拖拽和交互反馈)
   const enhancedHandleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {

@@ -74,6 +74,12 @@ async function createPetWindow() {
   petWindow.on("closed", () => {
     petWindow = null;
   });
+  petWindow.webContents.once("did-finish-load", () => {
+    if (petWindow) {
+      console.log("[main.ts] 页面加载完成，设置初始鼠标穿透状态: false");
+      petWindow.setIgnoreMouseEvents(false, { forward: true });
+    }
+  });
 }
 function createSettingsWindow() {
   if (settingsWindow) {
