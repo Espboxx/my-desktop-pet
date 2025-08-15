@@ -3,6 +3,7 @@ import { PetType } from '../types/petTypes';
 import { PET_TYPES } from '../constants/petConstants';
 import { useSharedPetStatus } from '../context/PetStatusContext'; // Import context hook
 import usePetAnimation from '../hooks/pet/usePetAnimation'; // Corrected import path
+import useSettings from '../hooks/settings/useSettings'; // Import settings hook
 import usePetInteraction from '../hooks/interaction'; // Corrected import path
 import useAutonomousMovement from '../hooks/pet/useAutonomousMovement'; // Corrected import path
 import useMouseChasing from '../hooks/interaction/useMouseChasing'; // 导入鼠标追逐钩子
@@ -59,6 +60,9 @@ const PetWindow: React.FC = () => {
     interact // Get the interact function from context
   } = useSharedPetStatus();
   const { showBubble } = useBubbleService(); // Get bubble service function
+
+  // 获取设置
+  const { settings } = useSettings();
 
   // 图像预加载 (性能优化)
   const imagePreloader = useImagePreloader(currentPetTypeId);
@@ -333,6 +337,7 @@ useEffect(() => {
     windowHeight: windowDimensions.height, // Pass window height
     petWidth: petDimensions.width,
     petHeight: petDimensions.height,
+    activityLevel: settings.activityLevel, // 传递活动级别设置
   });
 
   // 初始化鼠标追逐hook

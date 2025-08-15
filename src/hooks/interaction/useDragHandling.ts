@@ -44,6 +44,8 @@ export function useDragHandling({
   const initialPetPosRef = useRef<PetPosition | null>(null);
   const mouseDownButtonRef = useRef<number | null>(null); // Use Ref for button state
   const animationFrameRef = useRef<number | null>(null); // Ref for requestAnimationFrame
+  const lastUpdateTimeRef = useRef<number>(0); // 用于节流的时间戳
+  const pendingPositionRef = useRef<PetPosition | null>(null); // 待更新的位置
 
   const handleMouseDownForDrag = useCallback((e: React.MouseEvent) => {
     // Only handle left clicks for dragging
@@ -85,16 +87,25 @@ export function useDragHandling({
         }
       }
 
-      // If dragging, schedule a position update
+      // If dragging, schedule a position update with throttling
       if (isDraggingRef.current) {
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current);
+        const newX = initialPetPosRef.current!.x + dx;
+        const newY = initialPetPosRef.current!.y + dy;
+        pendingPositionRef.current = { x: newX, y: newY };
+
+        // 使用节流机制，限制更新频率到60fps
+        const now = performance.now();
+        if (now - lastUpdateTimeRef.current >= 16.67) { // ~60fps
+          if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
+          }
+          animationFrameRef.current = requestAnimationFrame(() => {
+            if (pendingPositionRef.current) {
+              setPetPositionExternally(pendingPositionRef.current);
+              lastUpdateTimeRef.current = performance.now();
+            }
+          });
         }
-        animationFrameRef.current = requestAnimationFrame(() => {
-          const newX = initialPetPosRef.current!.x + dx;
-          const newY = initialPetPosRef.current!.y + dy;
-          setPetPositionExternally({ x: newX, y: newY });
-        });
       }
     }
     // Prevent default browser drag behavior might be needed here or in the main handler

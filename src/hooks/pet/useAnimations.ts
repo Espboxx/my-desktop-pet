@@ -10,7 +10,8 @@ export function useAnimations(
   isLoaded: boolean,
   status: PetStatus,
   statusRef: React.MutableRefObject<PetStatus>,
-  lowStatusFlags: Record<'mood' | 'cleanliness' | 'hunger' | 'energy', boolean>
+  lowStatusFlags: Record<'mood' | 'cleanliness' | 'hunger' | 'energy', boolean>,
+  activityLevel: 'calm' | 'normal' | 'playful' = 'normal' // 新增：活动级别参数
 ) {
   // 眨眼动画状态
   const [isBlinking, setIsBlinking] = useState(false);
@@ -39,8 +40,14 @@ export function useAnimations(
         return;
       }
 
-      const minBlinkDelay = 2000; // 眨眼之间的最小延迟
-      const maxBlinkDelay = 10000; // 最大延迟
+      // 根据活动级别调整眨眼频率
+      const blinkDelays = {
+        calm: { min: 3000, max: 15000 },     // 安静模式：眨眼较少
+        normal: { min: 2000, max: 10000 },   // 正常模式：正常眨眼
+        playful: { min: 1500, max: 6000 }    // 活跃模式：眨眼较频繁
+      };
+
+      const { min: minBlinkDelay, max: maxBlinkDelay } = blinkDelays[activityLevel];
       const randomDelay = minBlinkDelay + Math.random() * (maxBlinkDelay - minBlinkDelay);
 
       blinkTimeoutRef.current = setTimeout(() => {
@@ -65,7 +72,7 @@ export function useAnimations(
     // 卸载时清理
     return clearBlinkTimeout;
 
-  }, [isLoaded, lowStatusFlags.energy, lowStatusFlags.mood, currentIdleAnimation, statusRef]); // 依赖项
+  }, [isLoaded, lowStatusFlags.energy, lowStatusFlags.mood, currentIdleAnimation, statusRef, activityLevel]); // 添加activityLevel依赖
 
   // --- 空闲动画逻辑 ---
   useEffect(() => {
@@ -83,17 +90,23 @@ export function useAnimations(
     const scheduleIdleAnimation = () => {
       clearIdleAnimationTimeouts(); // 清除先前的超时
 
-      // 根据心情/能量调整延迟
-      let minDelay = 8000; // 增加默认最小延迟
-      let maxDelay = 15000; // 增加默认最大延迟
+      // 根据活动级别和心情/能量调整延迟
+      const baseDelays = {
+        calm: { min: 15000, max: 30000 },     // 安静模式：动画很少
+        normal: { min: 8000, max: 15000 },    // 正常模式：适中频率
+        playful: { min: 4000, max: 10000 }    // 活跃模式：动画频繁
+      };
+
+      let { min: minDelay, max: maxDelay } = baseDelays[activityLevel];
       const currentStatus = statusRef.current;
 
+      // 根据心情/能量进一步微调（在活动级别基础上）
       if (currentStatus.mood > 80 && currentStatus.energy > 80) { // 非常开心和精力充沛
-        minDelay = 6000;
-        maxDelay = 12000;
+        minDelay *= 0.8; // 减少20%延迟
+        maxDelay *= 0.8;
       } else if (currentStatus.mood < 25 || currentStatus.energy < 25) { // 非常悲伤或疲倦
-        minDelay = 12000;
-        maxDelay = 20000;
+        minDelay *= 1.5; // 增加50%延迟
+        maxDelay *= 1.5;
       }
 
       const randomDelay = minDelay + Math.random() * (maxDelay - minDelay);
@@ -179,7 +192,7 @@ export function useAnimations(
     // 卸载或条件变化时清理
     return clearIdleAnimationTimeouts;
 
-  }, [isLoaded, status.energy, status.mood, lowStatusFlags.energy, lowStatusFlags.mood, isBlinking, status.unlockedIdleAnimations, statusRef]); // 添加依赖项
+  }, [isLoaded, status.energy, status.mood, lowStatusFlags.energy, lowStatusFlags.mood, isBlinking, status.unlockedIdleAnimations, statusRef, activityLevel]); // 添加activityLevel依赖
 
   return {
     isBlinking,

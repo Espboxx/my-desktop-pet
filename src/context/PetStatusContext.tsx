@@ -2,6 +2,7 @@ import React, { createContext, useContext, ReactNode } from 'react';
 import { PetStatus, IdleAnimation, InteractionType, ItemType } from '../types/petTypes'; // Remove PetPosition import from here, Add InteractionType, ItemType
 import { PetPosition } from '../hooks/interaction/types'; // Correctly import PetPosition
 import usePetStatus from '../hooks/core/usePetStatus'; // Corrected import path
+import useSettings from '../hooks/settings/useSettings'; // Import settings hook
 
 // Define the shape of the context data
 interface PetStatusContextType {
@@ -31,8 +32,11 @@ interface PetStatusProviderProps {
 }
 
 export const PetStatusProvider: React.FC<PetStatusProviderProps> = ({ children }) => {
-  // Use the hook inside the provider
-  const petStatusData = usePetStatus();
+  // Use settings hook to get activity level
+  const { settings } = useSettings();
+
+  // Use the hook inside the provider with activity level
+  const petStatusData = usePetStatus(settings.activityLevel);
 
   // The value provided by the context will be the object returned by the hook
   return (

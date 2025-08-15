@@ -21,7 +21,7 @@ import {
  * 宠物状态管理的主Hook
  * 整合了各个功能模块，提供统一的接口
  */
-export default function usePetStatus() {
+export default function usePetStatus(activityLevel: 'calm' | 'normal' | 'playful' = 'normal') {
   // 加载状态
   const {
     status,
@@ -89,7 +89,7 @@ export default function usePetStatus() {
   const { lowStatusFlags } = useStatusWarnings(status); // Removed showBubble argument
   
   // 动画管理
-  const { isBlinking, currentIdleAnimation } = useAnimations(isLoaded, status, statusRef, lowStatusFlags);
+  const { isBlinking, currentIdleAnimation } = useAnimations(isLoaded, status, statusRef, lowStatusFlags, activityLevel);
 
   // 返回统一的接口
   return {

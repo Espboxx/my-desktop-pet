@@ -12,12 +12,25 @@ interface UseAutonomousMovementProps {
   windowHeight: number; // Use window dimensions instead of screen
   petWidth: number; // Get pet dimensions to calculate boundaries
   petHeight: number;
+  activityLevel?: 'calm' | 'normal' | 'playful'; // 新增：活动级别设置
 }
 
-const MOVEMENT_INTERVAL = 15000; // Move every 15 seconds (adjust as needed)
+// 基础移动间隔配置（毫秒）
+const MOVEMENT_INTERVALS = {
+  calm: 45000,     // 45秒 - 安静模式，很少移动
+  normal: 25000,   // 25秒 - 正常模式，适中频率
+  playful: 12000   // 12秒 - 活跃模式，频繁移动
+};
+
 const MOVEMENT_DURATION = 1000; // Duration of the move animation (adjust as needed)
-const MAX_MOVE_DISTANCE = 150; // Max distance per move (adjust as needed)
-const MIN_MOVE_DISTANCE = 30; // Min distance per move
+
+// 移动距离配置
+const MOVE_DISTANCES = {
+  calm: { min: 20, max: 80 },      // 安静模式：短距离移动
+  normal: { min: 30, max: 150 },   // 正常模式：中等距离移动
+  playful: { min: 50, max: 200 }   // 活跃模式：长距离移动
+};
+
 const EDGE_PADDING = 20; // Padding from screen edges
 
 export default function useAutonomousMovement({
@@ -30,13 +43,15 @@ export default function useAutonomousMovement({
   windowHeight, // Use window dimensions
   petWidth,
   petHeight,
+  activityLevel = 'normal', // 默认为正常活动级别
 }: UseAutonomousMovementProps) {
   const movementTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isMovingRef = useRef(false);
 
   const calculateNewPosition = useCallback((): PetPosition => {
     const angle = Math.random() * 2 * Math.PI; // Random direction
-    const distance = Math.random() * (MAX_MOVE_DISTANCE - MIN_MOVE_DISTANCE) + MIN_MOVE_DISTANCE;
+    const { min, max } = MOVE_DISTANCES[activityLevel];
+    const distance = Math.random() * (max - min) + min;
 
     let newX = petPosition.x + Math.cos(angle) * distance;
     let newY = petPosition.y + Math.sin(angle) * distance;
@@ -58,7 +73,7 @@ export default function useAutonomousMovement({
 
 
     return { x: newX, y: newY };
-  }, [petPosition, windowWidth, windowHeight, petWidth, petHeight]); // Update dependencies
+  }, [petPosition, windowWidth, windowHeight, petWidth, petHeight, activityLevel]); // 添加activityLevel依赖
 
   const startMovement = useCallback(() => {
     if (isMovingRef.current || isDragging || showMenu) return; // Don't move if already moving or user interacting
@@ -108,6 +123,12 @@ export default function useAutonomousMovement({
     if (movementTimeoutRef.current) {
       clearTimeout(movementTimeoutRef.current);
     }
+
+    // 根据活动级别获取基础间隔时间
+    const baseInterval = MOVEMENT_INTERVALS[activityLevel];
+    // 添加随机性：±20%的变化
+    const randomizedInterval = baseInterval * (0.8 + Math.random() * 0.4);
+
     movementTimeoutRef.current = setTimeout(() => {
         // Check again before starting movement, in case interaction started during timeout
         if (!isDragging && !showMenu) {
@@ -116,8 +137,8 @@ export default function useAutonomousMovement({
             // If interaction is happening, reschedule after a shorter delay
             scheduleNextMovement();
         }
-    }, MOVEMENT_INTERVAL * (0.8 + Math.random() * 0.4)); // Add some randomness to interval
-  }, [startMovement, isDragging, showMenu]);
+    }, randomizedInterval);
+  }, [startMovement, isDragging, showMenu, activityLevel]); // 添加activityLevel依赖
 
   useEffect(() => {
     // Start the first movement cycle

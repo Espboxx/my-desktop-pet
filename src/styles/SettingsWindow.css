@@ -2,23 +2,39 @@
 .settings-window {
   width: 100%;
   height: 100%;
-  background-color: #fdfdff; /* Slightly lighter background */
+  background: linear-gradient(135deg, #fdfdff 0%, #f8fafc 100%); /* 现代渐变背景 */
   display: flex;
   overflow: hidden;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #444; /* Slightly softer text color */
-  border-radius: 8px; /* Add rounded corners to the window */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif; /* 更现代的字体栈 */
+  color: #334155; /* 更现代的文字颜色 */
+  border-radius: 16px; /* 更圆润的窗口边角 */
+  box-shadow:
+    0 25px 50px rgba(0, 0, 0, 0.15),
+    0 10px 20px rgba(0, 0, 0, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.05); /* 多层阴影增加深度 */
 }
 
 /* 侧边导航 */
 .settings-nav {
-  width: 180px; /* Slightly wider nav */
-  background-color: #f1f3f5; /* Lighter nav background */
-  border-right: 1px solid #dee2e6; /* Softer border */
-  padding: 20px 0; /* Increased padding */
+  width: 200px; /* 稍微增加宽度 */
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.9) 100%); /* 垂直渐变背景 */
+  border-right: 1px solid rgba(226, 232, 240, 0.6); /* 更透明的边框 */
+  padding: 24px 0; /* 增加内边距 */
   flex-shrink: 0;
-  transition: width 0.2s ease; /* Smooth transition if width changes later */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 更平滑的过渡 */
+  backdrop-filter: blur(8px); /* 毛玻璃效果 */
+  position: relative; /* 为伪元素做准备 */
+}
+
+/* 为导航栏添加微妙的内发光效果 */
+.settings-nav::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
 }
 
 .settings-nav ul {
@@ -28,27 +44,35 @@
 }
 
 .settings-nav li {
-  padding: 14px 25px; /* Increased padding */
+  padding: 16px 28px; /* 增加内边距 */
   font-size: 14px;
+  font-weight: 500; /* 稍微加粗 */
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 12px; /* Increased gap */
-  color: #495057;
-  border-left: 4px solid transparent; /* Slightly thicker border */
-  transition: background-color 0.2s ease, color 0.2s ease, border-left-color 0.2s ease; /* Add transitions */
+  gap: 14px; /* 增加间隙 */
+  color: #64748b; /* 更现代的颜色 */
+  border-left: 4px solid transparent; /* 左边框指示器 */
+  border-radius: 0 12px 12px 0; /* 右侧圆角 */
+  margin: 2px 8px 2px 0; /* 添加边距 */
+  position: relative; /* 为伪元素做准备 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 更平滑的过渡 */
 }
 
 .settings-nav li:hover {
-  background-color: #e9ecef; /* Slightly darker hover */
-  color: #212529;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(37, 99, 235, 0.04)); /* 蓝色渐变悬停 */
+  color: #1e40af; /* 蓝色文字 */
+  transform: translateX(4px); /* 轻微右移效果 */
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1); /* 蓝色阴影 */
 }
 
 .settings-nav li.active {
-  background-color: #ffffff; /* Keep white background for active */
-  font-weight: 600; /* Slightly bolder */
-  color: #0d6efd; /* Bootstrap primary blue */
-  border-left-color: #0d6efd;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.08)); /* 更强的蓝色渐变 */
+  font-weight: 600; /* 加粗 */
+  color: #1d4ed8; /* 深蓝色文字 */
+  border-left-color: #3b82f6; /* 蓝色左边框 */
+  transform: translateX(6px); /* 更明显的右移 */
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); /* 更强的阴影 */
 }
 
 /* Styles for react-icons */
@@ -75,36 +99,59 @@
 
 /* 设置页眉 */
 .settings-header {
-  background-color: #f8f9fa; /* Lighter header background */
-  padding: 12px 25px; /* Adjusted padding */
-  font-weight: 600; /* Adjusted font weight */
-  font-size: 16px; /* Slightly larger title */
-  border-bottom: 1px solid #dee2e6; /* Softer border */
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.9), rgba(241, 245, 249, 0.8)); /* 渐变背景 */
+  padding: 16px 32px; /* 增加内边距 */
+  font-weight: 600; /* 保持字体粗细 */
+  font-size: 18px; /* 稍微增大标题 */
+  color: #1e293b; /* 更深的标题颜色 */
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6); /* 更透明的边框 */
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
+  backdrop-filter: blur(8px); /* 毛玻璃效果 */
+  position: relative; /* 为伪元素做准备 */
+}
+
+/* 为页眉添加微妙的底部发光 */
+.settings-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
 }
 
 .settings-header .close-btn {
-  background: transparent;
-  border: none;
-  font-size: 18px; /* Adjusted icon size */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(248, 250, 252, 0.05)); /* 微妙渐变背景 */
+  border: 1px solid rgba(226, 232, 240, 0.3); /* 细腻边框 */
+  font-size: 16px; /* 调整图标大小 */
   cursor: pointer;
-  color: #6c757d; /* Softer initial color */
-  padding: 5px; /* Add padding for easier clicking */
-  border-radius: 50%; /* Make it round */
-  width: 30px; /* Ensure button size */
-  height: 30px;
+  color: #64748b; /* 现代化颜色 */
+  padding: 8px; /* 增加内边距 */
+  border-radius: 12px; /* 更圆润的按钮 */
+  width: 36px; /* 稍微增大按钮 */
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 更平滑的过渡 */
+  position: relative; /* 为伪元素做准备 */
+  overflow: hidden; /* 隐藏溢出效果 */
 }
 
 .settings-header .close-btn:hover {
-  background-color: #e9ecef; /* Add hover background */
-  color: #212529; /* Darker hover color */
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05)); /* 红色渐变悬停 */
+  border-color: rgba(239, 68, 68, 0.3); /* 红色边框 */
+  color: #dc2626; /* 红色文字 */
+  transform: scale(1.05); /* 轻微放大效果 */
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15); /* 红色阴影 */
+}
+
+.settings-header .close-btn:active {
+  transform: scale(0.95); /* 按下时缩小 */
 }
 
 /* 设置内容区域 */

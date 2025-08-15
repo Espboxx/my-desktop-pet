@@ -386,23 +386,27 @@
 .pet-menu {
   position: fixed; /* 使用 fixed 定位，相对于屏幕定位 */
   /* 位置现在通过内联样式在 PetContextMenu.tsx 中设置 */
-  background-color: #ffffff; /* White background */
-  border: 2px solid #e2e8f0; /* Lighter border */
-  border-radius: 10px; /* Softer radius */
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); /* 增强阴影效果，使菜单更突出 */
-  padding: 8px; /* Keep padding */
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9)); /* 现代渐变背景 */
+  border: 1px solid rgba(226, 232, 240, 0.6); /* 更细腻的边框 */
+  border-radius: 16px; /* 更圆润的边角 */
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.15),
+    0 8px 16px rgba(0, 0, 0, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8); /* 多层阴影和内发光 */
+  padding: 12px; /* 增加内边距 */
   display: flex; /* Use flexbox for menu items */
   flex-direction: column; /* Stack items vertically */
   width: fit-content; /* Make menu width fit content */
-  gap: 6px; /* Keep gap */
-  min-width: 120px; /* Set a min-width to prevent empty menu */
-  max-width: 200px; /* 设置最大宽度，防止菜单过宽 */
+  gap: 4px; /* 减少间隙，让布局更紧凑 */
+  min-width: 140px; /* 稍微增加最小宽度 */
+  max-width: 220px; /* 增加最大宽度 */
   z-index: 9999; /* 更高的 z-index 确保菜单在最上层 */
-  animation: fadeIn 0.15s ease-out; /* Add a subtle fade-in */
+  animation: menuSlideIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 更流畅的进入动画 */
   pointer-events: all; /* Ensure menu itself is interactive */
-  backdrop-filter: blur(8px); /* 添加毛玻璃效果 */
-  -webkit-backdrop-filter: blur(8px); /* Safari 兼容性 */
-  /* -webkit-app-region: no-drag; */ /* 移除 */
+  backdrop-filter: blur(12px) saturate(1.2); /* 增强毛玻璃效果 */
+  -webkit-backdrop-filter: blur(12px) saturate(1.2); /* Safari 兼容性 */
+  transform-origin: top left; /* 设置变换原点 */
 }
 
 /* Remove ul styling as we are styling buttons directly */
@@ -410,28 +414,40 @@
 
 /* Style menu buttons directly */
 .pet-menu button {
-  background-color: transparent; /* Make button background transparent */
-  border: none; /* Remove button border */
-  border-radius: 6px; /* Slightly larger radius for buttons */
-  padding: 6px 10px; /* Adjusted padding */
-  font-size: 14px; /* Slightly larger font */
-  color: #334155; /* Darker text color (Tailwind slate-700) */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(248, 250, 252, 0.05)); /* 微妙的渐变背景 */
+  border: 1px solid rgba(226, 232, 240, 0.3); /* 细腻的边框 */
+  border-radius: 10px; /* 更圆润的按钮 */
+  padding: 10px 14px; /* 增加内边距 */
+  font-size: 14px; /* 保持字体大小 */
+  font-weight: 500; /* 稍微加粗 */
+  color: #475569; /* 现代化的文字颜色 */
   cursor: pointer;
   text-align: center; /* Center button text */
   box-sizing: border-box;
-  transition: background-color 0.2s ease, color 0.2s ease; /* Added color transition */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 更平滑的过渡 */
   white-space: nowrap;
+  position: relative; /* 为伪元素做准备 */
+  overflow: hidden; /* 隐藏溢出的效果 */
 }
 
 .pet-menu button:hover {
-  background-color: #e2e8f0; /* Light gray background on hover (Tailwind slate-200) */
-  color: #1e293b; /* Darker text on hover (Tailwind slate-800) */
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05)); /* 蓝色渐变悬停 */
+  border-color: rgba(59, 130, 246, 0.3); /* 蓝色边框 */
+  color: #1e40af; /* 蓝色文字 */
+  transform: translateY(-1px); /* 轻微上浮效果 */
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15); /* 蓝色阴影 */
+}
+
+.pet-menu button:active {
+  transform: translateY(0); /* 按下时恢复位置 */
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2); /* 减少阴影 */
 }
 
 .pet-menu hr {
   border: none;
-  border-top: 1px solid #f1f5f9; /* Lighter separator (Tailwind slate-100) */
-  margin: 6px 0; /* Adjusted margin for separators */
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(226, 232, 240, 0.6), transparent); /* 渐变分隔线 */
+  margin: 8px 0; /* 增加边距 */
 }
 
 /* Remove icon placeholder styles */
@@ -469,6 +485,25 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+/* 新增：菜单滑入动画 */
+@keyframes menuSlideIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(-8px);
+    filter: blur(4px);
+  }
+  60% {
+    opacity: 0.8;
+    transform: scale(1.02) translateY(-2px);
+    filter: blur(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
   }
 }
 
@@ -640,21 +675,42 @@
 
 /* 被提起动画 */
 @keyframes picked-up {
-  0% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-8px) scale(1.05); } /* 向上跳跃并稍微放大 */
-  100% { transform: translateY(-5px) scale(1.03); } /* 停留在稍微抬起的状态 */
+  0% {
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  }
+  50% {
+    transform: translateY(-8px) scale(1.05);
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
+  }
+  100% {
+    transform: translateY(-5px) scale(1.03);
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+  }
 }
 
 .pet.picked-up {
   /* 应用动画，并保持最后一帧状态 */
   animation: picked-up 0.3s ease-out forwards;
+  opacity: 0.85; /* 拖拽时半透明效果 */
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3)); /* 增强阴影 */
+  z-index: 1000; /* 确保在最上层 */
 }
 
 /* 拖拽中晃动动画 */
 @keyframes dragging-shake {
-  0%, 100% { transform: translateY(-5px) rotate(0deg) scale(1.03); } /* 保持抬起和放大状态 */
-  25% { transform: translateY(-5px) rotate(-2deg) scale(1.03); }
-  75% { transform: translateY(-5px) rotate(2deg) scale(1.03); }
+  0%, 100% {
+    transform: translateY(-5px) rotate(0deg) scale(1.03);
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+  }
+  25% {
+    transform: translateY(-5px) rotate(-2deg) scale(1.03);
+    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.35));
+  }
+  75% {
+    transform: translateY(-5px) rotate(2deg) scale(1.03);
+    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.35));
+  }
 }
 
 /* 这个类会被 PetWindow.tsx 动态添加/移除 */
@@ -664,6 +720,9 @@
   /* 如果 picked-up/landed 使用了 forwards，这个动画可能需要更复杂的处理 */
   /* 暂时这样，如果效果不理想再调整 */
   animation: dragging-shake 0.4s ease-in-out infinite alternate;
+  opacity: 0.8; /* 拖拽中更透明 */
+  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.4)); /* 更强的阴影 */
+  cursor: grabbing; /* 拖拽光标 */
 }
 
 /* --- Simplified Status Bar Styles --- */
@@ -704,15 +763,31 @@ font-size: 12px; /* Slightly larger font for visibility */
 
 /* 落地动画 */
 @keyframes landed {
-  0% { transform: translateY(-5px) scale(1.03); } /* 从抬起状态开始 */
-  30% { transform: translateY(3px) scale(0.95); } /* 向下压缩 */
-  60% { transform: translateY(-2px) scale(1.02); } /* 轻微反弹 */
-  100% { transform: translateY(0) scale(1); } /* 恢复原状 */
+  0% {
+    transform: translateY(-5px) scale(1.03);
+    opacity: 0.85;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+  }
+  30% {
+    transform: translateY(3px) scale(0.95);
+    opacity: 0.9;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+  }
+  60% {
+    transform: translateY(-2px) scale(1.02);
+    opacity: 0.95;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2));
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+  }
 }
 
 .pet.landed {
   /* 应用落地动画 */
-  animation: landed 0.4s ease-out;
+  animation: landed 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 更弹性的缓动 */
 }
 
 /* 新增：待机 - 伸懒腰动画 */
