@@ -1,8 +1,206 @@
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 import { app, ipcMain, globalShortcut, screen, BrowserWindow, Tray, Menu, dialog } from "electron";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import fs, { promises } from "node:fs";
 import * as stream from "stream";
+const DEFAULT_CONFIG = {
+  duration: 300,
+  steps: 20,
+  easing: "easeInOut",
+  enabled: true
+};
+const easingFunctions = {
+  linear: (t) => t,
+  easeInOut: (t) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
+  easeIn: (t) => t * t,
+  easeOut: (t) => t * (2 - t)
+};
+class WindowEffectsManager {
+  constructor(config = {}) {
+    __publicField(this, "config");
+    __publicField(this, "windowStates", /* @__PURE__ */ new Map());
+    this.config = { ...DEFAULT_CONFIG, ...config };
+  }
+  /**
+   * 更新配置
+   */
+  updateConfig(newConfig) {
+    this.config = { ...this.config, ...newConfig };
+    console.log("[WindowEffects] 配置已更新:", this.config);
+  }
+  /**
+   * 获取当前配置
+   */
+  getConfig() {
+    return { ...this.config };
+  }
+  /**
+   * 获取窗口状态
+   */
+  getWindowState(windowId) {
+    if (!this.windowStates.has(windowId)) {
+      this.windowStates.set(windowId, {
+        isAnimating: false,
+        currentZIndex: 0,
+        targetZIndex: 0,
+        animationId: null
+      });
+    }
+    return this.windowStates.get(windowId);
+  }
+  /**
+   * 实现丝滑置顶效果
+   */
+  async smoothBringToTop(window) {
+    if (!window || window.isDestroyed()) {
+      console.warn("[WindowEffects] 窗口无效或已销毁");
+      return false;
+    }
+    const windowId = window.id;
+    const state = this.getWindowState(windowId);
+    if (state.isAnimating && state.animationId) {
+      clearTimeout(state.animationId);
+      state.isAnimating = false;
+    }
+    if (!this.config.enabled) {
+      return this.directBringToTop(window);
+    }
+    try {
+      console.log("[WindowEffects] 开始丝滑置顶动画");
+      state.isAnimating = true;
+      await this.performSmoothAnimation(window, state);
+      console.log("[WindowEffects] 丝滑置顶动画完成");
+      return true;
+    } catch (error) {
+      console.error("[WindowEffects] 丝滑置顶失败:", error);
+      return this.directBringToTop(window);
+    } finally {
+      state.isAnimating = false;
+    }
+  }
+  /**
+   * 执行平滑动画
+   */
+  async performSmoothAnimation(window, state) {
+    return new Promise((resolve, reject) => {
+      const { duration, steps, easing } = this.config;
+      const stepDuration = duration / steps;
+      let currentStep = 0;
+      const easingFunc = easingFunctions[easing];
+      if (!window.isVisible()) {
+        window.show();
+      }
+      const animateStep = () => {
+        try {
+          if (currentStep >= steps) {
+            window.setAlwaysOnTop(true, "screen-saver");
+            window.focus();
+            window.setAlwaysOnTop(true, "floating");
+            resolve();
+            return;
+          }
+          const progress = currentStep / steps;
+          const easedProgress = easingFunc(progress);
+          this.applyAnimationStep(window, easedProgress);
+          currentStep++;
+          state.animationId = setTimeout(animateStep, stepDuration);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      animateStep();
+    });
+  }
+  /**
+   * 应用动画步骤
+   */
+  applyAnimationStep(window, progress) {
+    try {
+      if (progress < 0.3) {
+        window.show();
+        window.moveTop();
+      } else if (progress < 0.6) {
+        window.focus();
+        window.setAlwaysOnTop(false);
+      } else if (progress < 0.9) {
+        window.setAlwaysOnTop(true, "normal");
+      } else {
+        window.setAlwaysOnTop(true, "screen-saver");
+        window.focus();
+      }
+      const opacity = 0.95 + progress * 0.05;
+      window.setOpacity(Math.min(1, opacity));
+    } catch (error) {
+      console.warn("[WindowEffects] 动画步骤执行警告:", error);
+    }
+  }
+  /**
+   * 直接置顶（降级方案）
+   */
+  directBringToTop(window) {
+    try {
+      console.log("[WindowEffects] 执行直接置顶");
+      if (!window.isVisible()) {
+        window.show();
+      }
+      window.focus();
+      window.setAlwaysOnTop(true, "screen-saver");
+      window.moveTop();
+      return true;
+    } catch (error) {
+      console.error("[WindowEffects] 直接置顶失败:", error);
+      return false;
+    }
+  }
+  /**
+   * 取消置顶
+   */
+  cancelTopMost(window) {
+    try {
+      if (!window || window.isDestroyed()) {
+        return false;
+      }
+      const windowId = window.id;
+      const state = this.getWindowState(windowId);
+      if (state.isAnimating && state.animationId) {
+        clearTimeout(state.animationId);
+        state.isAnimating = false;
+      }
+      window.setAlwaysOnTop(false);
+      console.log("[WindowEffects] 已取消置顶");
+      return true;
+    } catch (error) {
+      console.error("[WindowEffects] 取消置顶失败:", error);
+      return false;
+    }
+  }
+  /**
+   * 检查窗口是否正在动画中
+   */
+  isAnimating(window) {
+    if (!window || window.isDestroyed()) {
+      return false;
+    }
+    const state = this.getWindowState(window.id);
+    return state.isAnimating;
+  }
+  /**
+   * 清理资源
+   */
+  cleanup() {
+    for (const [windowId, state] of this.windowStates) {
+      if (state.animationId) {
+        clearTimeout(state.animationId);
+      }
+    }
+    this.windowStates.clear();
+    console.log("[WindowEffects] 资源已清理");
+  }
+}
+const windowEffectsManager = new WindowEffectsManager();
 if (process.stdout instanceof stream.Writable) {
   process.stdout.setDefaultEncoding("utf-8");
 }
@@ -325,6 +523,66 @@ ipcMain.on("exit-app", () => {
   quitting = true;
   app.quit();
 });
+ipcMain.handle("smooth-bring-to-top", async () => {
+  if (!petWindow) {
+    console.warn("[main.ts] 宠物窗口不存在，无法执行置顶");
+    return { success: false, error: "窗口不存在" };
+  }
+  try {
+    const success = await windowEffectsManager.smoothBringToTop(petWindow);
+    console.log(`[main.ts] 丝滑置顶${success ? "成功" : "失败"}`);
+    return { success, error: success ? null : "置顶失败" };
+  } catch (error) {
+    console.error("[main.ts] 丝滑置顶异常:", error);
+    return { success: false, error: error.message };
+  }
+});
+ipcMain.handle("cancel-top-most", () => {
+  if (!petWindow) {
+    console.warn("[main.ts] 宠物窗口不存在，无法取消置顶");
+    return { success: false, error: "窗口不存在" };
+  }
+  try {
+    const success = windowEffectsManager.cancelTopMost(petWindow);
+    console.log(`[main.ts] 取消置顶${success ? "成功" : "失败"}`);
+    return { success, error: success ? null : "取消置顶失败" };
+  } catch (error) {
+    console.error("[main.ts] 取消置顶异常:", error);
+    return { success: false, error: error.message };
+  }
+});
+ipcMain.handle("get-window-effects-config", () => {
+  try {
+    const config = windowEffectsManager.getConfig();
+    return { success: true, config, error: null };
+  } catch (error) {
+    console.error("[main.ts] 获取窗口特效配置异常:", error);
+    return { success: false, config: null, error: error.message };
+  }
+});
+ipcMain.handle("update-window-effects-config", (_, newConfig) => {
+  try {
+    windowEffectsManager.updateConfig(newConfig);
+    const config = windowEffectsManager.getConfig();
+    console.log("[main.ts] 窗口特效配置已更新:", config);
+    return { success: true, config, error: null };
+  } catch (error) {
+    console.error("[main.ts] 更新窗口特效配置异常:", error);
+    return { success: false, config: null, error: error.message };
+  }
+});
+ipcMain.handle("is-window-animating", () => {
+  if (!petWindow) {
+    return { success: false, isAnimating: false, error: "窗口不存在" };
+  }
+  try {
+    const isAnimating = windowEffectsManager.isAnimating(petWindow);
+    return { success: true, isAnimating, error: null };
+  } catch (error) {
+    console.error("[main.ts] 检查窗口动画状态异常:", error);
+    return { success: false, isAnimating: false, error: error.message };
+  }
+});
 ipcMain.on("show-status-details", () => {
   console.log("显示宠物状态详情");
 });
@@ -370,6 +628,8 @@ app.whenReady().then(async () => {
   });
 });
 app.on("will-quit", async () => {
+  windowEffectsManager.cleanup();
+  console.log("[main.ts] 窗口特效管理器资源已清理");
   globalShortcut.unregisterAll();
 });
 export {

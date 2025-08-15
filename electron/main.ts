@@ -6,6 +6,7 @@ import fs from 'node:fs'
 import { promises as fsPromises } from 'node:fs'
 import * as stream from 'stream';
 import type { SavedPetData } from '../src/types/petTypes'; // Import the type
+import { windowEffectsManager, type SmoothTopMostConfig } from './windowEffects'; // Import window effects
 
 // 设置标准输出和标准错误的编码为 UTF-8
 if (process.stdout instanceof stream.Writable) {
@@ -458,6 +459,75 @@ ipcMain.on('exit-app', () => {
   app.quit();
 });
 
+// 丝滑置顶效果相关IPC处理器
+ipcMain.handle('smooth-bring-to-top', async () => {
+  if (!petWindow) {
+    console.warn('[main.ts] 宠物窗口不存在，无法执行置顶');
+    return { success: false, error: '窗口不存在' };
+  }
+
+  try {
+    const success = await windowEffectsManager.smoothBringToTop(petWindow);
+    console.log(`[main.ts] 丝滑置顶${success ? '成功' : '失败'}`);
+    return { success, error: success ? null : '置顶失败' };
+  } catch (error) {
+    console.error('[main.ts] 丝滑置顶异常:', error);
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('cancel-top-most', () => {
+  if (!petWindow) {
+    console.warn('[main.ts] 宠物窗口不存在，无法取消置顶');
+    return { success: false, error: '窗口不存在' };
+  }
+
+  try {
+    const success = windowEffectsManager.cancelTopMost(petWindow);
+    console.log(`[main.ts] 取消置顶${success ? '成功' : '失败'}`);
+    return { success, error: success ? null : '取消置顶失败' };
+  } catch (error) {
+    console.error('[main.ts] 取消置顶异常:', error);
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('get-window-effects-config', () => {
+  try {
+    const config = windowEffectsManager.getConfig();
+    return { success: true, config, error: null };
+  } catch (error) {
+    console.error('[main.ts] 获取窗口特效配置异常:', error);
+    return { success: false, config: null, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('update-window-effects-config', (_, newConfig: Partial<SmoothTopMostConfig>) => {
+  try {
+    windowEffectsManager.updateConfig(newConfig);
+    const config = windowEffectsManager.getConfig();
+    console.log('[main.ts] 窗口特效配置已更新:', config);
+    return { success: true, config, error: null };
+  } catch (error) {
+    console.error('[main.ts] 更新窗口特效配置异常:', error);
+    return { success: false, config: null, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('is-window-animating', () => {
+  if (!petWindow) {
+    return { success: false, isAnimating: false, error: '窗口不存在' };
+  }
+
+  try {
+    const isAnimating = windowEffectsManager.isAnimating(petWindow);
+    return { success: true, isAnimating, error: null };
+  } catch (error) {
+    console.error('[main.ts] 检查窗口动画状态异常:', error);
+    return { success: false, isAnimating: false, error: (error as Error).message };
+  }
+});
+
 // 新增：显示状态详情
 ipcMain.on('show-status-details', () => {
   console.log('显示宠物状态详情');
@@ -540,6 +610,10 @@ app.on('will-quit', async () => { // Make async
   // if (petWindow) {
   //   ...
   // }
+
+  // 清理窗口特效管理器资源
+  windowEffectsManager.cleanup();
+  console.log('[main.ts] 窗口特效管理器资源已清理');
 
   // Unregister all shortcuts.
   globalShortcut.unregisterAll()

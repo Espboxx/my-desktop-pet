@@ -74,6 +74,22 @@ electron.contextBridge.exposeInMainWorld("desktopPet", {
   },
   takePetPhoto: () => {
     electron.ipcRenderer.send("take-pet-photo");
+  },
+  // 丝滑置顶效果相关API
+  smoothBringToTop: () => {
+    return electron.ipcRenderer.invoke("smooth-bring-to-top");
+  },
+  cancelTopMost: () => {
+    return electron.ipcRenderer.invoke("cancel-top-most");
+  },
+  getWindowEffectsConfig: () => {
+    return electron.ipcRenderer.invoke("get-window-effects-config");
+  },
+  updateWindowEffectsConfig: (config) => {
+    return electron.ipcRenderer.invoke("update-window-effects-config", config);
+  },
+  isWindowAnimating: () => {
+    return electron.ipcRenderer.invoke("is-window-animating");
   }
 });
 electron.contextBridge.exposeInMainWorld("windowInfo", {

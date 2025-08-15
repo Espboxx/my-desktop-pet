@@ -83,6 +83,23 @@ contextBridge.exposeInMainWorld('desktopPet', {
   takePetPhoto: () => {
     ipcRenderer.send('take-pet-photo');
   },
+
+  // 丝滑置顶效果相关API
+  smoothBringToTop: (): Promise<{success: boolean, error: string | null}> => {
+    return ipcRenderer.invoke('smooth-bring-to-top');
+  },
+  cancelTopMost: (): Promise<{success: boolean, error: string | null}> => {
+    return ipcRenderer.invoke('cancel-top-most');
+  },
+  getWindowEffectsConfig: (): Promise<{success: boolean, config: any | null, error: string | null}> => {
+    return ipcRenderer.invoke('get-window-effects-config');
+  },
+  updateWindowEffectsConfig: (config: any): Promise<{success: boolean, config: any | null, error: string | null}> => {
+    return ipcRenderer.invoke('update-window-effects-config', config);
+  },
+  isWindowAnimating: (): Promise<{success: boolean, isAnimating: boolean, error: string | null}> => {
+    return ipcRenderer.invoke('is-window-animating');
+  },
 })
 
 // 提供窗口信息

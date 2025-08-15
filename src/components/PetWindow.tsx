@@ -19,11 +19,13 @@ import HapticFeedbackTest from './HapticFeedbackTest'; // Import the test compon
 import { useBubbleService } from '../services/bubble/BubbleContext'; // Corrected import path for bubble service hook
 import { usePerformanceMonitor } from '../hooks/core/usePerformanceMonitor'; // Import performance monitor
 import { useErrorHandler } from './ErrorBoundary'; // Import error handler
+import { useWindowEffects } from '../hooks/core/useWindowEffects'; // Import window effects hook
 import { PERFORMANCE_CONFIG, isPerformanceMonitoringEnabled, isHapticFeedbackEnabled } from '../config/performanceConfig'; // Import performance config
 import { autoRunDragTests } from '../utils/dragTestHelper'; // Import drag test helper
 import { useImagePreloader } from '../hooks/useImagePreloader'; // Import image preloader
 import '../utils/manualDragTest'; // Import manual drag test tool
 import '../utils/firstClickTestHelper'; // Import first click test tool
+import '../utils/windowEffectsTestHelper'; // Import window effects test tool
 import '../styles/PetWindow.css';
 import '../styles/InteractionEnhancements.css'; // 导入交互增强样式
 
@@ -66,6 +68,9 @@ const PetWindow: React.FC = () => {
     enabled: isHapticFeedbackEnabled(),
     cooldownMs: PERFORMANCE_CONFIG.INTERACTION.HAPTIC_COOLDOWN
   });
+
+  // 窗口特效管理
+  const windowEffects = useWindowEffects();
 
   // 交互反馈 (直接使用配置，避免useMemo问题)
   const interactionFeedbackResult = useInteractionFeedback({
@@ -460,6 +465,14 @@ useEffect(() => {
       // 执行原有的处理逻辑
       handleMouseDown(e);
       feedbackHandlers.onMouseDown(e);
+
+      // 触发丝滑置顶效果（仅在左键点击时）
+      if (e.button === 0 && windowEffects.config?.enabled) {
+        console.log('[PetWindow] 触发丝滑置顶效果');
+        windowEffects.smoothBringToTop().catch(error => {
+          console.warn('[PetWindow] 丝滑置顶失败:', error);
+        });
+      }
 
       // 提供触觉反馈（现在应该可以正常工作）
       if (interactionState.interactionIntensity > 0.5) {

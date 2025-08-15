@@ -4,8 +4,8 @@
   "metadata": {
     "version": "2.0.0",
     "description": "project 级资源注册表",
-    "createdAt": "2025-08-15T13:41:48.675Z",
-    "updatedAt": "2025-08-15T13:41:48.678Z",
+    "createdAt": "2025-08-15T14:13:22.688Z",
+    "updatedAt": "2025-08-15T14:13:22.693Z",
     "resourceCount": 6
   },
   "resources": [
@@ -17,9 +17,9 @@
       "description": "专业角色，提供特定领域的专业能力",
       "reference": "@project://.promptx/resource/role/desktop-pet-coding-standards/desktop-pet-coding-standards.role.md",
       "metadata": {
-        "createdAt": "2025-08-15T13:41:48.676Z",
-        "updatedAt": "2025-08-15T13:41:48.676Z",
-        "scannedAt": "2025-08-15T13:41:48.676Z",
+        "createdAt": "2025-08-15T14:13:22.690Z",
+        "updatedAt": "2025-08-15T14:13:22.690Z",
+        "scannedAt": "2025-08-15T14:13:22.690Z",
         "path": "role/desktop-pet-coding-standards/desktop-pet-coding-standards.role.md"
       }
     },
@@ -31,9 +31,9 @@
       "description": "执行模式，定义具体的行为模式",
       "reference": "@project://.promptx/resource/role/desktop-pet-coding-standards/execution/coding-standards-workflow.execution.md",
       "metadata": {
-        "createdAt": "2025-08-15T13:41:48.676Z",
-        "updatedAt": "2025-08-15T13:41:48.676Z",
-        "scannedAt": "2025-08-15T13:41:48.676Z",
+        "createdAt": "2025-08-15T14:13:22.690Z",
+        "updatedAt": "2025-08-15T14:13:22.690Z",
+        "scannedAt": "2025-08-15T14:13:22.690Z",
         "path": "role/desktop-pet-coding-standards/execution/coding-standards-workflow.execution.md"
       }
     },
@@ -45,9 +45,9 @@
       "description": "思维模式，指导AI的思考方式",
       "reference": "@project://.promptx/resource/role/desktop-pet-coding-standards/thought/coding-standards-thinking.thought.md",
       "metadata": {
-        "createdAt": "2025-08-15T13:41:48.677Z",
-        "updatedAt": "2025-08-15T13:41:48.677Z",
-        "scannedAt": "2025-08-15T13:41:48.677Z",
+        "createdAt": "2025-08-15T14:13:22.691Z",
+        "updatedAt": "2025-08-15T14:13:22.691Z",
+        "scannedAt": "2025-08-15T14:13:22.691Z",
         "path": "role/desktop-pet-coding-standards/thought/coding-standards-thinking.thought.md"
       }
     },
@@ -59,9 +59,9 @@
       "description": "专业角色，提供特定领域的专业能力",
       "reference": "@project://.promptx/resource/role/electron-desktop-developer/electron-desktop-developer.role.md",
       "metadata": {
-        "createdAt": "2025-08-15T13:41:48.677Z",
-        "updatedAt": "2025-08-15T13:41:48.677Z",
-        "scannedAt": "2025-08-15T13:41:48.677Z",
+        "createdAt": "2025-08-15T14:13:22.692Z",
+        "updatedAt": "2025-08-15T14:13:22.692Z",
+        "scannedAt": "2025-08-15T14:13:22.692Z",
         "path": "role/electron-desktop-developer/electron-desktop-developer.role.md"
       }
     },
@@ -73,9 +73,9 @@
       "description": "执行模式，定义具体的行为模式",
       "reference": "@project://.promptx/resource/role/electron-desktop-developer/execution/electron-development-workflow.execution.md",
       "metadata": {
-        "createdAt": "2025-08-15T13:41:48.678Z",
-        "updatedAt": "2025-08-15T13:41:48.678Z",
-        "scannedAt": "2025-08-15T13:41:48.678Z",
+        "createdAt": "2025-08-15T14:13:22.692Z",
+        "updatedAt": "2025-08-15T14:13:22.692Z",
+        "scannedAt": "2025-08-15T14:13:22.692Z",
         "path": "role/electron-desktop-developer/execution/electron-development-workflow.execution.md"
       }
     },
@@ -87,9 +87,9 @@
       "description": "思维模式，指导AI的思考方式",
       "reference": "@project://.promptx/resource/role/electron-desktop-developer/thought/desktop-app-thinking.thought.md",
       "metadata": {
-        "createdAt": "2025-08-15T13:41:48.678Z",
-        "updatedAt": "2025-08-15T13:41:48.678Z",
-        "scannedAt": "2025-08-15T13:41:48.678Z",
+        "createdAt": "2025-08-15T14:13:22.693Z",
+        "updatedAt": "2025-08-15T14:13:22.693Z",
+        "scannedAt": "2025-08-15T14:13:22.693Z",
         "path": "role/electron-desktop-developer/thought/desktop-app-thinking.thought.md"
       }
     }
