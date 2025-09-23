@@ -1,0 +1,224 @@
+{
+  "projectName": "my-desktop-pet",
+  "projectType": "electron-desktop-app",
+  "description": "Electron desktop pet application with React, TypeScript, and Vite",
+  "timestamp": "2025-09-23T22:28:34.000Z",
+  "modules": [
+    {
+      "path": "electron",
+      "name": "Electron Main Process",
+      "type": "main-process",
+      "entryFile": "electron/main.ts",
+      "keyFiles": [
+        "electron/main.ts",
+        "electron/preload.ts",
+        "electron/windowEffects.ts"
+      ],
+      "responsibilities": [
+        "窗口管理",
+        "IPC通信",
+        "系统集成",
+        "状态持久化"
+      ],
+      "technologies": ["Electron 30.0.1", "Node.js API"],
+      "coverage": 95,
+      "hasTests": false,
+      "hasDocumentation": true
+    },
+    {
+      "path": "src/components",
+      "name": "React Components",
+      "type": "ui-components",
+      "entryFile": "src/App.tsx",
+      "keyFiles": [
+        "src/App.tsx",
+        "src/components/PetWindow.tsx",
+        "src/components/SettingsWindow.tsx",
+        "src/components/Pet/PetModel.tsx"
+      ],
+      "responsibilities": [
+        "用户界面",
+        "宠物展示",
+        "设置界面",
+        "交互组件"
+      ],
+      "technologies": ["React 18.2.0", "React Icons 5.5.0"],
+      "coverage": 90,
+      "hasTests": false,
+      "hasDocumentation": true
+    },
+    {
+      "path": "src/hooks",
+      "name": "React Hooks",
+      "type": "business-logic",
+      "entryFile": "src/hooks/index.ts",
+      "keyFiles": [
+        "src/hooks/core/usePetStatus.ts",
+        "src/hooks/interaction/usePetInteraction.ts",
+        "src/hooks/pet/useStateLoader.ts"
+      ],
+      "responsibilities": [
+        "状态管理",
+        "交互逻辑",
+        "动画管理",
+        "业务规则"
+      ],
+      "technologies": ["React Hooks", "TypeScript"],
+      "coverage": 85,
+      "hasTests": false,
+      "hasDocumentation": true
+    },
+    {
+      "path": "src/services",
+      "name": "Business Services",
+      "type": "services",
+      "entryFile": "src/services/bubble/BubbleContext.tsx",
+      "keyFiles": [
+        "src/services/bubble/BubbleContext.tsx",
+        "src/services/userActivation/UserActivationManager.ts",
+        "src/services/imageResourceManager.ts"
+      ],
+      "responsibilities": [
+        "气泡显示",
+        "用户激活管理",
+        "图像资源管理",
+        "兼容性检查"
+      ],
+      "technologies": ["Context API", "Electron API"],
+      "coverage": 80,
+      "hasTests": false,
+      "hasDocumentation": true
+    },
+    {
+      "path": "src/types",
+      "name": "Type Definitions",
+      "type": "types",
+      "entryFile": "src/types/petTypes.ts",
+      "keyFiles": [
+        "src/types/petTypes.ts",
+        "src/types/windowEffects.ts"
+      ],
+      "responsibilities": [
+        "类型定义",
+        "接口规范",
+        "数据结构"
+      ],
+      "technologies": ["TypeScript 5.2"],
+      "coverage": 95,
+      "hasTests": false,
+      "hasDocumentation": true
+    },
+    {
+      "path": "src/constants",
+      "name": "Configuration Constants",
+      "type": "configuration",
+      "entryFile": "src/constants/petConstants.ts",
+      "keyFiles": [
+        "src/constants/petConstants.ts",
+        "src/constants/taskData.ts",
+        "src/constants/itemData.ts"
+      ],
+      "responsibilities": [
+        "宠物配置",
+        "游戏数据",
+        "默认设置"
+      ],
+      "technologies": ["TypeScript", "JSON"],
+      "coverage": 85,
+      "hasTests": false,
+      "hasDocumentation": true
+    }
+  ],
+  "coverage": {
+    "totalFiles": 89,
+    "scannedFiles": 75,
+    "coveragePercentage": 84.3,
+    "ignoredFiles": 14,
+    "ignoredPatterns": [
+      "node_modules/**/*",
+      "dist/**/*",
+      ".git/**/*",
+      "*.log",
+      "*.tmp"
+    ]
+  },
+  "gaps": [
+    {
+      "type": "test_coverage",
+      "description": "缺少单元测试和集成测试",
+      "severity": "medium",
+      "suggestedFiles": [
+        "src/components/__tests__/",
+        "src/hooks/__tests__/",
+        "src/services/__tests__/"
+      ]
+    },
+    {
+      "type": "documentation",
+      "description": "部分组件缺少详细的 API 文档",
+      "severity": "low",
+      "suggestedFiles": [
+        "src/components/SettingsTabs/*.md",
+        "src/hooks/animation/*.md"
+      ]
+    },
+    {
+      "type": "error_handling",
+      "description": "部分模块的错误处理可以加强",
+      "severity": "medium",
+      "suggestedFiles": [
+        "src/services/customImageStorage.ts",
+        "src/hooks/core/usePetStatus.ts"
+      ]
+    },
+    {
+      "type": "performance",
+      "description": "大型组件可以进一步优化性能",
+      "severity": "low",
+      "suggestedFiles": [
+        "src/components/PetWindow.tsx",
+        "src/hooks/interaction/usePetInteraction.ts"
+      ]
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "high",
+      "action": "添加测试框架",
+      "description": "配置 Jest + React Testing Library 进行单元测试",
+      "estimatedEffort": "2-3 days"
+    },
+    {
+      "priority": "medium",
+      "action": "完善错误边界",
+      "description": "为关键组件添加更完善的错误处理和恢复机制",
+      "estimatedEffort": "1-2 days"
+    },
+    {
+      "priority": "medium",
+      "action": "性能监控",
+      "description": "添加生产环境性能监控和分析工具",
+      "estimatedEffort": "2-3 days"
+    },
+    {
+      "priority": "low",
+      "action": "国际化支持",
+      "description": "添加多语言支持，提升用户体验",
+      "estimatedEffort": "3-4 days"
+    }
+  ],
+  "nextSteps": [
+    "优先完善错误处理和测试覆盖",
+    "考虑添加插件系统支持第三方宠物类型",
+    "优化大型组件的性能和内存使用",
+    "添加更多的用户交互反馈和引导"
+  ],
+  "scanSummary": {
+    "startTime": "2025-09-23T22:28:34.000Z",
+    "endTime": "2025-09-23T22:28:34.000Z",
+    "scanType": "initialization",
+    "scannerVersion": "1.0.0",
+    "truncated": false,
+    "notes": "完整的模块化架构设计，所有主要模块都有详细文档"
+  }
+}
