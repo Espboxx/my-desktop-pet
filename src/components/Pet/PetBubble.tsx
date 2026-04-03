@@ -1,5 +1,6 @@
 import React from 'react';
-import { useBubbleService, BubbleInstance } from '../../services/bubble/BubbleContext'; // Import hook and type
+import type { BubbleInstance } from '../../services/bubble/BubbleContext'; // Import hook and type
+import { useBubbleService } from '../../services/bubble/useBubbleService';
 
 interface PetBubbleProps {
   // bubbleState is no longer needed, fetched from context

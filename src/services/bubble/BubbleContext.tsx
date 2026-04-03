@@ -1,4 +1,4 @@
-import React, { createContext, useState, useCallback, useRef, ReactNode, useContext } from 'react';
+import React, { createContext, useState, useCallback, useRef, ReactNode } from 'react';
 
 // Define bubble types
 export type BubbleType = 'thought' | 'speech' | 'notification' | 'unlock' | 'warning';
@@ -20,7 +20,7 @@ interface BubbleContextType {
 }
 
 // Create the context with a default value (can be undefined or a mock implementation)
-const BubbleContext = createContext<BubbleContextType | undefined>(undefined);
+export const BubbleContext = createContext<BubbleContextType | undefined>(undefined);
 
 // Define props for the provider
 interface BubbleProviderProps {
@@ -83,11 +83,3 @@ export const BubbleProvider: React.FC<BubbleProviderProps> = ({ children }) => {
   );
 };
 
-// Custom hook to use the bubble context
-export const useBubbleService = (): BubbleContextType => {
-  const context = useContext(BubbleContext);
-  if (context === undefined) {
-    throw new Error('useBubbleService must be used within a BubbleProvider');
-  }
-  return context;
-};
