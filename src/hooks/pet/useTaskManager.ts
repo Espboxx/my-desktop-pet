@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
-import { PetStatus } from '../../types/petTypes';
-import { gameData } from '../../constants/taskData';
-import { ITEMS as predefinedItems } from '../../constants/itemData';
-import { useBubbleService } from '../../services/bubble/BubbleContext'; // Import bubble service
+import { PetStatus } from '@/types/petTypes';
+import { gameData } from '@/constants/taskData';
+import { ITEMS as predefinedItems } from '@/constants/itemData';
+import { useBubbleService } from '@/services/bubble/BubbleContext'; // Import bubble service
 
 /**
  * Hook to manage task progress, completion, and rewards.

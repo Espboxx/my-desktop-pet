@@ -3,7 +3,7 @@
  * 确保应用在各种环境下都能正常运行
  */
 
-import { PetType } from '../types/petTypes';
+import { PetType } from '@/types/petTypes';
 import imageResourceManager from './imageResourceManager';
 
 export interface CompatibilityReport {

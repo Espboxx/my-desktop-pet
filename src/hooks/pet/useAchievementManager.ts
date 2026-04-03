@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { PetStatus } from '../../types/petTypes';
-import { ACHIEVEMENTS as predefinedAchievements } from '../../constants/petConstants';
-import { useBubbleService } from '../../services/bubble/BubbleContext'; // Import bubble service
+import { PetStatus } from '@/types/petTypes';
+import { ACHIEVEMENTS as predefinedAchievements } from '@/constants/petConstants';
+import { useBubbleService } from '@/services/bubble/BubbleContext'; // Import bubble service
 
 /**
  * Hook to manage achievement checking, unlocking, and rewards.

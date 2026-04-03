@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { PetStatus } from '../../types/petTypes';
+import { PetStatus } from '@/types/petTypes';
 import { EVENT_CHANCES, STATUS_THRESHOLDS } from './constants';
-import { useBubbleService } from '../../services/bubble/BubbleContext'; // Import bubble service
+import { useBubbleService } from '@/services/bubble/BubbleContext'; // Import bubble service
 
 /**
  * Hook to handle proactive need bubbles based on pet status.

@@ -1,7 +1,7 @@
 import React from 'react';
-import { useSharedPetStatus } from '../../context/PetStatusContext'; // Import context hook
-import { PET_TYPES } from '../../constants/petConstants'; // Import pet types constant
-import { PetType } from '../../types/petTypes'; // Import PetType for casting
+import { useSharedPetStatus } from '@/context/PetStatusContext'; // Import context hook
+import { PET_TYPES } from '@/constants/petConstants'; // Import pet types constant
+import { PetType } from '@/types/petTypes'; // Import PetType for casting
 import PetModel from '../Pet/PetModel'; // Import PetModel component
 
 const PetSelectionTab: React.FC = () => {

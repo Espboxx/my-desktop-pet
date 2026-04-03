@@ -30,7 +30,7 @@ export class PetStatusService {
   /**
    * 通用的更新或插入方法
    */
-  private upsertRecord(tableName: string, idField: string, data: Record<string, any>, whereCondition?: string): number {
+  private upsertRecord(tableName: string, idField: string, data: Record<string, unknown>, whereCondition?: string): number {
     const db = databaseManager.getDatabase();
 
     const whereClause = whereCondition || `${idField} = ?`;
@@ -65,7 +65,7 @@ export class PetStatusService {
   /**
    * 批量删除并插入数据
    */
-  private batchInsert(tableName: string, petStatusId: number, data: any[], fields: string[]): void {
+  private batchInsert(tableName: string, petStatusId: number, data: Record<string, unknown>[], fields: string[]): void {
     const db = databaseManager.getDatabase();
 
     // 删除现有数据
@@ -78,7 +78,7 @@ export class PetStatusService {
 
       db.transaction(() => {
         data.forEach(item => {
-          const values = fields.map(field => item[field]);
+          const values = fields.map(field => item[field] as unknown);
           stmt.run(values);
         });
       })();

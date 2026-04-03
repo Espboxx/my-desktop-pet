@@ -1,6 +1,6 @@
-import { useEffect, useCallback, useRef } from 'react';
-import imageResourceManager from '../services/imageResourceManager';
-import { PET_TYPES } from '../constants/petConstants';
+import { useEffect, useCallback, useRef } from "react";
+import imageResourceManager from "@/services/imageResourceManager";
+import { PET_TYPES } from "@/constants/petConstants";
 
 /**
  * 图像预加载Hook - 用于性能优化
@@ -12,12 +12,12 @@ export function useImagePreloader(currentPetTypeId: string) {
   // 预热缓存 - 应用启动时调用
   const warmupCache = useCallback(async () => {
     if (isWarmingUpRef.current) return;
-    
+
     isWarmingUpRef.current = true;
     try {
       await imageResourceManager.warmupCache(PET_TYPES);
     } catch (error) {
-      console.error('Failed to warm up image cache:', error);
+      console.error("Failed to warm up image cache:", error);
     } finally {
       isWarmingUpRef.current = false;
     }
@@ -26,29 +26,32 @@ export function useImagePreloader(currentPetTypeId: string) {
   // 智能预加载 - 当宠物类型改变时调用
   const smartPreload = useCallback(async (petTypeId: string) => {
     if (preloadedRef.current.has(petTypeId)) return;
-    
+
     try {
       await imageResourceManager.smartPreload(petTypeId, PET_TYPES);
       preloadedRef.current.add(petTypeId);
     } catch (error) {
-      console.error('Failed to smart preload images:', error);
+      console.error("Failed to smart preload images:", error);
     }
   }, []);
 
   // 预加载特定表情
-  const preloadExpression = useCallback(async (petTypeId: string, expressionKey: string) => {
-    const petType = PET_TYPES[petTypeId];
-    if (!petType || petType.modelType !== 'image') return;
+  const preloadExpression = useCallback(
+    async (petTypeId: string, expressionKey: string) => {
+      const petType = PET_TYPES[petTypeId];
+      if (!petType || petType.modelType !== "image") return;
 
-    const expression = petType.expressions[expressionKey];
-    if (expression?.imageUrl) {
-      try {
-        await imageResourceManager.preloadImage(expression.imageUrl);
-      } catch (error) {
-        console.error('Failed to preload expression image:', error);
+      const expression = petType.expressions[expressionKey];
+      if (expression?.imageUrl) {
+        try {
+          await imageResourceManager.preloadImage(expression.imageUrl);
+        } catch (error) {
+          console.error("Failed to preload expression image:", error);
+        }
       }
-    }
-  }, []);
+    },
+    [],
+  );
 
   // 获取缓存统计
   const getCacheStats = useCallback(() => {
@@ -83,7 +86,7 @@ export function useImagePreloader(currentPetTypeId: string) {
     smartPreload,
     preloadExpression,
     getCacheStats,
-    clearCache
+    clearCache,
   };
 }
 
@@ -94,14 +97,14 @@ export function useImagePerformanceMonitor() {
   const performanceDataRef = useRef({
     loadTimes: [] as number[],
     errorCount: 0,
-    totalRequests: 0
+    totalRequests: 0,
   });
 
   const recordLoadTime = useCallback((loadTime: number) => {
     const data = performanceDataRef.current;
     data.loadTimes.push(loadTime);
     data.totalRequests++;
-    
+
     // 只保留最近100次的记录
     if (data.loadTimes.length > 100) {
       data.loadTimes.shift();
@@ -115,20 +118,21 @@ export function useImagePerformanceMonitor() {
 
   const getPerformanceStats = useCallback(() => {
     const data = performanceDataRef.current;
-    const avgLoadTime = data.loadTimes.length > 0 
-      ? data.loadTimes.reduce((sum, time) => sum + time, 0) / data.loadTimes.length 
-      : 0;
-    
-    const errorRate = data.totalRequests > 0 
-      ? (data.errorCount / data.totalRequests) * 100 
-      : 0;
+    const avgLoadTime =
+      data.loadTimes.length > 0
+        ? data.loadTimes.reduce((sum, time) => sum + time, 0) /
+          data.loadTimes.length
+        : 0;
+
+    const errorRate =
+      data.totalRequests > 0 ? (data.errorCount / data.totalRequests) * 100 : 0;
 
     return {
       averageLoadTime: Math.round(avgLoadTime),
       errorRate: Math.round(errorRate * 100) / 100,
       totalRequests: data.totalRequests,
       errorCount: data.errorCount,
-      recentLoadTimes: [...data.loadTimes]
+      recentLoadTimes: [...data.loadTimes],
     };
   }, []);
 
@@ -136,7 +140,7 @@ export function useImagePerformanceMonitor() {
     performanceDataRef.current = {
       loadTimes: [],
       errorCount: 0,
-      totalRequests: 0
+      totalRequests: 0,
     };
   }, []);
 
@@ -144,7 +148,7 @@ export function useImagePerformanceMonitor() {
     recordLoadTime,
     recordError,
     getPerformanceStats,
-    resetStats
+    resetStats,
   };
 }
 
@@ -152,43 +156,43 @@ export function useImagePerformanceMonitor() {
  * 自适应图像质量Hook
  */
 export function useAdaptiveImageQuality() {
-  const qualityRef = useRef<'high' | 'medium' | 'low'>('high');
+  const qualityRef = useRef<"high" | "medium" | "low">("high");
 
   const adjustQuality = useCallback((performanceStats: any) => {
     const { averageLoadTime, errorRate } = performanceStats;
-    
+
     // 根据性能指标调整图像质量
     if (averageLoadTime > 2000 || errorRate > 10) {
-      qualityRef.current = 'low';
+      qualityRef.current = "low";
     } else if (averageLoadTime > 1000 || errorRate > 5) {
-      qualityRef.current = 'medium';
+      qualityRef.current = "medium";
     } else {
-      qualityRef.current = 'high';
+      qualityRef.current = "high";
     }
   }, []);
 
   const getQualitySettings = useCallback(() => {
     const quality = qualityRef.current;
-    
+
     switch (quality) {
-      case 'low':
+      case "low":
         return {
           maxSize: 32,
           compression: 0.7,
-          format: 'jpeg'
+          format: "jpeg",
         };
-      case 'medium':
+      case "medium":
         return {
           maxSize: 48,
           compression: 0.8,
-          format: 'webp'
+          format: "webp",
         };
-      case 'high':
+      case "high":
       default:
         return {
           maxSize: 64,
           compression: 0.9,
-          format: 'png'
+          format: "png",
         };
     }
   }, []);
@@ -196,6 +200,6 @@ export function useAdaptiveImageQuality() {
   return {
     currentQuality: qualityRef.current,
     adjustQuality,
-    getQualitySettings
+    getQualitySettings,
   };
 }

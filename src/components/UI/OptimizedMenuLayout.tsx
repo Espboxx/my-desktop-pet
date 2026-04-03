@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { PetStatus } from '../../types/petTypes';
-import { LowStatusFlags } from '../../hooks/pet/useStatusWarnings';
+import { PetStatus } from '@/types/petTypes';
+import { LowStatusFlags } from '@/hooks/pet/useStatusWarnings';
 import './OptimizedMenuLayout.css';
 
 interface OptimizedMenuLayoutProps {

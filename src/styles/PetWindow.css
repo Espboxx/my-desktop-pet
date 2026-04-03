@@ -7,8 +7,8 @@
   /* align-items: center; */
   /* justify-content: center; */
   /* gap: 10px; */
-   width: auto; /* Auto width to fit content */
-   height: auto; /* Auto height to fit content */
+  width: auto; /* Auto width to fit content */
+  height: auto; /* Auto height to fit content */
   padding: 15px 15px 50px 15px; /* T=15, R=15, B=50, L=15 */
   box-sizing: border-box;
   background-color: transparent;
@@ -86,7 +86,11 @@
 .status-bar {
   position: relative;
   width: 180px; /* 稍微增加宽度，让内容更舒适 */
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9)); /* 渐变背景 */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(248, 250, 252, 0.9)
+  ); /* 渐变背景 */
   border: 1px solid rgba(226, 232, 240, 0.8); /* 更柔和的边框 */
   border-radius: 12px; /* 更圆润的边角 */
   padding: 10px 12px; /* 增加内边距 */
@@ -120,12 +124,15 @@
   pointer-events: auto;
 }
 
-
 /* Styles for the simplified status bar (when not hovering) */
 .status-bar.simple {
   width: auto; /* Auto width to fit content */
   padding: 6px 12px; /* 调整简化模式的内边距 */
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(248, 250, 252, 0.75)); /* 保持渐变但更透明 */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.85),
+    rgba(248, 250, 252, 0.75)
+  ); /* 保持渐变但更透明 */
   backdrop-filter: blur(6px); /* 减少毛玻璃效果 */
   transform: scale(0.95); /* 稍微缩小简化模式 */
 }
@@ -194,8 +201,15 @@
 }
 
 @keyframes pulse-warning {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.1); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
 }
 
 .status-meter {
@@ -212,26 +226,37 @@
 .status-meter-fill {
   height: 100%;
   border-radius: 8px;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease; /* 更平滑的过渡 */
+  transition:
+    width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.3s ease; /* 更平滑的过渡 */
   position: relative;
   overflow: hidden;
 }
 
 /* 为进度条添加光泽效果 */
 .status-meter-fill::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
   animation: shimmer 2s infinite;
 }
 
 @keyframes shimmer {
-  0% { left: -100%; }
-  100% { left: 100%; }
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 .status-meter-fill.mood {
@@ -282,14 +307,23 @@
 }
 
 @keyframes blink-warning {
-  from { opacity: 1; }
-  to { opacity: 0.6; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.6;
+  }
 }
 
 /* 状态积极变化动画 */
 @keyframes increase-positive-flash {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.3); } /* 短暂变亮 */
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.3);
+  } /* 短暂变亮 */
 }
 
 .status-meter-fill.increase-positive {
@@ -298,8 +332,13 @@
 
 /* 状态恢复动画 */
 @keyframes recovery-positive-flash {
-  0%, 100% { box-shadow: none; }
-  50% { box-shadow: 0 0 8px 2px rgba(76, 175, 80, 0.7); } /* 短暂绿色外发光 */
+  0%,
+  100% {
+    box-shadow: none;
+  }
+  50% {
+    box-shadow: 0 0 8px 2px rgba(76, 175, 80, 0.7);
+  } /* 短暂绿色外发光 */
 }
 
 .status-meter-fill.recovery-positive {
@@ -308,9 +347,19 @@
 
 /* 疲惫动画 */
 @keyframes tired-sway {
-  0%, 100% { transform: translateX(0) rotate(0); opacity: 1; }
-  25% { transform: translateX(-3px) rotate(-2deg); opacity: 0.8; }
-  75% { transform: translateX(3px) rotate(2deg); opacity: 0.8; }
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+    opacity: 1;
+  }
+  25% {
+    transform: translateX(-3px) rotate(-2deg);
+    opacity: 0.8;
+  }
+  75% {
+    transform: translateX(3px) rotate(2deg);
+    opacity: 0.8;
+  }
 }
 
 .pet.tired-animation {
@@ -319,8 +368,13 @@
 
 /* 思考动画 */
 @keyframes thinking-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
 }
 
 .pet.thinking-animation {
@@ -329,9 +383,18 @@
 
 /* 分心动画 */
 @keyframes distracted-look {
-  0%, 100% { transform: translateX(0) rotate(0); }
-  20%, 60% { transform: translateX(-4px) rotate(-3deg); }
-  40%, 80% { transform: translateX(4px) rotate(3deg); }
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-4px) rotate(-3deg);
+  }
+  40%,
+  80% {
+    transform: translateX(4px) rotate(3deg);
+  }
 }
 
 .pet.distracted-animation {
@@ -340,9 +403,26 @@
 
 /* 生病动画 */
 @keyframes sick-tremble {
-  0%, 100% { transform: translateX(0); filter: brightness(1); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-1px); filter: brightness(0.8); }
-  20%, 40%, 60%, 80% { transform: translateX(1px); filter: brightness(0.8); }
+  0%,
+  100% {
+    transform: translateX(0);
+    filter: brightness(1);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-1px);
+    filter: brightness(0.8);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(1px);
+    filter: brightness(0.8);
+  }
 }
 
 .pet.sick-animation {
@@ -354,7 +434,11 @@
   position: absolute; /* Position relative to the pet wrapper */
   /* top: -5px; */ /* Remove static positioning, will be handled by JS */
   /* left: 55px; */ /* Remove static positioning, will be handled by JS */
-  background-image: linear-gradient(to bottom, #ffffff 90%, #f8f9fa); /* Subtle gradient */
+  background-image: linear-gradient(
+    to bottom,
+    #ffffff 90%,
+    #f8f9fa
+  ); /* Subtle gradient */
   border: 1px solid #dee2e6; /* Slightly softer border */
   border-radius: 14px; /* Slightly more rounded */
   padding: 10px 14px; /* Slightly increased padding */
@@ -368,7 +452,7 @@
 }
 
 .thought-bubble::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -6px; /* Position tail slightly lower */
   left: 15px; /* Adjust horizontal position of tail */
@@ -386,7 +470,11 @@
 .pet-menu {
   position: fixed; /* 使用 fixed 定位，相对于屏幕定位 */
   /* 位置现在通过内联样式在 PetContextMenu.tsx 中设置 */
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9)); /* 现代渐变背景 */
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(248, 250, 252, 0.9)
+  ); /* 现代渐变背景 */
   border: 1px solid rgba(226, 232, 240, 0.6); /* 更细腻的边框 */
   border-radius: 16px; /* 更圆润的边角 */
   box-shadow:
@@ -414,7 +502,11 @@
 
 /* Style menu buttons directly */
 .pet-menu button {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(248, 250, 252, 0.05)); /* 微妙的渐变背景 */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(248, 250, 252, 0.05)
+  ); /* 微妙的渐变背景 */
   border: 1px solid rgba(226, 232, 240, 0.3); /* 细腻的边框 */
   border-radius: 10px; /* 更圆润的按钮 */
   padding: 10px 14px; /* 增加内边距 */
@@ -431,7 +523,11 @@
 }
 
 .pet-menu button:hover {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05)); /* 蓝色渐变悬停 */
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.1),
+    rgba(37, 99, 235, 0.05)
+  ); /* 蓝色渐变悬停 */
   border-color: rgba(59, 130, 246, 0.3); /* 蓝色边框 */
   color: #1e40af; /* 蓝色文字 */
   transform: translateY(-1px); /* 轻微上浮效果 */
@@ -446,7 +542,12 @@
 .pet-menu hr {
   border: none;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(226, 232, 240, 0.6), transparent); /* 渐变分隔线 */
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(226, 232, 240, 0.6),
+    transparent
+  ); /* 渐变分隔线 */
   margin: 8px 0; /* 增加边距 */
 }
 
@@ -465,7 +566,8 @@
   }
 }
 
-@keyframes popIn { /* Keep original popIn if used elsewhere, otherwise remove */
+@keyframes popIn {
+  /* Keep original popIn if used elsewhere, otherwise remove */
   0% {
     opacity: 0;
     transform: scale(0.5);
@@ -509,7 +611,8 @@
 
 /* 跳跃动画 */
 @keyframes jump {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -517,50 +620,104 @@
   }
 }
 
-.jump-animation { animation: jump 0.5s ease-in-out; }
+.jump-animation {
+  animation: jump 0.5s ease-in-out;
+}
 
 /* 旋转动画 (例如：玩耍) */
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
-.spin-animation { animation: spin 0.6s linear; }
+.spin-animation {
+  animation: spin 0.6s linear;
+}
 
 /* 摇晃动画 (例如：喂食) */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
 }
-.shake-animation { animation: shake 0.4s ease-in-out; }
+.shake-animation {
+  animation: shake 0.4s ease-in-out;
+}
 
 /* 快速摇晃动画 (喂食变体) */
 @keyframes fast-shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-  20%, 40%, 60%, 80% { transform: translateX(4px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
 }
-.fast-shake-animation { animation: fast-shake 0.3s linear; }
+.fast-shake-animation {
+  animation: fast-shake 0.3s linear;
+}
 
 /* 缩放/心跳动画 (例如：抚摸) */
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }
-.pulse-animation { animation: pulse 0.5s ease-in-out; }
+.pulse-animation {
+  animation: pulse 0.5s ease-in-out;
+}
 
 /* 开心摇摆动画 (抚摸变体) */
 @keyframes wiggle {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-5deg); }
-  75% { transform: rotate(5deg); }
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
 }
-.wiggle-animation { animation: wiggle 0.4s ease-in-out; }
+.wiggle-animation {
+  animation: wiggle 0.4s ease-in-out;
+}
 
 /* 睡觉动画 */
 @keyframes sleep {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(2px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(2px);
+  }
 }
 .sleep-animation {
   animation: sleep 1.5s ease-in-out infinite;
@@ -653,7 +810,6 @@
 /* Removed .pet-interaction-area styles */
 /* Removed extraneous closing brace */
 
-
 /* 等级显示样式 */
 .level-display {
   position: absolute;
@@ -699,7 +855,8 @@
 
 /* 拖拽中晃动动画 */
 @keyframes dragging-shake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(-5px) rotate(0deg) scale(1.03);
     filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
   }
@@ -749,17 +906,16 @@
 
 /* Style for the level item within the simplified bar */
 .status-item.simple-level {
-justify-content: center; /* Center the level text */
-gap: 0; /* No gap needed */
+  justify-content: center; /* Center the level text */
+  gap: 0; /* No gap needed */
 }
 
 /* Adjust the level value text in simple mode */
 .status-bar.simple .status-value {
-min-width: auto; /* Remove min-width */
-text-align: center; /* Center text */
-font-size: 12px; /* Slightly larger font for visibility */
+  min-width: auto; /* Remove min-width */
+  text-align: center; /* Center text */
+  font-size: 12px; /* Slightly larger font for visibility */
 }
-
 
 /* 落地动画 */
 @keyframes landed {
@@ -792,8 +948,13 @@ font-size: 12px; /* Slightly larger font for visibility */
 
 /* 新增：待机 - 伸懒腰动画 */
 @keyframes stretch {
-  0%, 100% { transform: scaleY(1) scaleX(1); }
-  50% { transform: scaleY(1.15) scaleX(0.9); } /* 垂直拉伸，水平略微压缩 */
+  0%,
+  100% {
+    transform: scaleY(1) scaleX(1);
+  }
+  50% {
+    transform: scaleY(1.15) scaleX(0.9);
+  } /* 垂直拉伸，水平略微压缩 */
 }
 .stretch-animation {
   animation: stretch 0.8s ease-in-out;
@@ -801,9 +962,16 @@ font-size: 12px; /* Slightly larger font for visibility */
 
 /* 新增：待机 - 晃动动画 */
 @keyframes idle-wiggle {
-  0%, 100% { transform: translateX(0) rotate(0); }
-  25% { transform: translateX(-2px) rotate(-2deg); }
-  75% { transform: translateX(2px) rotate(2deg); }
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  25% {
+    transform: translateX(-2px) rotate(-2deg);
+  }
+  75% {
+    transform: translateX(2px) rotate(2deg);
+  }
 }
 .idle-wiggle-animation {
   animation: idle-wiggle 0.6s ease-in-out;
@@ -811,8 +979,13 @@ font-size: 12px; /* Slightly larger font for visibility */
 
 /* 鼠标悬停歪头动画 */
 @keyframes tilt-head {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(-8deg); } /* 稍微歪一下头 */
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-8deg);
+  } /* 稍微歪一下头 */
 }
 .tilt-head {
   animation: tilt-head 0.6s ease-in-out;
@@ -820,9 +993,16 @@ font-size: 12px; /* Slightly larger font for visibility */
 
 /* 鼠标快速移动环顾动画 */
 @keyframes look-around-fast {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-10deg) scale(1.02); } /* 向左看 */
-  75% { transform: rotate(10deg) scale(1.02); } /* 向右看 */
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-10deg) scale(1.02);
+  } /* 向左看 */
+  75% {
+    transform: rotate(10deg) scale(1.02);
+  } /* 向右看 */
 }
 .look-around-fast {
   animation: look-around-fast 0.4s ease-in-out;
@@ -830,8 +1010,13 @@ font-size: 12px; /* Slightly larger font for visibility */
 
 /* 眨眼动画 */
 @keyframes blink {
-  0%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(0.1); } /* 垂直方向短暂压缩 */
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.1);
+  } /* 垂直方向短暂压缩 */
 }
 
 .blink-animation {
@@ -843,12 +1028,23 @@ font-size: 12px; /* Slightly larger font for visibility */
 
 /* --- Autonomous Movement Animation --- */
 @keyframes walk-animation {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  25% { transform: translateY(-2px) rotate(-3deg); } /* Slight lift and tilt left */
-  75% { transform: translateY(-2px) rotate(3deg); } /* Slight lift and tilt right */
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-2px) rotate(-3deg);
+  } /* Slight lift and tilt left */
+  75% {
+    transform: translateY(-2px) rotate(3deg);
+  } /* Slight lift and tilt right */
 }
 
-.walk-animation {
+.walk-animation,
+.walk-right-animation,
+.walk-left-animation,
+.walk-up-animation,
+.walk-down-animation {
   /* Apply the walking animation */
   /* Adjust duration and timing function as needed */
   animation: walk-animation 0.6s ease-in-out infinite alternate;
@@ -861,7 +1057,12 @@ font-size: 12px; /* Slightly larger font for visibility */
   bottom: -35px; /* Position below the pet element */
   left: 50%; /* Center horizontally relative to the pet element */
   transform: translateX(-50%);
-  background-color: rgba(40, 40, 40, 0.85); /* Dark semi-transparent background */
+  background-color: rgba(
+    40,
+    40,
+    40,
+    0.85
+  ); /* Dark semi-transparent background */
   color: #ffffff; /* White text */
   padding: 6px 12px; /* Padding */
   border-radius: 15px; /* Rounded corners */
@@ -872,14 +1073,21 @@ font-size: 12px; /* Slightly larger font for visibility */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow */
   animation: fadeIn 0.3s ease-out; /* Reuse existing fadeIn animation */
   pointer-events: none; /* Notification shouldn't block clicks */
-  
+
   /* 追逐鼠标动画 */
   @keyframes chase-animation {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    25% { transform: translateY(-3px) rotate(-5deg); } /* 向左倾斜并轻微上升 */
-    75% { transform: translateY(-3px) rotate(5deg); } /* 向右倾斜并轻微上升 */
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    25% {
+      transform: translateY(-3px) rotate(-5deg);
+    } /* 向左倾斜并轻微上升 */
+    75% {
+      transform: translateY(-3px) rotate(5deg);
+    } /* 向右倾斜并轻微上升 */
   }
-  
+
   .chase-animation {
     animation: chase-animation 0.8s ease-in-out;
   }

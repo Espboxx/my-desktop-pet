@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import imageResourceManager from '../services/imageResourceManager';
+import { useState, useEffect, useCallback } from "react";
+import imageResourceManager from "@/services/imageResourceManager";
 
 export interface UseImageResourceResult {
   imageUrl: string | null;
@@ -13,7 +13,7 @@ export interface UseImageResourceResult {
  */
 export function useImageResource(
   petTypeId: string,
-  expressionKey?: string
+  expressionKey?: string,
 ): UseImageResourceResult {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,13 +22,16 @@ export function useImageResource(
   const loadImage = useCallback(async () => {
     setIsLoading(true);
     setHasError(false);
-    
+
     try {
-      const url = await imageResourceManager.getImageUrl(petTypeId, expressionKey);
+      const url = await imageResourceManager.getImageUrl(
+        petTypeId,
+        expressionKey,
+      );
       setImageUrl(url);
       setHasError(url === null);
     } catch (error) {
-      console.error('Failed to load image:', error);
+      console.error("Failed to load image:", error);
       setImageUrl(null);
       setHasError(true);
     } finally {
@@ -48,26 +51,29 @@ export function useImageResource(
     imageUrl,
     isLoading,
     hasError,
-    reload
+    reload,
   };
 }
 
 /**
  * 用于预加载宠物图像集的Hook
  */
-export function usePetImagePreloader(petTypeId: string, expressionKeys: string[]) {
+export function usePetImagePreloader(
+  petTypeId: string,
+  expressionKeys: string[],
+) {
   const [isPreloading, setIsPreloading] = useState(false);
   const [preloadProgress, setPreloadProgress] = useState(0);
 
   const preloadImages = useCallback(async () => {
     setIsPreloading(true);
     setPreloadProgress(0);
-    
+
     try {
       await imageResourceManager.preloadPetImages(petTypeId, expressionKeys);
       setPreloadProgress(100);
     } catch (error) {
-      console.error('Failed to preload images:', error);
+      console.error("Failed to preload images:", error);
     } finally {
       setIsPreloading(false);
     }
@@ -79,7 +85,7 @@ export function usePetImagePreloader(petTypeId: string, expressionKeys: string[]
 
   return {
     isPreloading,
-    preloadProgress
+    preloadProgress,
   };
 }
 
@@ -89,42 +95,48 @@ export function usePetImagePreloader(petTypeId: string, expressionKeys: string[]
 export function useCustomImageManager() {
   const [customImages, setCustomImages] = useState<string[]>([]);
 
-  const validateAndProcessFile = useCallback(async (file: File): Promise<{
-    success: boolean;
-    dataUrl?: string;
-    error?: string;
-  }> => {
-    // 验证文件
-    const validation = imageResourceManager.validateImageFile(file);
-    if (!validation.valid) {
-      return {
-        success: false,
-        error: validation.error
-      };
-    }
+  const validateAndProcessFile = useCallback(
+    async (
+      file: File,
+    ): Promise<{
+      success: boolean;
+      dataUrl?: string;
+      error?: string;
+    }> => {
+      // 验证文件
+      const validation = imageResourceManager.validateImageFile(file);
+      if (!validation.valid) {
+        return {
+          success: false,
+          error: validation.error,
+        };
+      }
 
-    try {
-      // 转换为Data URL
-      const dataUrl = await imageResourceManager.fileToDataUrl(file);
-      return {
-        success: true,
-        dataUrl
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: '文件处理失败'
-      };
-    }
-  }, []);
+      try {
+        // 转换为Data URL
+        const dataUrl = await imageResourceManager.fileToDataUrl(file);
+        return {
+          success: true,
+          dataUrl,
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: "文件处理失败",
+        };
+      }
+    },
+    [],
+  );
 
   const addCustomImage = useCallback((dataUrl: string, filename: string) => {
     // 这里可以添加将图像保存到本地存储的逻辑
-    setCustomImages(prev => [...prev, dataUrl]);
+    void filename;
+    setCustomImages((prev) => [...prev, dataUrl]);
   }, []);
 
   const removeCustomImage = useCallback((index: number) => {
-    setCustomImages(prev => prev.filter((_, i) => i !== index));
+    setCustomImages((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
   const clearCustomImages = useCallback(() => {
@@ -136,6 +148,6 @@ export function useCustomImageManager() {
     validateAndProcessFile,
     addCustomImage,
     removeCustomImage,
-    clearCustomImages
+    clearCustomImages,
   };
 }

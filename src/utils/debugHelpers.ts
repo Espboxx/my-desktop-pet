@@ -7,19 +7,19 @@ import React from 'react';
 /**
  * 检查useMemo依赖数组是否有效
  */
-export function validateUseMemoDepArray(deps: readonly any[], hookName: string = 'useMemo'): boolean {
+export function validateUseMemoDepArray(deps: readonly unknown[], hookName: string = 'useMemo'): boolean {
   if (!Array.isArray(deps)) {
     console.error(`${hookName}: 依赖数组不是数组类型:`, deps);
     return false;
   }
-  
+
   for (let i = 0; i < deps.length; i++) {
     if (deps[i] === undefined) {
       console.error(`${hookName}: 依赖数组中第${i}个元素是undefined:`, deps);
       return false;
     }
   }
-  
+
   return true;
 }
 
@@ -80,30 +80,30 @@ export function measureHookPerformance<T>(
 /**
  * 检查配置对象是否有效
  */
-export function validateConfig(config: any, configName: string): boolean {
+export function validateConfig(config: unknown, configName: string): boolean {
   if (!config) {
     console.error(`${configName}: 配置对象为空`);
     return false;
   }
-  
+
   if (typeof config !== 'object') {
     console.error(`${configName}: 配置不是对象类型:`, typeof config);
     return false;
   }
-  
+
   return true;
 }
 
 /**
  * React错误边界辅助函数
  */
-export function logReactError(error: Error, errorInfo: any, componentName: string): void {
+export function logReactError(error: Error, errorInfo: React.ErrorInfo, componentName: string): void {
   console.group(`React Error in ${componentName}`);
   console.error('Error:', error);
   console.error('Error Info:', errorInfo);
   console.error('Stack:', error.stack);
   console.groupEnd();
-  
+
   // 在开发环境中，可以发送错误到监控服务
   if (process.env.NODE_ENV === 'development') {
     // 这里可以集成错误监控服务
@@ -113,17 +113,17 @@ export function logReactError(error: Error, errorInfo: any, componentName: strin
 /**
  * 检查组件重新渲染原因
  */
-export function useWhyDidYouUpdate(name: string, props: Record<string, any>): void {
+export function useWhyDidYouUpdate(name: string, props: Record<string, unknown>): void {
   // 只在开发环境运行
   if (process.env.NODE_ENV !== 'development') return;
-  
-  const previousProps = React.useRef<Record<string, any>>();
-  
+
+  const previousProps = React.useRef<Record<string, unknown>>();
+
   React.useEffect(() => {
     if (previousProps.current) {
       const allKeys = Object.keys({ ...previousProps.current, ...props });
-      const changedProps: Record<string, { from: any; to: any }> = {};
-      
+      const changedProps: Record<string, { from: unknown; to: unknown }> = {};
+
       allKeys.forEach(key => {
         if (previousProps.current![key] !== props[key]) {
           changedProps[key] = {
@@ -132,12 +132,12 @@ export function useWhyDidYouUpdate(name: string, props: Record<string, any>): vo
           };
         }
       });
-      
+
       if (Object.keys(changedProps).length) {
         console.log(`[${name}] 重新渲染原因:`, changedProps);
       }
     }
-    
+
     previousProps.current = props;
   });
 }
@@ -149,16 +149,16 @@ export function detectMemoryLeaks(componentName: string): () => void {
   if (process.env.NODE_ENV !== 'development') {
     return () => {};
   }
-  
-  const startMemory = (performance as any).memory?.usedJSHeapSize || 0;
+
+  const startMemory = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize || 0;
   const startTime = Date.now();
-  
+
   return () => {
-    const endMemory = (performance as any).memory?.usedJSHeapSize || 0;
+    const endMemory = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize || 0;
     const endTime = Date.now();
     const memoryDiff = endMemory - startMemory;
     const timeDiff = endTime - startTime;
-    
+
     if (memoryDiff > 1024 * 1024) { // 超过1MB
       console.warn(
         `${componentName}: 可能的内存泄漏检测到`,
@@ -174,11 +174,11 @@ export function detectMemoryLeaks(componentName: string): () => void {
  */
 export function useDependencyChecker(
   hookName: string,
-  dependencies: any[],
+  dependencies: unknown[],
   expectedLength?: number
 ): void {
   if (process.env.NODE_ENV !== 'development') return;
-  
+
   React.useEffect(() => {
     // 检查依赖数组长度
     if (expectedLength !== undefined && dependencies.length !== expectedLength) {
@@ -187,14 +187,14 @@ export function useDependencyChecker(
         `期望: ${expectedLength}, 实际: ${dependencies.length}`
       );
     }
-    
+
     // 检查undefined依赖
     dependencies.forEach((dep, index) => {
       if (dep === undefined) {
         console.error(`${hookName}: 依赖数组第${index}个元素是undefined`);
       }
     });
-    
+
     // 检查函数依赖是否稳定
     dependencies.forEach((dep, index) => {
       if (typeof dep === 'function') {

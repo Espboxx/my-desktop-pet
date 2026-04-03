@@ -1,8 +1,8 @@
 import React from 'react';
-import { useSharedPetStatus } from '../../context/PetStatusContext'; // Import the shared status hook
-import { gameData } from '../../constants/taskData'; // Import task definitions
-import { ACHIEVEMENTS as predefinedAchievements } from '../../constants/petConstants'; // Import achievement definitions
-import { Task, Achievement } from '../../types/petTypes'; // Import types
+import { useSharedPetStatus } from '@/context/PetStatusContext'; // Import the shared status hook
+import { gameData } from '@/constants/taskData'; // Import task definitions
+import { ACHIEVEMENTS as predefinedAchievements } from '@/constants/petConstants'; // Import achievement definitions
+import { Task, Achievement } from '@/types/petTypes'; // Import types
 
 const TasksAchievementsTab: React.FC = () => {
   const { status, isLoaded } = useSharedPetStatus(); // Get status from context

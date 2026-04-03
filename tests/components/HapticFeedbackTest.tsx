@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useHapticFeedback } from '../hooks/interaction/useHapticFeedback';
-import { getUserActivationManager } from '../services/userActivation/UserActivationManager';
+import { useHapticFeedback } from '@/hooks/interaction/useHapticFeedback';
+import { getUserActivationManager } from '@/services/userActivation/UserActivationManager';
 
 /**
  * 触觉反馈测试组件

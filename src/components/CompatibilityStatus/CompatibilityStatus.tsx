@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useCompatibility, usePerformanceMonitoring } from '../../hooks/useCompatibility';
+import { useCompatibility } from '@/hooks/utils/useCompatibility';
+import { usePerformanceMonitor } from '@/hooks/core/usePerformanceMonitor';
 import './CompatibilityStatus.css';
 
 interface CompatibilityStatusProps {
@@ -12,7 +13,7 @@ const CompatibilityStatus: React.FC<CompatibilityStatusProps> = ({
   className = '' 
 }) => {
   const { report, isChecking } = useCompatibility();
-  const { recommendations } = usePerformanceMonitoring();
+  const { recommendations } = usePerformanceMonitor();
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (isChecking) {

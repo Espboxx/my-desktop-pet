@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { compatibilityChecker, CompatibilityReport } from '../services/compatibilityChecker';
-import { PetType } from '../types/petTypes';
+import { compatibilityChecker, CompatibilityReport } from '@/services/compatibilityChecker';
+import { PetType } from '@/types/petTypes';
 
 /**
  * 兼容性检查Hook

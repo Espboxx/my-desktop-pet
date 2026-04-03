@@ -1,6 +1,6 @@
 // src/hooks/interaction/usePetInteraction.ts
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { PetStatus, InteractionType, ItemType } from '../../types/petTypes'; // Add ItemType
+import { PetStatus, InteractionType, ItemType } from '@/types/petTypes'; // Add ItemType
 import {
   UsePetInteractionReturn,
   PetPosition,

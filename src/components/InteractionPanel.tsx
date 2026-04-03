@@ -1,6 +1,6 @@
 // src/components/InteractionPanel.tsx
 import React from 'react';
-import { InteractionType } from '../types/petTypes';
+import { InteractionType } from '@/types/petTypes';
 import './InteractionPanel.css';
 // Import icons from react-icons (using Font Awesome icons here)
 import {

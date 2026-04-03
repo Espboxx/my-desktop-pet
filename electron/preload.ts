@@ -1,113 +1,130 @@
-import { ipcRenderer, contextBridge } from 'electron';
-import type { SavedPetData } from '../src/types/petTypes'; // Import the type
+import { ipcRenderer, contextBridge } from "electron";
+import type { SavedPetData } from "../src/types/petTypes";
+import type {
+  DesktopPetAPI,
+  WindowInfoAPI,
+  IPCArgument,
+  IPCEventListener,
+  PetBehaviorConfig,
+  SmoothTopMostConfig,
+  WindowPosition,
+} from "../src/types/ipcTypes";
 
-// 暴露给渲染进程的API
-contextBridge.exposeInMainWorld('desktopPet', {
+const desktopPetAPI: DesktopPetAPI = {
   // 基本 IPC 通信
-  on: (channel: string, callback: (...args: any[]) => void) => {
-    const subscription = (_event: Electron.IpcRendererEvent, ...args: any[]) => callback(...args);
+  on: <T = IPCArgument>(channel: string, callback: IPCEventListener<T>) => {
+    const subscription = (
+      event: Electron.IpcRendererEvent,
+      ...args: IPCArgument[]
+    ) => {
+      callback(event, ...(args as T[]));
+    };
     ipcRenderer.on(channel, subscription);
     return () => ipcRenderer.removeListener(channel, subscription);
   },
   off: (channel: string) => {
     ipcRenderer.removeAllListeners(channel);
   },
-  send: (channel: string, ...args: any[]) => {
+  send: (channel: string, ...args: IPCArgument[]) => {
     ipcRenderer.send(channel, ...args);
   },
-  invoke: (channel: string, ...args: any[]) => {
-    return ipcRenderer.invoke(channel, ...args);
+  invoke: <T = unknown>(channel: string, ...args: IPCArgument[]) => {
+    return ipcRenderer.invoke(channel, ...args) as Promise<T>;
   },
-  
+
   // 桌面宠物专用 API
-  // dragPet: (mouseX: number, mouseY: number) => { // 旧的拖动API，已移除
-  //   ipcRenderer.send('pet-drag', { mouseX, mouseY });
-  // },
-  getWindowPosition: (): Promise<number[] | undefined> => { // 新增：获取窗口位置
-    return ipcRenderer.invoke('get-window-position');
+  getWindowPosition: async (): Promise<WindowPosition | undefined> => {
+    const position = await ipcRenderer.invoke("get-window-position");
+    if (!position) {
+      return undefined;
+    }
+
+    if (Array.isArray(position) && position.length >= 2) {
+      const [x, y] = position;
+      return { x: Number(x), y: Number(y) };
+    }
+
+    return position as WindowPosition;
   },
-  setPetPosition: (x: number, y: number) => { // 新增：设置窗口位置
-    ipcRenderer.send('set-pet-position', { x, y });
+  setPetPosition: (x: number, y: number) => {
+    ipcRenderer.send("set-pet-position", { x, y });
   },
   openSettings: () => {
-    ipcRenderer.send('open-settings');
+    ipcRenderer.send("open-settings");
   },
   setAlwaysOnTop: (flag: boolean) => {
-    ipcRenderer.send('set-always-on-top', flag);
+    ipcRenderer.send("set-always-on-top", flag);
   },
   getPetSettings: () => {
-    return ipcRenderer.invoke('get-pet-settings');
+    return ipcRenderer.invoke("get-pet-settings");
   },
-  savePetSettings: (settings: any) => {
-    ipcRenderer.send('save-pet-settings', settings);
+  savePetSettings: (settings: Record<string, unknown>) => {
+    ipcRenderer.send("save-pet-settings", settings);
   },
-  
+
   // 宠物状态 API
-  getPetState: (): Promise<SavedPetData | null> => { // Use SavedPetData type
-    return ipcRenderer.invoke('get-pet-state');
+  getPetState: (): Promise<SavedPetData | null> => {
+    return ipcRenderer.invoke("get-pet-state");
   },
-  savePetState: (state: SavedPetData) => { // Use SavedPetData type
-    ipcRenderer.send('save-pet-state', state);
+  savePetState: (state: SavedPetData) => {
+    ipcRenderer.send("save-pet-state", state);
   },
-  // 互动 API (主进程不再处理状态，但保留通道可能有用)
-  interactWithPet: (action: string) => { // Allow any string action for future flexibility
-    ipcRenderer.send('interact-with-pet', action);
+
+  // 互动 API
+  interactWithPet: (action: string) => {
+    ipcRenderer.send("interact-with-pet", action);
   },
-  updatePetBehavior: (behavior: {
-    activityLevel: 'calm' | 'normal' | 'playful';
-    moveInterval: number;
-    expressionChangeInterval: number;
-  }) => {
-    ipcRenderer.send('update-pet-behavior', behavior);
+  updatePetBehavior: (behavior: PetBehaviorConfig) => {
+    ipcRenderer.send("update-pet-behavior", behavior);
   },
-  adjustPetWindowSize: (expand: boolean) => { // 新增：调整宠物窗口大小
-    ipcRenderer.send('adjust-pet-window-size', expand);
+  adjustPetWindowSize: (expand: boolean) => {
+    ipcRenderer.send("adjust-pet-window-size", expand);
   },
-  // Remove onShowContextMenu again
-  // onShowContextMenu: (callback: () => void) => { ... },
-  exitApp: () => { // 新增：退出应用程序
-    ipcRenderer.send('exit-app');
+  exitApp: () => {
+    ipcRenderer.send("exit-app");
   },
-  setMousePassthrough: (enable: boolean) => { // 新增：设置鼠标穿透
-    ipcRenderer.send('set-mouse-passthrough', enable);
+  setMousePassthrough: (enable: boolean) => {
+    ipcRenderer.send("set-mouse-passthrough", enable);
   },
   showStatusDetails: () => {
-    ipcRenderer.send('show-status-details');
+    ipcRenderer.send("show-status-details");
   },
   showSkinSelector: () => {
-    ipcRenderer.send('show-skin-selector');
+    ipcRenderer.send("show-skin-selector");
   },
   showNameEditor: () => {
-    ipcRenderer.send('show-name-editor');
+    ipcRenderer.send("show-name-editor");
   },
   takePetPhoto: () => {
-    ipcRenderer.send('take-pet-photo');
+    ipcRenderer.send("take-pet-photo");
   },
 
-  // 丝滑置顶效果相关API
-  smoothBringToTop: (): Promise<{success: boolean, error: string | null}> => {
-    return ipcRenderer.invoke('smooth-bring-to-top');
+  // 丝滑置顶效果相关 API
+  smoothBringToTop: () => {
+    return ipcRenderer.invoke("smooth-bring-to-top");
   },
-  cancelTopMost: (): Promise<{success: boolean, error: string | null}> => {
-    return ipcRenderer.invoke('cancel-top-most');
+  cancelTopMost: () => {
+    return ipcRenderer.invoke("cancel-top-most");
   },
-  getWindowEffectsConfig: (): Promise<{success: boolean, config: any | null, error: string | null}> => {
-    return ipcRenderer.invoke('get-window-effects-config');
+  getWindowEffectsConfig: () => {
+    return ipcRenderer.invoke("get-window-effects-config");
   },
-  updateWindowEffectsConfig: (config: any): Promise<{success: boolean, config: any | null, error: string | null}> => {
-    return ipcRenderer.invoke('update-window-effects-config', config);
+  updateWindowEffectsConfig: (config: SmoothTopMostConfig) => {
+    return ipcRenderer.invoke("update-window-effects-config", config);
   },
-  isWindowAnimating: (): Promise<{success: boolean, isAnimating: boolean, error: string | null}> => {
-    return ipcRenderer.invoke('is-window-animating');
+  isWindowAnimating: () => {
+    return ipcRenderer.invoke("is-window-animating");
   },
-})
+};
 
-// 提供窗口信息
-contextBridge.exposeInMainWorld('windowInfo', {
-  // 从URL参数判断当前是哪个窗口
+const windowInfoAPI: WindowInfoAPI = {
   getCurrentWindow: () => {
     const urlParams = new URLSearchParams(window.location.search);
     const hash = window.location.hash.substring(1);
-    return urlParams.get('window') || hash || 'pet';
-  }
-})
+    const value = urlParams.get("window") || hash || "pet";
+    return value === "settings" ? "settings" : "pet";
+  },
+};
+
+contextBridge.exposeInMainWorld("desktopPet", desktopPetAPI);
+contextBridge.exposeInMainWorld("windowInfo", windowInfoAPI);

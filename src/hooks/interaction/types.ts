@@ -1,5 +1,5 @@
 // src/hooks/interaction/types.ts
-import { PetStatus, InteractionType } from '../../types/petTypes';
+import { PetStatus, InteractionType } from '@/types/petTypes';
 
 // 定义宠物位置类型
 export interface PetPosition {

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import { InteractionType, ItemType, PetStatus } from '../../types/petTypes';
-import { ITEMS as predefinedItems } from '../../constants/itemData';
+import { InteractionType, ItemType, PetStatus } from '@/types/petTypes';
+import { ITEMS as predefinedItems } from '@/constants/itemData';
 
 /**
  * 宠物互动hook

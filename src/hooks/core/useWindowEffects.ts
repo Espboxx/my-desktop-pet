@@ -7,7 +7,7 @@ import type {
   WindowEffectsResponse, 
   WindowEffectsConfigResponse,
   WindowAnimationStatusResponse 
-} from '../../types/windowEffects';
+} from '@/types/windowEffects';
 
 interface UseWindowEffectsReturn {
   // 状态

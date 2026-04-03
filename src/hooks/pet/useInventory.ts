@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import { PetStatus } from '../../types/petTypes';
-import { ITEMS as predefinedItems } from '../../constants/itemData';
+import { PetStatus } from '@/types/petTypes';
+import { ITEMS as predefinedItems } from '@/constants/itemData';
 
 /**
  * 物品管理hook

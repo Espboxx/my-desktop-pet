@@ -81,16 +81,26 @@ export default function useAutonomousMovement({
     isMovingRef.current = true;
     const targetPosition = calculateNewPosition();
 
-    // TODO: Add a 'walking' or 'moving' animation
-    setCurrentAnimation('walk-animation'); // Placeholder animation name
+    // 根据移动方向设置相应的动画
+    const dx = targetPosition.x - petPosition.x;
+    const dy = targetPosition.y - petPosition.y;
+
+    // 根据移动方向选择动画
+    if (Math.abs(dx) > Math.abs(dy)) {
+      // 水平移动
+      setCurrentAnimation(dx > 0 ? 'walk-right-animation' : 'walk-left-animation');
+    } else {
+      // 垂直移动
+      setCurrentAnimation(dy > 0 ? 'walk-down-animation' : 'walk-up-animation');
+    }
 
     // Animate the movement (simple linear interpolation for now)
     // For smoother animation, consider libraries like react-spring or framer-motion
     // Or, use CSS transitions on the pet container
     const startX = petPosition.x;
     const startY = petPosition.y;
-    const dx = targetPosition.x - startX;
-    const dy = targetPosition.y - startY;
+    const movementDx = targetPosition.x - startX;
+    const movementDy = targetPosition.y - startY;
     const startTime = Date.now();
 
     const animate = () => {
@@ -99,8 +109,8 @@ export default function useAutonomousMovement({
       const progress = Math.min(1, elapsed / MOVEMENT_DURATION);
 
       setPetPosition({
-        x: startX + dx * progress,
-        y: startY + dy * progress,
+        x: startX + movementDx * progress,
+        y: startY + movementDy * progress,
       });
 
       if (progress < 1) {

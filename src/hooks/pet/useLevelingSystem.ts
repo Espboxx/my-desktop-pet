@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { PetStatus } from '../../types/petTypes';
-import { LEVEL_UNLOCKS } from '../../constants/petConstants';
-import { useBubbleService } from '../../services/bubble/BubbleContext'; // Import bubble service
+import { PetStatus } from '@/types/petTypes';
+import { LEVEL_UNLOCKS } from '@/constants/petConstants';
+import { useBubbleService } from '@/services/bubble/BubbleContext'; // Import bubble service
 
 /**
  * Hook to handle experience gain, leveling up, and associated unlocks.

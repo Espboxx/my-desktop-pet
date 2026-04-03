@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { PetStatus } from '../../types/petTypes';
+import { PetStatus } from '@/types/petTypes';
 import { EVENT_CHANCES, STATUS_THRESHOLDS } from './constants';
-import { ITEMS as predefinedItems } from '../../constants/itemData';
-import { useBubbleService } from '../../services/bubble/BubbleContext'; // Import bubble service
+import { ITEMS as predefinedItems } from '@/constants/itemData';
+import { useBubbleService } from '@/services/bubble/BubbleContext'; // Import bubble service
 
 /**
  * Hook to handle random special events occurring over time.

@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { PetType, PetExpression } from '../../types/petTypes';
-import { useAutoFallback } from '../../hooks/useCompatibility';
+import { PetType, PetExpression } from '@/types/petTypes';
+import { useAutoFallback } from '@/hooks/utils/useCompatibility';
 import './PetModel.css';
 
 interface PetModelProps {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { PetStatus } from '../../types/petTypes';
-import { useBubbleService } from '../../services/bubble/BubbleContext'; // Import bubble service hook
+import { PetStatus } from '@/types/petTypes';
+import { useBubbleService } from '@/services/bubble/BubbleContext'; // Import bubble service hook
 
 // 定义低状态标志的类型
 export type LowStatusFlags = Record<'mood' | 'cleanliness' | 'hunger' | 'energy', boolean>;

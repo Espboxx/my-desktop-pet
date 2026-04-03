@@ -6,20 +6,48 @@ interface EventManagerOptions {
   enableThrottling?: boolean;
 }
 
+// 通用事件处理器类型
+type EventHandler<T extends Event = Event> = (event: T) => void;
+
+// 事件类型映射
+interface EventTypeMap {
+  mousemove: MouseEvent;
+  mousedown: MouseEvent;
+  mouseup: MouseEvent;
+  click: MouseEvent;
+  dblclick: MouseEvent;
+  keydown: KeyboardEvent;
+  keyup: KeyboardEvent;
+  keypress: KeyboardEvent;
+  focus: FocusEvent;
+  blur: FocusEvent;
+  change: Event;
+  input: Event;
+  submit: Event;
+  resize: UIEvent;
+  scroll: UIEvent;
+  load: Event;
+  error: ErrorEvent;
+}
+
+// 支持自定义事件类型
+type EventType = keyof EventTypeMap | string;
+type EventPayload<T extends EventType> = T extends keyof EventTypeMap ? EventTypeMap[T] : Event;
+
 /**
  * 统一的事件管理器hook
  * 避免重复的事件监听器，提供节流功能
  */
 export function useEventManager(options: EventManagerOptions = {}) {
   const { throttleDelay = 16, enableThrottling = true } = options; // 默认60fps
-  
-  const listenersRef = useRef<Map<string, Set<(event: any) => void>>>(new Map());
+
+  const listenersRef = useRef<Map<string, Set<EventHandler>>>(new Map());
   const activeListenersRef = useRef<Set<string>>(new Set());
 
   // 添加事件监听器
-  const addEventListener = useCallback((
-    eventType: string,
-    handler: (event: any) => void,
+  const addEventListener = useCallback(<T extends EventType>(
+    eventType: T,
+    handler: EventHandler<EventPayload<T>>,
     target: EventTarget = document
   ) => {
     if (!listenersRef.current.has(eventType)) {
@@ -53,7 +81,7 @@ export function useEventManager(options: EventManagerOptions = {}) {
 
   // 创建事件处理器
   const createHandler = useCallback((eventType: string) => {
-    return (event: any) => {
+    return (event: Event) => {
       const handlers = listenersRef.current.get(eventType);
       if (handlers) {
         handlers.forEach(handler => {

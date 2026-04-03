@@ -1,6 +1,6 @@
 import React from 'react';
-import { useSharedPetStatus } from '../../context/PetStatusContext';
-import { ITEMS as predefinedItems } from '../../constants/itemData'; // Import predefined item details
+import { useSharedPetStatus } from '@/context/PetStatusContext';
+import { ITEMS as predefinedItems } from '@/constants/itemData'; // Import predefined item details
 import '../../styles/InventoryTab.css'; // Create this CSS file later
 
 const InventoryTab: React.FC = () => {

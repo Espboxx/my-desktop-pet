@@ -2,8 +2,8 @@
 // 允许用户配置丝滑置顶等窗口特效
 
 import React, { useState, useCallback } from 'react';
-import { useWindowEffects } from '../../hooks/core/useWindowEffects';
-import type { SmoothTopMostConfig } from '../../types/windowEffects';
+import { useWindowEffects } from '@/hooks/core/useWindowEffects';
+import type { SmoothTopMostConfig } from '@/types/windowEffects';
 
 const WindowEffectsTab: React.FC = () => {
   const {

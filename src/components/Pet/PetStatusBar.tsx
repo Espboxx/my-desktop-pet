@@ -1,6 +1,6 @@
 import React from 'react';
-import { PetStatus } from '../../types/petTypes'; // Import PetStatus type
-import { LowStatusFlags } from '../../hooks/pet/useStatusWarnings'; // Import LowStatusFlags type
+import { PetStatus } from '@/types/petTypes'; // Import PetStatus type
+import { LowStatusFlags } from '@/hooks/pet/useStatusWarnings'; // Import LowStatusFlags type
 
 interface PetStatusBarProps {
   status: PetStatus;

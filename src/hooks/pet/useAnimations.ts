@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { IdleAnimation, PetStatus } from '../../types/petTypes';
+import { IdleAnimation, PetStatus } from '@/types/petTypes';
 import { IDLE_ANIMATION_DURATIONS, BASE_IDLE_ANIMATIONS } from './constants';
 
 /**
@@ -125,10 +125,25 @@ export function useAnimations(
         const TIRED_THRESHOLD = 30;
 
         // 定义动画池（使用现有的基本动画作为示例）
-        // TODO: 稍后添加更具体的动画（例如'idle-yawn', 'idle-happy-jump'）
-        const happyAnimations = ['idle-wiggle-animation'];
-        const tiredAnimations = ['stretch-animation']; // 暂时解释为疲倦的伸展/打哈欠
-        const neutralAnimations = ['stretch-animation', 'idle-wiggle-animation'];
+        // 丰富的动画池，根据宠物状态选择合适的动画
+        const happyAnimations = [
+          'idle-wiggle-animation',
+          'idle-happy-jump',      // 开心跳跃
+          'idle-spin-animation',  // 开心旋转
+          'idle-bounce-animation' // 开心弹跳
+        ];
+        const tiredAnimations = [
+          'stretch-animation',     // 疲倦伸展
+          'idle-yawn',           // 打哈欠
+          'idle-sleep-animation', // 困倦睡觉
+          'idle-rest-animation'   // 休息
+        ];
+        const neutralAnimations = [
+          'stretch-animation',
+          'idle-wiggle-animation',
+          'blink-animation',       // 眨眼
+          'idle-look-around'      // 环顾四周
+        ];
 
         let prioritizedPool: string[] = [];
 

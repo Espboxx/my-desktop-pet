@@ -1,8 +1,8 @@
 // src/hooks/interaction/useActionHandling.ts
 import { useCallback } from 'react';
-import { PetStatus, InteractionType, ItemType } from '../../types/petTypes';
-// import { ACHIEVEMENTS as predefinedAchievements } from '../../constants/petConstants'; // Unused
-// import { gameData } from '../../constants/taskData'; // Unused
+import { PetStatus, InteractionType, ItemType } from '@/types/petTypes';
+// import { ACHIEVEMENTS as predefinedAchievements } from '@/constants/petConstants'; // Unused
+// import { gameData } from '@/constants/taskData'; // Unused
 import { ANIMATION_GROUPS } from './constants'; // Import animation groups from local constants
 
 interface UseActionHandlingProps {
@@ -186,7 +186,9 @@ export function useActionHandling({
                 updatedStatus.mood = Math.min(100, Math.max(0, prev.mood + baseMoodChange));
                 updatedStatus.energy = Math.min(100, Math.max(0, prev.energy + baseEnergyChange));
                 updatedStatus.exp = prev.exp + baseExpChange;
-                // TODO: Add task/achievement checks here if needed for these actions
+                // 检查任务和成就进度
+                checkTaskProgress(action, currentCounts);
+                checkAchievementProgress(updatedStatus, currentCounts);
             }
 
             return {
@@ -244,6 +246,41 @@ export function useActionHandling({
     }
     // Menu closing and passthrough logic will be handled in the main orchestrator hook
   }, [status, interact, setStatus, setCurrentAnimation, showNotification, showThoughtBubble]); // Add showThoughtBubble to dependencies
+
+// 任务进度检查函数
+function checkTaskProgress(interactionType: string, currentCounts: Record<string, number>): void {
+  // 检查是否有相关任务需要更新
+  console.log(`📋 检查任务进度: ${interactionType}, 当前计数:`, currentCounts);
+
+  // 这里可以添加具体的任务检查逻辑
+  // 例如：检查是否完成了"喂食10次"任务
+  if (interactionType === 'feed' && currentCounts[interactionType] >= 10) {
+    console.log('🎉 完成喂食任务！');
+    // 可以触发任务完成通知
+  }
+}
+
+// 成就进度检查函数
+function checkAchievementProgress(
+  updatedStatus: import('../../types/petTypes').PetStatus,
+  currentCounts: Record<string, number>
+): void {
+  // 检查成就条件
+  console.log('🏆 检查成就进度...');
+
+  // 例如：检查是否达到特定等级
+  if (updatedStatus.level >= 5) {
+    console.log('🌟 达到5级成就！');
+  }
+
+  // 例如：检查互动总数
+  const totalInteractions = Object.values(currentCounts).reduce((sum, count) => sum + count, 0);
+  if (totalInteractions >= 100) {
+    console.log('🎊 互动达人成就！');
+  }
+
+  // 这里可以添加更多成就检查逻辑
+}
 
   return {
     handleAction,

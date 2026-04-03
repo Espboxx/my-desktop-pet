@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { PetStatus, SavedPetData } from '../../types/petTypes';
-import { PetPosition } from '../interaction/types';
-import { PET_TYPES } from '../../constants/petConstants';
+import { PetStatus, SavedPetData } from '@/types/petTypes';
+import { PetPosition } from '@/hooks/interaction/types';
+import { PET_TYPES } from '@/constants/petConstants';
 import { defaultInitialStatus } from './constants';
 
 /**

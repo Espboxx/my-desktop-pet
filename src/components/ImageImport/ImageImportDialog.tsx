@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { useCustomImageManager } from '../../hooks/useImageResource';
+import { useCustomImageManager } from '@/hooks/utils/useImageResource';
 import './ImageImportDialog.css';
 
 interface ImageImportDialogProps {

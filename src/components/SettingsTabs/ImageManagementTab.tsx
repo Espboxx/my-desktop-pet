@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { PET_TYPES } from '../../constants/petConstants';
-import { customImageStorage, CustomImageData } from '../../services/customImageStorage';
+import { PET_TYPES } from '@/constants/petConstants';
+import { customImageStorage, CustomImageData } from '@/services/customImageStorage';
 import ImageImportDialog from '../ImageImport/ImageImportDialog';
 
 const ImageManagementTab: React.FC = () => {

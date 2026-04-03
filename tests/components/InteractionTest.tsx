@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useHapticFeedback } from '../hooks/interaction/useHapticFeedback';
-import { useInteractionFeedback } from '../hooks/interaction/useInteractionFeedback';
-import { useSmoothMovement } from '../hooks/animation/useSmoothMovement';
+import { useHapticFeedback } from '@/hooks/interaction/useHapticFeedback';
+import { useInteractionFeedback } from '@/hooks/interaction/useInteractionFeedback';
+import { useSmoothMovement } from '@/hooks/animation/useSmoothMovement';
 
 /**
  * 交互测试组件
