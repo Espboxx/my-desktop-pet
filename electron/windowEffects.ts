@@ -119,7 +119,6 @@ class WindowEffectsManager {
    */
   private async performSmoothAnimation(window: BrowserWindow, state: WindowState): Promise<void> {
     return new Promise((resolve, reject) => {
-      const startTime = Date.now();
       const { duration, steps, easing } = this.config;
       const stepDuration = duration / steps;
       let currentStep = 0;
@@ -264,7 +263,7 @@ class WindowEffectsManager {
    */
   cleanup() {
     // 清理所有动画
-    for (const [windowId, state] of this.windowStates) {
+    for (const [, state] of this.windowStates) {
       if (state.animationId) {
         clearTimeout(state.animationId);
       }
