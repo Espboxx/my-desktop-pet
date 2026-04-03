@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { PetStatus } from '@/types/petTypes';
 import { ACHIEVEMENTS as predefinedAchievements } from '@/constants/petConstants';
-import { useBubbleService } from '@/services/bubble/BubbleContext'; // Import bubble service
+import { useBubbleService } from '@/services/bubble/useBubbleService'; // Import bubble service
 
 /**
  * Hook to manage achievement checking, unlocking, and rewards.
@@ -25,7 +25,7 @@ export function useAchievementManager(
 
       const currentAchievements = predefinedAchievements;
       let statusNeedsUpdate = false; // Flag to track if setStatus is needed
-      let updatedStatus = { ...currentStatus }; // Start with current status
+      const updatedStatus = { ...currentStatus }; // Start with current status
 
       const newlyUnlockedAchievementsInInterval: string[] = [];
       const achievementNotifications: string[] = [];

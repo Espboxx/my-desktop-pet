@@ -9,10 +9,16 @@ import {
 import { useImagePreloader } from "@/hooks/utils/useImagePreloader";
 import imageResourceManager from "@/services/imageResourceManager";
 
+interface ImageTestResult {
+  test: string;
+  status: 'PASS' | 'FAIL' | 'WARN' | 'INFO';
+  details: string;
+}
+
 const ImageSystemTest: React.FC = () => {
   const [selectedPetType, setSelectedPetType] = useState("default");
   const [selectedExpression, setSelectedExpression] = useState("normal");
-  const [testResults, setTestResults] = useState<any[]>([]);
+  const [testResults, setTestResults] = useState<ImageTestResult[]>([]);
   const [isRunningTests, setIsRunningTests] = useState(false);
 
   const { report } = useCompatibility();
@@ -27,7 +33,7 @@ const ImageSystemTest: React.FC = () => {
   // 运行图像系统测试
   const runImageSystemTests = async () => {
     setIsRunningTests(true);
-    const results: any[] = [];
+    const results: ImageTestResult[] = [];
 
     try {
       // 测试1: 兼容性检查

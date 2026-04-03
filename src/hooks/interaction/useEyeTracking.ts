@@ -37,7 +37,7 @@ export function useEyeTracking({
     // }
   }, []);
 
-  const updateEyeDirection = useCallback((mouseX: number, mouseY: number, _forceUpdate = false) => {
+  const updateEyeDirection = useCallback((mouseX: number, mouseY: number) => {
     // Store last known position regardless of tracking state
     lastMousePositionRef.current = { x: mouseX, y: mouseY };
 

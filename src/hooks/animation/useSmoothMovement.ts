@@ -70,8 +70,8 @@ export function useSmoothMovement(
   // 应用边界约束和反弹
   const applyBoundaryConstraints = useCallback((pos: Position, vel: Position): { position: Position; velocity: Position } => {
     const { minX, maxX, minY, maxY } = boundariesRef.current;
-    let newPos = { ...pos };
-    let newVel = { ...vel };
+    const newPos = { ...pos };
+    const newVel = { ...vel };
 
     if (enableBounce) {
       // X轴边界反弹
@@ -111,7 +111,7 @@ export function useSmoothMovement(
       
       if (deltaTime <= 0) return prevState;
 
-      let { position, velocity, targetPosition } = prevState;
+      const { position, velocity, targetPosition } = prevState;
 
       // 计算到目标的距离和方向
       const dx = targetPosition.x - position.x;
@@ -152,8 +152,8 @@ export function useSmoothMovement(
       }
 
       // 更新位置
-      let newPositionX = position.x + newVelocityX * deltaTime;
-      let newPositionY = position.y + newVelocityY * deltaTime;
+      const newPositionX = position.x + newVelocityX * deltaTime;
+      const newPositionY = position.y + newVelocityY * deltaTime;
 
       // 应用边界约束
       const constrained = applyBoundaryConstraints(

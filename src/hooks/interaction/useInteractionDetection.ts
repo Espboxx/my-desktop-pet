@@ -306,7 +306,7 @@ export function useInteractionDetection({
 
   }, [isDraggingRef, reactionAnimation, setReactionAnimation, internalClearReaction, petRef, detectCircularMotion]);
 
-  const handleMouseUpForDetection = useCallback((_e: MouseEvent) => {
+  const handleMouseUpForDetection = useCallback(() => {
     // Clear long press timeout on any mouse up (if it hasn't fired)
     if (longPressTimeoutRef.current) {
       clearTimeout(longPressTimeoutRef.current);
@@ -315,7 +315,7 @@ export function useInteractionDetection({
     // Other up-related logic (like click action) is handled by drag/main hook
   }, []);
 
-  const handleMouseEnterForDetection = useCallback((_e: React.MouseEvent) => {
+  const handleMouseEnterForDetection = useCallback(() => {
     // 只重置非悬停相关的检测状态
     if (hoverDetectTimeoutRef.current) clearTimeout(hoverDetectTimeoutRef.current);
     if (longPressTimeoutRef.current) clearTimeout(longPressTimeoutRef.current);
@@ -343,7 +343,7 @@ export function useInteractionDetection({
 
   }, [isDraggingRef, updateHoverTime]);
 
-  const handleMouseLeaveForDetection = useCallback((_e: React.MouseEvent) => {
+  const handleMouseLeaveForDetection = useCallback(() => {
     // 在重置状态前，如果有悬停动画正在播放，清除它
     if (hoverAnimationTriggeredRef.current && reactionAnimation === 'tilt-head') {
       internalClearReaction();

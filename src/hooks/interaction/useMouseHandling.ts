@@ -61,7 +61,8 @@ export default function useMouseHandling({
   const REACTION_ANIMATION_DURATION = INTERACTION_CONSTANTS.REACTION_ANIMATION_DURATION;
   
   // 鼠标进入处理
-  const handleMouseEnter = useCallback((_e: React.MouseEvent) => {
+  const handleMouseEnter = useCallback((event: React.MouseEvent) => {
+    void event;
     isMouseOverPet.current = true;
     if (window.desktopPet?.setMousePassthrough) {
       window.desktopPet.setMousePassthrough(false);
@@ -70,7 +71,8 @@ export default function useMouseHandling({
   }, [clearReaction, isMouseOverPet]);
   
   // 鼠标离开处理
-  const handleMouseLeave = useCallback((_e: React.MouseEvent) => {
+  const handleMouseLeave = useCallback((event: React.MouseEvent) => {
+    void event;
     isMouseOverPet.current = false;
     clearReaction(); // 清除反应和计时器
 

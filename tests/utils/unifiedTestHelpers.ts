@@ -92,10 +92,24 @@ class TestHelper {
 
     let props: Record<string, unknown> | undefined;
     if (reactPropsKey) {
-      props = (element as Record<string, unknown>)[reactPropsKey] as Record<string, unknown>;
+      props = (element as unknown as Record<string, unknown>)[reactPropsKey] as Record<string, unknown>;
     }
 
     return { reactFiberKey, reactPropsKey, props };
+  }
+
+  calculateSummary(tests: Record<string, TestResult>, duration: number): TestSuite['summary'] {
+    const total = Object.keys(tests).length;
+    const passed = Object.values(tests).filter((test) => test.success).length;
+    const failed = total - passed;
+
+    return {
+      total,
+      passed,
+      failed,
+      success: failed === 0,
+      duration,
+    };
   }
 
   /**
@@ -503,29 +517,17 @@ export function runWindowEffectsTest(): TestSuite {
 
 // 在开发环境中暴露到全局对象
 if (process.env.NODE_ENV === 'development') {
-  (window as any).unifiedTester = unifiedTester;
-  (window as any).runAllTests = runAllTests;
-  (window as any).runDragTest = runDragTest;
-  (window as any).runFirstClickTest = runFirstClickTest;
-  (window as any).runWindowEffectsTest = runWindowEffectsTest;
-}
-
-// ========== 辅助方法 ==========
-
-// 添加到 TestHelper 基类的辅助方法
-TestHelper.prototype.calculateSummary = function(
-  tests: Record<string, TestResult>,
-  duration: number
-) {
-  const testArray = Object.values(tests);
-  const passed = testArray.filter(t => t.success).length;
-  const failed = testArray.filter(t => !t.success).length;
-
-  return {
-    total: testArray.length,
-    passed,
-    failed,
-    success: failed === 0,
-    duration
+  const debugWindow = window as typeof window & {
+    unifiedTester?: UnifiedTester;
+    runAllTests?: typeof runAllTests;
+    runDragTest?: typeof runDragTest;
+    runFirstClickTest?: typeof runFirstClickTest;
+    runWindowEffectsTest?: typeof runWindowEffectsTest;
   };
-};
+
+  debugWindow.unifiedTester = unifiedTester;
+  debugWindow.runAllTests = runAllTests;
+  debugWindow.runDragTest = runDragTest;
+  debugWindow.runFirstClickTest = runFirstClickTest;
+  debugWindow.runWindowEffectsTest = runWindowEffectsTest;
+}

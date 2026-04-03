@@ -2,12 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { useHapticFeedback } from '@/hooks/interaction/useHapticFeedback';
 import { getUserActivationManager } from '@/services/userActivation/UserActivationManager';
 
+interface ActivationInfo {
+  hasInteracted: boolean;
+  canUseAPIs: boolean;
+  isElectron: boolean;
+  supportsVibration: boolean;
+  interactionCount: number;
+  electronInfo?: {
+    electronVersion?: string;
+    chromeVersion?: string;
+    nodeVersion?: string;
+    platform: string;
+    isMainProcess: boolean;
+    isRendererProcess: boolean;
+  };
+}
+
 /**
  * 触觉反馈测试组件
  * 用于测试和验证用户激活管理器和触觉反馈功能
  */
 const HapticFeedbackTest: React.FC = () => {
-  const [activationInfo, setActivationInfo] = useState<any>(null);
+  const [activationInfo, setActivationInfo] = useState<ActivationInfo | null>(null);
   const [testResults, setTestResults] = useState<string[]>([]);
   
   const hapticFeedback = useHapticFeedback({

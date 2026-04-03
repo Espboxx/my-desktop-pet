@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { getUserActivationManager } from '../../services/userActivation/UserActivationManager';
 
 interface InteractionFeedbackOptions {
   hoverDelay?: number;
@@ -15,6 +16,10 @@ interface InteractionState {
   isDragging: boolean;
   dragDistance: number;
   interactionIntensity: number; // 0-1, 交互强度
+}
+
+interface AudioContextWindow extends Window {
+  webkitAudioContext?: typeof AudioContext;
 }
 
 /**
@@ -58,7 +63,7 @@ export function useInteractionFeedback(options: InteractionFeedbackOptions = {})
     };
 
     // 使用用户激活管理器检查状态
-    const userActivationManager = require('../../services/userActivation/UserActivationManager').getUserActivationManager();
+    const userActivationManager = getUserActivationManager();
     if (!userActivationManager.canUseUserActivatedAPIs()) {
       // 静默失败，符合安全策略
       return;
@@ -78,7 +83,12 @@ export function useInteractionFeedback(options: InteractionFeedbackOptions = {})
     // 这里可以播放不同的音效
     // 暂时使用Web Audio API生成简单音效
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextCtor = window.AudioContext || (window as AudioContextWindow).webkitAudioContext;
+      if (!AudioContextCtor) {
+        return;
+      }
+
+      const audioContext = new AudioContextCtor();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
       
@@ -150,7 +160,8 @@ export function useInteractionFeedback(options: InteractionFeedbackOptions = {})
   }, [smoothTransitions]); // 移除interactionState.interactionIntensity依赖
 
   // 鼠标进入处理（添加防抖机制）
-  const handleMouseEnter = useCallback((_e: React.MouseEvent) => {
+  const handleMouseEnter = useCallback((event: React.MouseEvent) => {
+    void event;
     // 清除可能存在的离开延迟
     if (leaveTimeoutRef.current) {
       clearTimeout(leaveTimeoutRef.current);
@@ -177,7 +188,8 @@ export function useInteractionFeedback(options: InteractionFeedbackOptions = {})
   }, [hoverDelay, animateInteractionIntensity, triggerHapticFeedback, triggerSoundFeedback]);
 
   // 鼠标离开处理（添加防抖机制）
-  const handleMouseLeave = useCallback((_e: React.MouseEvent) => {
+  const handleMouseLeave = useCallback((event: React.MouseEvent) => {
+    void event;
     // 清除进入延迟
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
@@ -256,7 +268,8 @@ export function useInteractionFeedback(options: InteractionFeedbackOptions = {})
   }, [dragThreshold, interactionState.isDragging, animateInteractionIntensity, triggerHapticFeedback, triggerSoundFeedback]);
 
   // 鼠标抬起处理
-  const handleMouseUp = useCallback((_e: React.MouseEvent) => {
+  const handleMouseUp = useCallback((event: React.MouseEvent) => {
+    void event;
     const wasDragging = interactionState.isDragging;
     const isHovering = interactionState.isHovering;
 

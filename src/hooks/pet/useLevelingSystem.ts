@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { PetStatus } from '@/types/petTypes';
 import { LEVEL_UNLOCKS } from '@/constants/petConstants';
-import { useBubbleService } from '@/services/bubble/BubbleContext'; // Import bubble service
+import { useBubbleService } from '@/services/bubble/useBubbleService'; // Import bubble service
 
 /**
  * Hook to handle experience gain, leveling up, and associated unlocks.
@@ -21,7 +21,7 @@ export function useLevelingSystem(
     const intervalId = setInterval(() => {
       setStatus(prev => {
         // Create a mutable copy
-        let newStatus: PetStatus = { ...prev };
+        const newStatus: PetStatus = { ...prev };
         const oldLevel = prev.level;
 
         // --- Passive EXP Gain ---

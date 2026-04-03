@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { PetStatus } from '@/types/petTypes';
 import { EVENT_CHANCES, STATUS_THRESHOLDS } from './constants';
-import { useBubbleService } from '@/services/bubble/BubbleContext'; // Import bubble service
+import { useBubbleService } from '@/services/bubble/useBubbleService'; // Import bubble service
 
 /**
  * Hook to handle proactive need bubbles based on pet status.
@@ -23,7 +23,7 @@ export function useProactiveNeeds(
       // Only trigger if no other bubble is active and random chance met
       if (bubbles.length === 0 && Math.random() < EVENT_CHANCES.PROACTIVE_BUBBLE) {
         let bubbleText = "";
-        let bubbleType: 'thought' | 'speech' = 'thought'; // Default to thought
+        const bubbleType: 'thought' | 'speech' = 'thought'; // Default to thought
 
         // Priority needs check: Hunger > Energy > Mood > Cleanliness
         if (currentStatus.hunger >= STATUS_THRESHOLDS.HUNGER_NEED && currentStatus.hunger < 80) {

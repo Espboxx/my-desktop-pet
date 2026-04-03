@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { PetStatus } from '@/types/petTypes';
 import { EVENT_CHANCES, STATUS_THRESHOLDS } from './constants';
 import { ITEMS as predefinedItems } from '@/constants/itemData';
-import { useBubbleService } from '@/services/bubble/BubbleContext'; // Import bubble service
+import { useBubbleService } from '@/services/bubble/useBubbleService'; // Import bubble service
 
 /**
  * Hook to handle random special events occurring over time.
@@ -23,7 +23,7 @@ export function useSpecialEvents(
       if (!currentStatus) return;
 
       // let statusNeedsUpdate = false; // Unused
-      let updatedStatus = { ...currentStatus }; // Start with current status
+      const updatedStatus = { ...currentStatus }; // Start with current status
       let eventMessage = "";
       let specialEventOccurred = false;
 

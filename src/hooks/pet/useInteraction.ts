@@ -52,7 +52,7 @@ export function useInteraction(
     let statusUpdateAttempted = false;
 
     setStatus(prev => {
-      let currentInventory = { ...prev.inventory };
+      const currentInventory = { ...prev.inventory };
       let currentItemQuantity = 0;
 
       // 如果需要物品并已识别，则尝试消耗

@@ -126,8 +126,8 @@ export function useActionHandling({
         // Handle other status-modifying actions that DON'T require items (train, learn, sleep, massage)
         // Keep the original setStatus logic for these for now, or refactor interact to handle them too.
         setStatus(prev => {
-            let updatedStatus = { ...prev };
-            let currentCounts = { ...(prev.interactionCounts || {}) };
+            const updatedStatus = { ...prev };
+            const currentCounts = { ...(prev.interactionCounts || {}) };
             const interactionKey = action as InteractionType | string;
             currentCounts[interactionKey] = (currentCounts[interactionKey] || 0) + 1;
 

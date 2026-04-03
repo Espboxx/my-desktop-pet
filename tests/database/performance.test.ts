@@ -1,8 +1,10 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { databaseManager } from '../../electron/database/DatabaseManager';
 import { petStatusService } from '../../electron/database/services/PetStatusService';
 import { settingsService } from '../../electron/database/services/SettingsService';
 import type { SavedPetData } from '../../src/types/petTypes';
+
+type TestSettingsMap = Record<string, string | number | boolean>;
 
 describe('Database Performance Tests', () => {
   beforeAll(async () => {
@@ -52,9 +54,10 @@ describe('Database Performance Tests', () => {
           completedTasks: ['tutorial-complete'],
           unlockedIdleAnimations: ['sleeping', 'playing'],
           bubble: {
-            contentId: 'hungry',
-            isVisible: true,
-            displayDuration: 5000
+            active: true,
+            text: 'hungry',
+            type: 'thought',
+            timeout: 5000
           },
           inventory: {
             food: 5,
@@ -131,9 +134,10 @@ describe('Database Performance Tests', () => {
             completedTasks: [],
             unlockedIdleAnimations: [],
             bubble: {
-              contentId: 'test',
-              isVisible: true,
-              displayDuration: 5000
+              active: true,
+              text: 'test',
+              type: 'thought',
+              timeout: 5000
             },
             inventory: {
               food: i,
@@ -202,7 +206,7 @@ describe('Database Performance Tests', () => {
     });
 
     it('should handle large number of settings', async () => {
-      const largeSettings: Record<string, any> = {};
+      const largeSettings: TestSettingsMap = {};
 
       // 生成大量设置项
       for (let i = 0; i < 1000; i++) {
@@ -314,9 +318,10 @@ describe('Database Performance Tests', () => {
             completedTasks: [],
             unlockedIdleAnimations: [],
             bubble: {
-              contentId: 'test',
-              isVisible: true,
-              displayDuration: 5000
+              active: true,
+              text: 'test',
+              type: 'thought',
+              timeout: 5000
             },
             inventory: {}
           },
