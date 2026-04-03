@@ -129,7 +129,7 @@ export function useStateSync<T>(
   initialState: T,
   storage: 'memory' | 'localStorage' | 'sessionStorage' = 'memory'
 ) {
-  const storageMap = useRef(new Map<string, any>());
+  const storageMap = useRef(new Map<string, T>());
   
   const getStoredValue = useCallback(() => {
     switch (storage) {

@@ -8,6 +8,16 @@ interface PerformanceMetrics {
   memoryUsage?: number;
 }
 
+interface BrowserMemoryInfo {
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
+}
+
+interface PerformanceWithMemory extends Performance {
+  memory?: BrowserMemoryInfo;
+}
+
 /**
  * 性能监控hook
  * 监控组件渲染性能和内存使用
@@ -51,7 +61,7 @@ export function usePerformanceMonitor(componentName: string, enabled: boolean = 
     
     // 获取内存使用情况（如果可用）
     if ('memory' in performance) {
-      metrics.memoryUsage = (performance as any).memory.usedJSHeapSize;
+      metrics.memoryUsage = (performance as PerformanceWithMemory).memory?.usedJSHeapSize;
     }
     
     renderStartTimeRef.current = 0;
@@ -130,7 +140,9 @@ export function useMemoryMonitor(enabled: boolean = false) {
   const getMemoryUsage = useCallback(() => {
     if (!enabled || !('memory' in performance)) return null;
     
-    const memory = (performance as any).memory;
+    const memory = (performance as PerformanceWithMemory).memory;
+    if (!memory) return null;
+
     return {
       used: memory.usedJSHeapSize,
       total: memory.totalJSHeapSize,

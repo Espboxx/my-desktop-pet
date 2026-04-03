@@ -1,5 +1,4 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useThrottle } from './useDebounce';
 
 interface EventManagerOptions {
   throttleDelay?: number;
@@ -55,7 +54,7 @@ export function useEventManager(options: EventManagerOptions = {}) {
     }
     
     const handlers = listenersRef.current.get(eventType)!;
-    handlers.add(handler);
+    handlers.add(handler as EventHandler);
 
     // 如果这是第一个监听器，添加到DOM
     if (handlers.size === 1 && !activeListenersRef.current.has(eventType)) {
@@ -69,7 +68,7 @@ export function useEventManager(options: EventManagerOptions = {}) {
 
     // 返回清理函数
     return () => {
-      handlers.delete(handler);
+      handlers.delete(handler as EventHandler);
       
       // 如果没有更多监听器，从DOM移除
       if (handlers.size === 0 && activeListenersRef.current.has(eventType)) {
@@ -98,7 +97,34 @@ export function useEventManager(options: EventManagerOptions = {}) {
   // 创建节流事件处理器
   const createThrottledHandler = useCallback((eventType: string, delay: number) => {
     const handler = createHandler(eventType);
-    return useThrottle(handler, delay);
+    let lastCallTime = 0;
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    return (event: Event) => {
+      const now = Date.now();
+      const remaining = delay - (now - lastCallTime);
+
+      if (remaining <= 0) {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+
+        lastCallTime = now;
+        handler(event);
+        return;
+      }
+
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      timeoutId = setTimeout(() => {
+        lastCallTime = Date.now();
+        timeoutId = null;
+        handler(event);
+      }, remaining);
+    };
   }, [createHandler]);
 
   // 移除所有监听器

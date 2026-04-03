@@ -3,7 +3,7 @@ import { useCallback, useRef } from 'react';
 /**
  * 防抖hook - 延迟执行函数直到停止调用一段时间后
  */
-export function useDebounce<T extends (...args: any[]) => any>(
+export function useDebounce<T extends (...args: unknown[]) => unknown>(
   callback: T,
   delay: number
 ): T {
@@ -29,7 +29,7 @@ export function useDebounce<T extends (...args: any[]) => any>(
 /**
  * 节流hook - 限制函数执行频率
  */
-export function useThrottle<T extends (...args: any[]) => any>(
+export function useThrottle<T extends (...args: unknown[]) => unknown>(
   callback: T,
   delay: number
 ): T {
