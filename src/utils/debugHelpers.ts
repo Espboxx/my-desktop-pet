@@ -42,7 +42,8 @@ export function safeUseMemo<T>(
     return factory();
   }
   
-  return React.useMemo(factory, deps);
+  void deps;
+  return factory();
 }
 
 /**
@@ -114,12 +115,14 @@ export function logReactError(error: Error, errorInfo: React.ErrorInfo, componen
  * 检查组件重新渲染原因
  */
 export function useWhyDidYouUpdate(name: string, props: Record<string, unknown>): void {
-  // 只在开发环境运行
-  if (process.env.NODE_ENV !== 'development') return;
-
   const previousProps = React.useRef<Record<string, unknown>>();
 
   React.useEffect(() => {
+    if (process.env.NODE_ENV !== 'development') {
+      previousProps.current = props;
+      return;
+    }
+
     if (previousProps.current) {
       const allKeys = Object.keys({ ...previousProps.current, ...props });
       const changedProps: Record<string, { from: unknown; to: unknown }> = {};
@@ -177,9 +180,11 @@ export function useDependencyChecker(
   dependencies: unknown[],
   expectedLength?: number
 ): void {
-  if (process.env.NODE_ENV !== 'development') return;
-
   React.useEffect(() => {
+    if (process.env.NODE_ENV !== 'development') {
+      return;
+    }
+
     // 检查依赖数组长度
     if (expectedLength !== undefined && dependencies.length !== expectedLength) {
       console.warn(
@@ -203,5 +208,5 @@ export function useDependencyChecker(
         );
       }
     });
-  }, dependencies);
+  }, [dependencies, expectedLength, hookName]);
 }

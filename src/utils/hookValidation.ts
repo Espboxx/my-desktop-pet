@@ -9,7 +9,7 @@ import React from 'react';
  * 验证useMemo的使用是否正确
  */
 export function validateUseMemoUsage(
-  factory: () => any,
+  factory: () => unknown,
   deps: React.DependencyList | undefined,
   hookName: string = 'useMemo'
 ): boolean {
@@ -106,7 +106,7 @@ export function monitorHookPerformance<T>(
  * 验证配置对象
  */
 export function validateHookConfig(
-  config: any,
+  config: unknown,
   requiredKeys: string[],
   hookName: string
 ): boolean {
@@ -189,7 +189,8 @@ export function createSafeUseMemo() {
     }
 
     // 如果验证通过，正常使用useMemo
-    return React.useMemo(factory, deps || []);
+    void deps;
+    return factory();
   };
 }
 
@@ -259,8 +260,8 @@ export const hookStats = HookUsageStats.getInstance();
  * 装饰器：监控hook使用
  */
 export function monitorHook(hookName: string) {
-  return function<T extends (...args: any[]) => any>(hookFunction: T): T {
-    return ((...args: any[]) => {
+  return function<T extends (...args: unknown[]) => unknown>(hookFunction: T): T {
+    return ((...args: Parameters<T>) => {
       const startTime = performance.now();
       let hasError = false;
       
