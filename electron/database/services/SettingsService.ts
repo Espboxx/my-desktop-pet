@@ -1,5 +1,18 @@
 import { databaseManager } from '../DatabaseManager';
 
+type SettingValue = string | number | boolean | Record<string, unknown> | null;
+
+interface SettingRow {
+  key: string;
+  value: string;
+  type: string;
+}
+
+interface SingleSettingRow {
+  value: string;
+  type: string;
+}
+
 /**
  * 应用设置数据库服务
  * 负责应用设置的数据库操作
@@ -8,20 +21,20 @@ export class SettingsService {
   /**
    * 获取应用设置
    */
-  public getSettings(): Record<string, any> {
+  public getSettings(): Record<string, SettingValue> {
     try {
       const db = databaseManager.getDatabase();
 
       // 获取所有设置
-      const settings = db.prepare(`
+      const settings = db.prepare<[], SettingRow>(`
         SELECT key, value, type
         FROM app_settings
         ORDER BY key
       `).all();
 
       // 转换为对象并解析类型
-      const result: Record<string, any> = {};
-      settings.forEach((setting: any) => {
+      const result: Record<string, SettingValue> = {};
+      settings.forEach((setting) => {
         const { key, value, type } = setting;
         try {
           switch (type) {
@@ -58,11 +71,11 @@ export class SettingsService {
     try {
       const db = databaseManager.getDatabase();
 
-      const setting = db.prepare(`
+      const setting = db.prepare<[string], SingleSettingRow>(`
         SELECT value, type
         FROM app_settings
         WHERE key = ?
-      `).get([key]);
+      `).get(key);
 
       if (!setting) {
         return defaultValue;
@@ -90,7 +103,7 @@ export class SettingsService {
   /**
    * 设置应用设置
    */
-  public setSettings(settings: Record<string, any>): void {
+  public setSettings(settings: Record<string, SettingValue>): void {
     try {
       const db = databaseManager.getDatabase();
 
@@ -116,7 +129,7 @@ export class SettingsService {
   /**
    * 设置单个设置项
    */
-  public setSetting(key: string, value: any): void {
+  public setSetting(key: string, value: SettingValue): void {
     try {
       const db = databaseManager.getDatabase();
 
@@ -170,7 +183,7 @@ export class SettingsService {
   /**
    * 获取设置类型
    */
-  private getValueType(value: any): string {
+  private getValueType(value: SettingValue): string {
     if (typeof value === 'number') {
       return 'number';
     } else if (typeof value === 'boolean') {
@@ -185,7 +198,7 @@ export class SettingsService {
   /**
    * 将值转换为字符串
    */
-  private valueToString(value: any, type: string): string {
+  private valueToString(value: SettingValue, type: string): string {
     switch (type) {
       case 'object':
         return JSON.stringify(value);
@@ -197,7 +210,7 @@ export class SettingsService {
   /**
    * 获取默认设置
    */
-  private getDefaultSettings(): Record<string, any> {
+  private getDefaultSettings(): Record<string, SettingValue> {
     return {
       // 窗口设置
       window_opacity: 0.8,
@@ -251,19 +264,19 @@ export class SettingsService {
   /**
    * 验证设置值
    */
-  public validateSettings(settings: Record<string, any>): { valid: boolean; errors: string[] } {
+  public validateSettings(settings: Record<string, SettingValue>): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
 
     // 验证窗口设置
     if (settings.window_opacity !== undefined) {
-      const opacity = parseFloat(settings.window_opacity);
+      const opacity = parseFloat(String(settings.window_opacity));
       if (isNaN(opacity) || opacity < 0.1 || opacity > 1.0) {
         errors.push('窗口透明度必须在 0.1 到 1.0 之间');
       }
     }
 
     if (settings.window_size !== undefined) {
-      const size = parseFloat(settings.window_size);
+      const size = parseFloat(String(settings.window_size));
       if (isNaN(size) || size < 0.5 || size > 2.0) {
         errors.push('窗口大小必须在 0.5 到 2.0 之间');
       }
@@ -271,7 +284,7 @@ export class SettingsService {
 
     // 验证音量设置
     if (settings.sound_volume !== undefined) {
-      const volume = parseFloat(settings.sound_volume);
+      const volume = parseFloat(String(settings.sound_volume));
       if (isNaN(volume) || volume < 0 || volume > 1.0) {
         errors.push('音量必须在 0 到 1.0 之间');
       }
@@ -279,7 +292,7 @@ export class SettingsService {
 
     // 验证时间间隔
     if (settings.auto_save_interval !== undefined) {
-      const interval = parseInt(settings.auto_save_interval);
+      const interval = parseInt(String(settings.auto_save_interval), 10);
       if (isNaN(interval) || interval < 1000 || interval > 300000) {
         errors.push('自动保存间隔必须在 1000ms 到 300000ms 之间');
       }
@@ -287,7 +300,7 @@ export class SettingsService {
 
     // 验证FPS设置
     if (settings.max_fps !== undefined) {
-      const fps = parseInt(settings.max_fps);
+      const fps = parseInt(String(settings.max_fps), 10);
       if (isNaN(fps) || fps < 30 || fps > 120) {
         errors.push('最大FPS必须在 30 到 120 之间');
       }
@@ -302,9 +315,9 @@ export class SettingsService {
   /**
    * 获取设置分类
    */
-  public getSettingsByCategory(): Record<string, Record<string, any>> {
+  public getSettingsByCategory(): Record<string, Record<string, SettingValue>> {
     const settings = this.getSettings();
-    const categories: Record<string, Record<string, any>> = {
+    const categories: Record<string, Record<string, SettingValue>> = {
       window: {},
       pet: {},
       sound: {},

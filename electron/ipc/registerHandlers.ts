@@ -22,16 +22,23 @@ interface RegisterHandlersOptions {
 
 function mapStoredSettingsToRendererSettings(): PetSettings {
   const settings = settingsService.getSettings()
+  const petType = typeof settings.pet_type === 'string' ? settings.pet_type : 'default'
+  const activityLevel = settings.activity_level === 'calm' || settings.activity_level === 'playful'
+    ? settings.activity_level
+    : 'normal'
+  const size = typeof settings.pet_size === 'number' ? settings.pet_size : 100
+  const opacity = typeof settings.window_opacity === 'number' ? settings.window_opacity : 100
+
   return {
-    petType: settings.pet_type || 'default',
+    petType,
     accessory: null,
     alwaysOnTop: settings.always_on_top !== false,
     soundEnabled: settings.sound_enabled !== false,
-    activityLevel: settings.activity_level || 'normal',
+    activityLevel,
     autoHideFullscreen: settings.auto_hide_fullscreen !== false,
     launchOnStartup: settings.launch_on_startup !== false,
-    size: settings.pet_size || 100,
-    opacity: settings.window_opacity || 100,
+    size,
+    opacity,
   }
 }
 
