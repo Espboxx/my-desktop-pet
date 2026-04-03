@@ -1,11 +1,11 @@
 import { ipcRenderer, contextBridge } from "electron";
 import type { SavedPetData } from "../src/types/petTypes";
+import type { PetSettings } from '../src/types/settings'
 import type {
   DesktopPetAPI,
   WindowInfoAPI,
   IPCArgument,
   IPCEventListener,
-  PetBehaviorConfig,
   SmoothTopMostConfig,
   WindowPosition,
 } from "../src/types/ipcTypes";
@@ -46,9 +46,6 @@ const desktopPetAPI: DesktopPetAPI = {
 
     return position as WindowPosition;
   },
-  setPetPosition: (x: number, y: number) => {
-    ipcRenderer.send("set-pet-position", { x, y });
-  },
   openSettings: () => {
     ipcRenderer.send("open-settings");
   },
@@ -58,7 +55,7 @@ const desktopPetAPI: DesktopPetAPI = {
   getPetSettings: () => {
     return ipcRenderer.invoke("get-pet-settings");
   },
-  savePetSettings: (settings: Record<string, unknown>) => {
+  savePetSettings: (settings: PetSettings) => {
     ipcRenderer.send("save-pet-settings", settings);
   },
 
@@ -68,14 +65,6 @@ const desktopPetAPI: DesktopPetAPI = {
   },
   savePetState: (state: SavedPetData) => {
     ipcRenderer.send("save-pet-state", state);
-  },
-
-  // 互动 API
-  interactWithPet: (action: string) => {
-    ipcRenderer.send("interact-with-pet", action);
-  },
-  updatePetBehavior: (behavior: PetBehaviorConfig) => {
-    ipcRenderer.send("update-pet-behavior", behavior);
   },
   adjustPetWindowSize: (expand: boolean) => {
     ipcRenderer.send("adjust-pet-window-size", expand);
@@ -109,7 +98,7 @@ const desktopPetAPI: DesktopPetAPI = {
   getWindowEffectsConfig: () => {
     return ipcRenderer.invoke("get-window-effects-config");
   },
-  updateWindowEffectsConfig: (config: SmoothTopMostConfig) => {
+  updateWindowEffectsConfig: (config: Partial<SmoothTopMostConfig>) => {
     return ipcRenderer.invoke("update-window-effects-config", config);
   },
   isWindowAnimating: () => {
