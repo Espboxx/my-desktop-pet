@@ -37,6 +37,7 @@ const PetModel: React.FC<PetModelProps> = ({ petType, expression, size = 64, cla
 
   switch (effectivePetType.modelType) {
     case 'image':
+    {
       // Prefer expression-specific image, fallback to base image, then to emoji
       const imageUrl = expression.imageUrl || petType.baseImageUrl;
 
@@ -102,6 +103,7 @@ const PetModel: React.FC<PetModelProps> = ({ petType, expression, size = 64, cla
           />
         </div>
       );
+    }
 
     case 'spritesheet':
       if (petType.spritesheetUrl && petType.spriteWidth && petType.spriteHeight && expression.spriteFrame !== undefined) {
@@ -132,11 +134,13 @@ const PetModel: React.FC<PetModelProps> = ({ petType, expression, size = 64, cla
       return <span>🧩</span>; // Fallback emoji
 
     case 'svg':
+    {
       // Prefer expression-specific SVG, fallback to base SVG
       const svgData = expression.svgData || petType.baseSvgData;
       // Basic rendering, might need refinement based on how SVG data is stored/used
       // Add a class for potential specific styling
       return svgData ? <div dangerouslySetInnerHTML={{ __html: svgData }} className="pet-svg" /> : <span>✏️</span>; // Fallback emoji
+    }
 
     case 'emoji':
     default:

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSharedPetStatus } from '@/context/PetStatusContext'; // Import the shared status hook
+import { useSharedPetStatus } from '@/context/useSharedPetStatus'; // Import the shared status hook
 import { gameData } from '@/constants/taskData'; // Import task definitions
 import { ACHIEVEMENTS as predefinedAchievements } from '@/constants/petConstants'; // Import achievement definitions
 import { Task, Achievement } from '@/types/petTypes'; // Import types
@@ -17,7 +17,7 @@ const TasksAchievementsTab: React.FC = () => {
             <h3>进行中的任务</h3>
             {status.activeTasks.length > 0 ? (
               <ul>
-                {status.activeTasks.map(taskId => {
+                {status.activeTasks.map((taskId: string) => {
                   const task: Task | undefined = gameData.tasks[taskId];
                   return task ? (
                     <li key={taskId}>
@@ -38,7 +38,7 @@ const TasksAchievementsTab: React.FC = () => {
             <h3>已解锁成就</h3>
             {status.unlockedAchievements.length > 0 ? (
               <ul>
-                {status.unlockedAchievements.map(achievementId => {
+                {status.unlockedAchievements.map((achievementId: string) => {
                   const achievement: Achievement | undefined = predefinedAchievements[achievementId];
                   return achievement ? (
                     <li key={achievementId}>

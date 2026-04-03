@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSharedPetStatus } from '@/context/PetStatusContext';
+import { useSharedPetStatus } from '@/context/useSharedPetStatus';
 import { ITEMS as predefinedItems } from '@/constants/itemData'; // Import predefined item details
 import '../../styles/InventoryTab.css'; // Create this CSS file later
 
@@ -18,7 +18,7 @@ const InventoryTab: React.FC = () => {
         quantity,
       };
     })
-    .filter(item => item !== null); // Remove null entries
+    .filter((item): item is NonNullable<typeof item> => item !== null); // Remove null entries
 
   return (
     <div className="inventory-tab">

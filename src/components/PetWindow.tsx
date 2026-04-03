@@ -6,8 +6,9 @@ import React, {
   useMemo,
 } from "react"; // Add useCallback and useMemo
 import { PetType } from "@/types/petTypes";
+import type { PetPosition } from "@/hooks/interaction/types";
 import { PET_TYPES } from "@/constants/petConstants";
-import { useSharedPetStatus } from "@/context/PetStatusContext"; // Import context hook
+import { useSharedPetStatus } from "@/context/useSharedPetStatus"; // Import context hook
 import usePetAnimation from "@/hooks/pet/usePetAnimation"; // Corrected import path
 import useSettings from "@/hooks/settings/useSettings"; // Import settings hook
 import usePetInteraction from "@/hooks/interaction"; // Corrected import path
@@ -23,7 +24,7 @@ import PetBubble from "./Pet/PetBubble"; // Import the new PetBubble component
 import PetStatusBar from "./Pet/PetStatusBar"; // Import the new PetStatusBar component
 import PetContextMenu from "./Pet/PetContextMenu"; // Import the new PetContextMenu component
 import HapticFeedbackTest from "@tests/components/HapticFeedbackTest"; // Import the test component
-import { useBubbleService } from "@/services/bubble/BubbleContext"; // Corrected import path for bubble service hook
+import { useBubbleService } from "@/services/bubble/useBubbleService"; // Corrected import path for bubble service hook
 import { usePerformanceMonitor } from "@/hooks/core/usePerformanceMonitor"; // Import performance monitor
 import { useErrorHandler } from "./ErrorBoundary"; // Import error handler
 import { useWindowEffects } from "@/hooks/core/useWindowEffects"; // Import window effects hook
@@ -76,7 +77,7 @@ const PetWindow: React.FC = () => {
   const { settings } = useSettings();
 
   // 图像预加载 (性能优化)
-  const imagePreloader = useImagePreloader(currentPetTypeId);
+  useImagePreloader(currentPetTypeId);
 
   // 触觉反馈 (直接使用配置，避免useMemo问题)
   const hapticFeedback = useHapticFeedback({
@@ -312,8 +313,7 @@ const PetWindow: React.FC = () => {
 
   // 开发环境拖拽测试
   useEffect(() => {
-    if (process.env.NODE_ENV === "development" && isLoaded) {
-    }
+    if (process.env.NODE_ENV === "development" && isLoaded) return;
   }, [isLoaded]);
 
   // 更新边界
@@ -328,7 +328,7 @@ const PetWindow: React.FC = () => {
 
   // 创建智能的位置设置函数
   const smartSetPosition = useCallback(
-    (newPosition: any) => {
+    (newPosition: PetPosition | ((position: PetPosition) => PetPosition)) => {
       if (isDragging) {
         // 拖拽时直接设置位置
         if (typeof newPosition === "function") {
@@ -632,6 +632,7 @@ const PetWindow: React.FC = () => {
             const styles = getInteractionStyles("translate(-50%, -50%)");
             // 移除可能冲突的transition，使用我们自己的
             const { transition, ...restStyles } = styles;
+            void transition;
             return restStyles;
           })(),
           position: "absolute",

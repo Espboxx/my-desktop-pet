@@ -1,4 +1,4 @@
-import { Task, GameData } from '../types/petTypes';
+import { Achievement, Task, GameData } from '../types/petTypes';
 
 // 示例任务定义
 const tasks: Record<string, Task> = {
@@ -164,7 +164,7 @@ const tasks: Record<string, Task> = {
 };
 
 // 可以在这里添加成就数据，但目前只关注任务
-const achievements: Record<string, any> = {}; // 暂时为空
+const achievements: Record<string, Achievement> = {}; // 暂时为空
 
 export const gameData: GameData = {
   tasks,
