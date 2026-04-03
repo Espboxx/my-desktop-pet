@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+import type { Database as BetterSqliteDatabase } from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { app } from 'electron';
@@ -13,7 +14,7 @@ import { indexManager } from './IndexManager';
  */
 export class DatabaseManager {
   private static instance: DatabaseManager;
-  private db: Database.Database | null = null;
+  private db: BetterSqliteDatabase | null = null;
   private isConnected = false;
   private retryCount = 0;
   private maxRetries = 3;
@@ -41,7 +42,7 @@ export class DatabaseManager {
   /**
    * 获取数据库连接
    */
-  public getDatabase(): Database.Database {
+  public getDatabase(): BetterSqliteDatabase {
     if (!this.isConnected || !this.db) {
       throw new Error('数据库未连接，请先调用 connect() 方法');
     }
@@ -165,20 +166,20 @@ export class DatabaseManager {
   /**
    * 执行事务
    */
-  public transaction<T>(callback: (db: Database.Database) => T): T {
+  public transaction<T>(callback: (db: BetterSqliteDatabase) => T): T {
     const db = this.getDatabase();
-    return db.transaction(callback)();
+    return db.transaction(() => callback(db))();
   }
 
   /**
    * 执行查询
    */
-  public query(sql: string, params: any[] = [], useCache: boolean = true): any[] {
+  public query<T = Record<string, unknown>>(sql: string, params: unknown[] = [], useCache: boolean = true): T[] {
     const startTime = performance.now();
 
     // 尝试从缓存获取
     if (useCache) {
-      const cachedResult = queryCache.get(sql, params);
+      const cachedResult = queryCache.get<T[]>(sql, params);
       if (cachedResult) {
         performanceMonitor.recordQuery('query-cache', startTime, true);
         return cachedResult;
@@ -187,8 +188,8 @@ export class DatabaseManager {
 
     const db = this.getDatabase();
     try {
-      const stmt = db.prepare(sql);
-      const result = stmt.all(params);
+      const stmt = db.prepare<unknown[], T>(sql);
+      const result = stmt.all(...params);
 
       // 缓存结果（SELECT查询才缓存）
       if (useCache && sql.trim().toUpperCase().startsWith('SELECT')) {
@@ -207,12 +208,12 @@ export class DatabaseManager {
   /**
    * 执行单条查询
    */
-  public queryOne(sql: string, params: any[] = [], useCache: boolean = true): any {
+  public queryOne<T = Record<string, unknown>>(sql: string, params: unknown[] = [], useCache: boolean = true): T | undefined {
     const startTime = performance.now();
 
     // 尝试从缓存获取
     if (useCache) {
-      const cachedResult = queryCache.get(sql, params);
+      const cachedResult = queryCache.get<T>(sql, params);
       if (cachedResult) {
         performanceMonitor.recordQuery('queryOne-cache', startTime, true);
         return cachedResult;
@@ -221,8 +222,8 @@ export class DatabaseManager {
 
     const db = this.getDatabase();
     try {
-      const stmt = db.prepare(sql);
-      const result = stmt.get(params);
+      const stmt = db.prepare<unknown[], T>(sql);
+      const result = stmt.get(...params);
 
       // 缓存结果（SELECT查询才缓存）
       if (useCache && sql.trim().toUpperCase().startsWith('SELECT')) {
@@ -241,7 +242,7 @@ export class DatabaseManager {
   /**
    * 执行插入/更新/删除
    */
-  public execute(sql: string, params: any[] = []): Database.RunResult {
+  public execute(sql: string, params: unknown[] = []): Database.RunResult {
     const startTime = performance.now();
     const db = this.getDatabase();
 
@@ -250,7 +251,7 @@ export class DatabaseManager {
 
     try {
       const stmt = db.prepare(sql);
-      const result = stmt.run(params);
+      const result = stmt.run(...params);
 
       // 失效相关表的缓存
       tables.forEach(table => {
@@ -296,12 +297,12 @@ export class DatabaseManager {
   /**
    * 批量执行
    */
-  public batchExecute(sql: string, paramsList: any[][]): Database.RunResult[] {
+  public batchExecute(sql: string, paramsList: unknown[][]): Database.RunResult[] {
     const db = this.getDatabase();
     try {
       const stmt = db.prepare(sql);
-      const transaction = db.transaction((params: any[][]) => {
-        return params.map(param => stmt.run(param));
+      const transaction = db.transaction((allParams: unknown[][]) => {
+        return allParams.map(param => stmt.run(...param));
       });
       return transaction(paramsList);
     } catch (error) {
@@ -324,7 +325,7 @@ export class DatabaseManager {
       memory: db.memory,
       readonly: db.readonly,
       name: db.name,
-      cacheSize: stats,
+      cacheSize: typeof stats === 'number' ? stats : 0,
       retryCount: this.retryCount
     };
   }
@@ -440,6 +441,7 @@ export class DatabaseManager {
         progress: (info) => {
           const progress = ((info.totalPages - info.remainingPages) / info.totalPages * 100).toFixed(1);
           console.log(`📊 数据库备份进度: ${progress}%`);
+          return info.remainingPages;
         }
       }).then(() => {
         console.log('✅ 数据库备份完成:', backupPath);
@@ -521,7 +523,7 @@ export class DatabaseManager {
         cleanup();
       });
 
-      process.on('unhandledRejection', (reason, promise) => {
+      process.on('unhandledRejection', (reason) => {
         console.error('🚨 未处理的Promise拒绝:', reason);
         cleanup();
       });
