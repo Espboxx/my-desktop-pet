@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react'
+import React, { createContext, useEffect, useMemo, type ReactNode } from 'react'
 import usePetStatus from '@/hooks/core/usePetStatus'
 import useSettings from '@/hooks/settings/useSettings'
 
 type PetStatusContextType = ReturnType<typeof usePetStatus>
 
-const PetStatusContext = createContext<PetStatusContextType | undefined>(undefined)
+export const PetStatusContext = createContext<PetStatusContextType | undefined>(undefined)
 
 // Create a provider component
 interface PetStatusProviderProps {
@@ -39,11 +39,3 @@ export const PetStatusProvider: React.FC<PetStatusProviderProps> = ({ children }
   return <PetStatusContext.Provider value={value}>{children}</PetStatusContext.Provider>
 }
 
-// Create a custom hook for easy consumption
-export const useSharedPetStatus = (): PetStatusContextType => {
-  const context = useContext(PetStatusContext)
-  if (context === undefined) {
-    throw new Error('useSharedPetStatus must be used within a PetStatusProvider')
-  }
-  return context
-}
