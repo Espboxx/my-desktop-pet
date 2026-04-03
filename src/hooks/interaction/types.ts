@@ -5,6 +5,8 @@ import { PetStatus, InteractionType } from '@/types/petTypes';
 export interface PetPosition {
   x: number;
   y: number;
+  screenWidth?: number;
+  screenHeight?: number;
 }
 
 // 定义鼠标历史点类型

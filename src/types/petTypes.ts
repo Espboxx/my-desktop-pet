@@ -1,4 +1,5 @@
 import { PetPosition } from '../hooks/interaction/types'; // Import PetPosition
+export type { PetPosition } from '../hooks/interaction/types';
 
 // Define Model Type
 export type PetModelType = 'emoji' | 'image' | 'spritesheet' | 'svg';
