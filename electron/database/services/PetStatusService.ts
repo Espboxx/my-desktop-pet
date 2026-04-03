@@ -1,6 +1,59 @@
 import { databaseManager } from '../DatabaseManager';
 import { DatabaseErrorHandler } from '../ErrorHandler';
-import type { SavedPetData, PetPosition } from '../../../src/types/petTypes';
+import type { PetBubbleState, PetPosition, SavedPetData } from '../../../src/types/petTypes';
+
+interface PetStatusIdRow {
+  id: number;
+}
+
+interface PetStatusRow {
+  petTypeId: string;
+  mood: number;
+  cleanliness: number;
+  hunger: number;
+  energy: number;
+  exp: number;
+  level: number;
+  max_mood: number;
+  max_cleanliness: number;
+  max_hunger: number;
+  max_energy: number;
+}
+
+interface PositionRow extends PetPosition {
+  screenWidth?: number;
+  screenHeight?: number;
+}
+
+interface InteractionCountRow {
+  interaction_type: string;
+  count: number;
+}
+
+interface AchievementRow {
+  achievement_id: string;
+}
+
+interface UserTaskRow {
+  task_id: string;
+  status: 'active' | 'completed' | 'expired';
+  completed_at: string | null;
+}
+
+interface InventoryRow {
+  item_id: string;
+  quantity: number;
+}
+
+interface AnimationRow {
+  animation_id: string;
+}
+
+interface BubbleRow {
+  content: string | null;
+  isVisible: number | boolean;
+  displayDuration: number | null;
+}
 
 /**
  * 宠物状态数据库服务
@@ -19,7 +72,7 @@ export class PetStatusService {
   private getLatestPetStatusId(): number | null {
     try {
       const db = databaseManager.getDatabase();
-      const result = db.prepare('SELECT id FROM pet_status ORDER BY id DESC LIMIT 1').get();
+      const result = db.prepare<[], PetStatusIdRow>('SELECT id FROM pet_status ORDER BY id DESC LIMIT 1').get();
       return result ? result.id : null;
     } catch (error) {
       this.errorHandler.handleError('获取最新宠物状态ID失败', error as Error);
@@ -34,7 +87,7 @@ export class PetStatusService {
     const db = databaseManager.getDatabase();
 
     const whereClause = whereCondition || `${idField} = ?`;
-    const existingRecord = db.prepare(`SELECT ${idField} FROM ${tableName} WHERE ${whereClause} LIMIT 1`).get(
+    const existingRecord = db.prepare<unknown[], Record<string, number>>(`SELECT ${idField} FROM ${tableName} WHERE ${whereClause} LIMIT 1`).get(
       whereCondition ? undefined : [data[idField]]
     );
 
@@ -58,7 +111,7 @@ export class PetStatusService {
       const values = fields.map(field => data[field]);
 
       const result = db.prepare(`INSERT INTO ${tableName} (${fields.join(', ')}) VALUES (${placeholders})`).run(values);
-      return result.lastInsertRowid;
+      return Number(result.lastInsertRowid);
     }
   }
 
@@ -93,7 +146,7 @@ export class PetStatusService {
       const db = databaseManager.getDatabase();
 
       // 获取最新的宠物状态
-      const petStatus = db.prepare(`
+      const petStatus = db.prepare<[], PetStatusRow>(`
         SELECT
           ps.*,
           pt.id as petTypeId
@@ -108,71 +161,84 @@ export class PetStatusService {
       }
 
       // 获取位置信息
-      const position = this.getLatestPetStatusId() ? db.prepare(`
+      const position = this.getLatestPetStatusId() ? db.prepare<[number], PositionRow>(`
         SELECT x, y, screen_width as screenWidth, screen_height as screenHeight
         FROM pet_position
         WHERE pet_status_id = ?
         ORDER BY id DESC
         LIMIT 1
-      `).get([this.getLatestPetStatusId()]) : null;
+      `).get(this.getLatestPetStatusId()!) : null;
 
       // 获取互动计数
-      const interactionCounts = this.getLatestPetStatusId() ? db.prepare(`
+      const interactionCounts = this.getLatestPetStatusId() ? db.prepare<[number], InteractionCountRow>(`
         SELECT interaction_type, count
         FROM interaction_counts
         WHERE pet_status_id = ?
-      `).all([this.getLatestPetStatusId()]).reduce((acc, row: any) => {
+      `).all(this.getLatestPetStatusId()!).reduce<Record<string, number>>((acc, row) => {
         acc[row.interaction_type] = row.count;
         return acc;
-      }, {} as Record<string, number>) : {};
+      }, {}) : {};
 
       // 获取成就
-      const unlockedAchievements = this.getLatestPetStatusId() ? db.prepare(`
+      const unlockedAchievements = this.getLatestPetStatusId() ? db.prepare<[number], AchievementRow>(`
         SELECT achievement_id
         FROM user_achievements
         WHERE pet_status_id = ?
-      `).all([this.getLatestPetStatusId()]).map((row: any) => row.achievement_id) : [];
+      `).all(this.getLatestPetStatusId()!).map((row) => row.achievement_id) : [];
 
       // 获取任务状态
-      const userTasks = this.getLatestPetStatusId() ? db.prepare(`
+      const userTasks = this.getLatestPetStatusId() ? db.prepare<[number], UserTaskRow>(`
         SELECT task_id, status, completed_at
         FROM user_tasks
         WHERE pet_status_id = ?
-      `).all([this.getLatestPetStatusId()]) : [];
+      `).all(this.getLatestPetStatusId()!) : [];
 
       const activeTasks = userTasks
-        .filter((task: any) => task.status === 'active')
-        .map((task: any) => task.task_id);
+        .filter((task) => task.status === 'active')
+        .map((task) => task.task_id);
 
       const completedTasks = userTasks
-        .filter((task: any) => task.status === 'completed')
-        .map((task: any) => task.task_id);
+        .filter((task) => task.status === 'completed')
+        .map((task) => task.task_id);
 
       // 获取物品库存
-      const inventory = this.getLatestPetStatusId() ? db.prepare(`
+      const inventory = this.getLatestPetStatusId() ? db.prepare<[number], InventoryRow>(`
         SELECT item_id, quantity
         FROM inventory
         WHERE pet_status_id = ?
-      `).all([this.getLatestPetStatusId()]).reduce((acc, row: any) => {
+      `).all(this.getLatestPetStatusId()!).reduce<Record<string, number>>((acc, row) => {
         acc[row.item_id] = row.quantity;
         return acc;
-      }, {} as Record<string, number>) : {};
+      }, {}) : {};
 
       // 获取解锁动画
-      const unlockedIdleAnimations = this.getLatestPetStatusId() ? db.prepare(`
+      const unlockedIdleAnimations = this.getLatestPetStatusId() ? db.prepare<[number], AnimationRow>(`
         SELECT animation_id
         FROM unlocked_animations
         WHERE pet_status_id = ?
-      `).all([this.getLatestPetStatusId()]).map((row: any) => row.animation_id) : [];
+      `).all(this.getLatestPetStatusId()!).map((row) => row.animation_id) : [];
 
       // 获取气泡状态
-      const bubble = this.getLatestPetStatusId() ? db.prepare(`
-        SELECT content_id as contentId, is_visible as isVisible, display_duration as displayDuration
+      const bubble = this.getLatestPetStatusId() ? db.prepare<[number], BubbleRow>(`
+        SELECT bc.content, pb.is_visible as isVisible, pb.display_duration as displayDuration
         FROM pet_bubble
+        LEFT JOIN bubble_contents bc ON bc.id = pb.content_id
         WHERE pet_status_id = ?
         ORDER BY id DESC
         LIMIT 1
-      `).get([this.getLatestPetStatusId()]) : null;
+      `).get(this.getLatestPetStatusId()!) : null;
+
+      const bubbleState: PetBubbleState = bubble ? {
+        active: Boolean(bubble.isVisible),
+        text: bubble.content ?? '',
+        type: 'thought',
+        timeout: bubble.displayDuration ?? null,
+      } : {
+        active: false,
+        text: '',
+        type: 'thought',
+        timeout: null,
+      };
 
       // 构建返回数据
       const result: SavedPetData = {
@@ -193,15 +259,11 @@ export class PetStatusService {
           activeTasks,
           completedTasks,
           unlockedIdleAnimations,
-          bubble: bubble || {
-            contentId: null,
-            isVisible: false,
-            displayDuration: 5000
-          },
-          inventory
-        },
-        position: position
-      };
+           bubble: bubbleState,
+           inventory
+         },
+         position: position ?? undefined
+       };
 
       return result;
 
@@ -251,7 +313,7 @@ export class PetStatusService {
 
         // 批量更新互动计数
         const interactionData = Object.entries(stateData.status.interactionCounts)
-          .filter(([_, count]) => count > 0)
+          .filter(([, count]) => count > 0)
           .map(([type, count]) => ({
             pet_status_id: petStatusId,
             interaction_type: type,
@@ -285,7 +347,7 @@ export class PetStatusService {
 
         // 批量更新物品库存
         const inventoryData = Object.entries(stateData.status.inventory)
-          .filter(([_, quantity]) => quantity > 0)
+          .filter(([, quantity]) => quantity > 0)
           .map(([itemId, quantity]) => ({
             pet_status_id: petStatusId,
             item_id: itemId,
@@ -304,10 +366,10 @@ export class PetStatusService {
         if (stateData.status.bubble) {
           const bubbleData = {
             pet_status_id: petStatusId,
-            content_id: stateData.status.bubble.contentId,
-            is_visible: stateData.status.bubble.isVisible,
-            display_duration: stateData.status.bubble.displayDuration
-          };
+             content_id: null,
+             is_visible: stateData.status.bubble.active,
+             display_duration: stateData.status.bubble.timeout ?? 5000
+           };
           this.upsertRecord('pet_bubble', 'id', bubbleData, `pet_status_id = ${petStatusId} ORDER BY id DESC LIMIT 1`);
         }
       })();
@@ -374,14 +436,14 @@ export class PetStatusService {
       };
 
       const validUpdates = Object.entries(updates)
-        .filter(([_, value]) => value !== undefined)
+        .filter(([, value]) => value !== undefined)
         .reduce((acc, [key, value]) => {
           const field = fieldMap[key as keyof typeof fieldMap];
           if (field) {
             acc[field] = value;
           }
           return acc;
-        }, {} as Record<string, any>);
+        }, {} as Record<string, number>);
 
       if (Object.keys(validUpdates).length === 0) {
         return;
