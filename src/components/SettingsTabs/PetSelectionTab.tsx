@@ -1,13 +1,12 @@
 import React from 'react';
-import { useSharedPetStatus } from '@/context/PetStatusContext'; // Import context hook
+import useSettings from '@/hooks/settings/useSettings'
 import { PET_TYPES } from '@/constants/petConstants'; // Import pet types constant
 import { PetType } from '@/types/petTypes'; // Import PetType for casting
 import PetModel from '../Pet/PetModel'; // Import PetModel component
 
 const PetSelectionTab: React.FC = () => {
-  const { currentPetTypeId, setCurrentPetTypeId } = useSharedPetStatus(); // Get state and setter from context
-
-  // (Removed selectedPet logic based on old settings)
+  const { settings, updateSetting } = useSettings()
+  const currentPetTypeId = settings.petType
 
   return (
     <div className="settings-section">
@@ -20,7 +19,7 @@ const PetSelectionTab: React.FC = () => {
               <div
                 key={pet.id}
                 className={`grid-item ${currentPetTypeId === pet.id ? 'selected' : ''}`} // Use currentPetTypeId for selection
-                onClick={() => setCurrentPetTypeId(pet.id)} // Use setCurrentPetTypeId on click
+                onClick={() => updateSetting('petType', pet.id)}
               >
                 {/* Enhanced preview using PetModel component */}
                 <div className="item-preview">

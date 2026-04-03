@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FaCog, FaPalette, FaPaw, FaHatWizard, FaTrophy, FaTimes, FaBoxOpen, FaImage } from 'react-icons/fa'; // 导入图标, 添加 FaBoxOpen, FaImage
+import { FaCog, FaPalette, FaPaw, FaHatWizard, FaTrophy, FaTimes, FaBoxOpen, FaImage, FaMagic } from 'react-icons/fa';
+import type { IconType } from 'react-icons'
 import '../styles/SettingsWindow.css';
 import GeneralTab from './SettingsTabs/GeneralTab';
 import AppearanceTab from './SettingsTabs/AppearanceTab';
@@ -8,10 +9,33 @@ import AccessoriesTab from './SettingsTabs/AccessoriesTab';
 import TasksAchievementsTab from './SettingsTabs/TasksAchievementsTab';
 import InventoryTab from './SettingsTabs/InventoryTab'; // 导入新的库存标签页组件
 import ImageManagementTab from './SettingsTabs/ImageManagementTab'; // 导入图像管理标签页组件
-import ImageSystemTest from './ImageSystemTest'; // 导入图像系统测试组件
+import WindowEffectsTab from './SettingsTabs/WindowEffectsTab'
+import ImageSystemTest from '@tests/components/ImageSystemTest'
+
+interface SettingsTabDefinition {
+  id: string
+  label: string
+  icon: IconType
+  component: React.ComponentType
+  devOnly?: boolean
+}
+
+const SETTINGS_TABS: SettingsTabDefinition[] = [
+  { id: 'general', label: '常规', icon: FaCog, component: GeneralTab },
+  { id: 'appearance', label: '外观', icon: FaPalette, component: AppearanceTab },
+  { id: 'pet-selection', label: '宠物选择', icon: FaPaw, component: PetSelectionTab },
+  { id: 'accessories', label: '饰品', icon: FaHatWizard, component: AccessoriesTab },
+  { id: 'window-effects', label: '窗口特效', icon: FaMagic, component: WindowEffectsTab },
+  { id: 'tasks-achievements', label: '任务/成就', icon: FaTrophy, component: TasksAchievementsTab },
+  { id: 'inventory', label: '库存', icon: FaBoxOpen, component: InventoryTab },
+  { id: 'image-management', label: '图像管理', icon: FaImage, component: ImageManagementTab },
+  { id: 'debug', label: '调试', icon: FaCog, component: ImageSystemTest, devOnly: true },
+]
 
 const SettingsWindow: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('general');
+  const visibleTabs = SETTINGS_TABS.filter((tab) => !tab.devOnly || process.env.NODE_ENV === 'development')
+  const activeTabDefinition = visibleTabs.find((tab) => tab.id === activeTab) ?? visibleTabs[0]
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -26,60 +50,15 @@ const SettingsWindow: React.FC = () => {
       {/* 导航侧边栏 */}
       <nav className="settings-nav">
         <ul>
-          <li 
-            className={activeTab === 'general' ? 'active' : ''}
-            onClick={() => handleTabChange('general')}
-          >
-            <FaCog className="nav-icon" /> 常规
-          </li>
-          <li 
-            className={activeTab === 'appearance' ? 'active' : ''}
-            onClick={() => handleTabChange('appearance')}
-          >
-            <FaPalette className="nav-icon" /> 外观
-          </li>
-          <li 
-            className={activeTab === 'pet-selection' ? 'active' : ''}
-            onClick={() => handleTabChange('pet-selection')}
-          >
-            <FaPaw className="nav-icon" /> 宠物选择
-          </li>
-          <li 
-            className={activeTab === 'accessories' ? 'active' : ''}
-            onClick={() => handleTabChange('accessories')}
-          >
-            <FaHatWizard className="nav-icon" /> 饰品
-          </li>
-          {/* 新增任务/成就标签 */}
-          <li
-            className={activeTab === 'tasks-achievements' ? 'active' : ''}
-            onClick={() => handleTabChange('tasks-achievements')}
-          >
-            <FaTrophy className="nav-icon" /> 任务/成就
-          </li>
-          {/* 新增库存标签 */}
-          <li
-            className={activeTab === 'inventory' ? 'active' : ''}
-            onClick={() => handleTabChange('inventory')}
-          >
-            <FaBoxOpen className="nav-icon" /> 库存
-          </li>
-          {/* 新增图像管理标签 */}
-          <li
-            className={activeTab === 'image-management' ? 'active' : ''}
-            onClick={() => handleTabChange('image-management')}
-          >
-            <FaImage className="nav-icon" /> 图像管理
-          </li>
-          {/* 开发环境调试标签 */}
-          {process.env.NODE_ENV === 'development' && (
+          {visibleTabs.map(({ id, label, icon: Icon }) => (
             <li
-              className={activeTab === 'debug' ? 'active' : ''}
-              onClick={() => handleTabChange('debug')}
+              key={id}
+              className={activeTab === id ? 'active' : ''}
+              onClick={() => handleTabChange(id)}
             >
-              <FaCog className="nav-icon" /> 调试
+              <Icon className="nav-icon" /> {label}
             </li>
-          )}
+          ))}
         </ul>
       </nav>
 
@@ -91,36 +70,7 @@ const SettingsWindow: React.FC = () => {
         </div>
 
         <div className="settings-content-area">
-          <div style={{ display: activeTab === 'general' ? 'block' : 'none' }}>
-            <GeneralTab />
-          </div>
-          <div style={{ display: activeTab === 'appearance' ? 'block' : 'none' }}>
-            <AppearanceTab />
-          </div>
-          <div style={{ display: activeTab === 'pet-selection' ? 'block' : 'none' }}>
-            <PetSelectionTab />
-          </div>
-          <div style={{ display: activeTab === 'accessories' ? 'block' : 'none' }}>
-            <AccessoriesTab />
-          </div>
-          {/* 新增任务/成就内容区域 */}
-          <div style={{ display: activeTab === 'tasks-achievements' ? 'block' : 'none' }}>
-            <TasksAchievementsTab />
-          </div>
-          {/* 新增库存内容区域 */}
-          <div style={{ display: activeTab === 'inventory' ? 'block' : 'none' }}>
-            <InventoryTab />
-          </div>
-          {/* 新增图像管理内容区域 */}
-          <div style={{ display: activeTab === 'image-management' ? 'block' : 'none' }}>
-            <ImageManagementTab />
-          </div>
-          {/* 开发环境调试内容区域 */}
-          {process.env.NODE_ENV === 'development' && (
-            <div style={{ display: activeTab === 'debug' ? 'block' : 'none' }}>
-              <ImageSystemTest />
-            </div>
-          )}
+          {activeTabDefinition ? <activeTabDefinition.component /> : null}
         </div>
       </div>
     </div>
