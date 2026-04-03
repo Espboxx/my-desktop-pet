@@ -24,6 +24,14 @@ export interface IndexStats {
   lastUsed?: string;
 }
 
+interface IndexRow {
+  name: string;
+  tableName: string;
+  sql: string | null;
+  columnName?: string;
+  stat?: string;
+}
+
 /**
  * 数据库索引管理器
  */
@@ -100,11 +108,8 @@ export class IndexManager {
    * 获取所有索引信息
    */
   public getAllIndexes(): IndexInfo[] {
-    const db = databaseManager.getDatabase();
-    const indexes: IndexInfo[] = [];
-
     try {
-      const rows = db.query(`
+      const rows = databaseManager.query<IndexRow>(`
         SELECT i.name, i.tbl_name as tableName, i.sql,
                ii.name as columnName
         FROM sqlite_master i
@@ -121,7 +126,7 @@ export class IndexManager {
           indexMap.set(row.name, {
             name: row.name,
             tableName: row.tableName,
-            sql: row.sql,
+            sql: row.sql ?? '',
             columns: [],
             isUnique: row.sql?.includes('UNIQUE') || false,
             isPrimary: row.sql?.includes('PRIMARY KEY') || false
@@ -144,16 +149,15 @@ export class IndexManager {
    * 获取索引使用统计
    */
   public getIndexStats(): IndexStats[] {
-    const db = databaseManager.getDatabase();
     const stats: IndexStats[] = [];
 
     try {
       // 首先执行 ANALYZE 更新统计信息
-      db.exec('ANALYZE');
+      databaseManager.getDatabase().exec('ANALYZE');
 
       // 获取索引统计信息
-      const rows = db.query(`
-        SELECT i.name, i.tbl_name as tableName, s.stat as size
+      const rows = databaseManager.query<IndexRow>(`
+        SELECT i.name, i.tbl_name as tableName, s.stat
         FROM sqlite_master i
         LEFT JOIN sqlite_stat1 s ON s.tbl = i.tbl_name AND s.idx = i.name
         WHERE i.type = 'index' AND i.name NOT LIKE 'sqlite_%'
@@ -164,7 +168,7 @@ export class IndexManager {
         stats.push({
           name: row.name,
           tableName: row.tableName,
-          size: row.size ? parseInt(row.stat) || 0 : 0,
+          size: row.stat ? parseInt(row.stat, 10) || 0 : 0,
           usage: Math.random() * 100, // 模拟使用率，实际需要更复杂的统计
           efficiency: Math.random() * 100 // 模拟效率，实际需要查询性能分析
         });
@@ -181,10 +185,8 @@ export class IndexManager {
    * 分析查询性能
    */
   public analyzeQueryPerformance(sql: string): string {
-    const db = databaseManager.getDatabase();
-
     try {
-      const result = db.query(`EXPLAIN QUERY PLAN ${sql}`);
+      const result = databaseManager.query<Record<string, unknown>>(`EXPLAIN QUERY PLAN ${sql}`);
       return JSON.stringify(result, null, 2);
     } catch (error) {
       console.error('分析查询性能失败:', error);
