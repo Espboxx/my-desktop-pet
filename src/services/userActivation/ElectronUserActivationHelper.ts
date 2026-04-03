@@ -97,7 +97,7 @@ class ElectronUserActivationHelper {
 
     // 方法2: 检查预加载的API
     if (typeof window !== 'undefined' && 
-        (window.electronAPI || window.desktopPet)) {
+        window.desktopPet) {
       return true;
     }
 
@@ -236,8 +236,6 @@ class ElectronUserActivationHelper {
    * 创建适合当前环境的用户激活配置
    */
   public createOptimalUserActivationConfig() {
-    const strategy = this.getRecommendedActivationStrategy();
-    
     return {
       persistToStorage: true,
       debugMode: this.config.debugMode,

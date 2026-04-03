@@ -40,14 +40,12 @@ class UserActivationManager {
     // 获取推荐的配置
     const optimalConfig = this.electronHelper.createOptimalUserActivationConfig();
 
-    this.options = {
+    this.options = Object.assign({
       persistToStorage: true,
       storageKey: 'desktop-pet-user-activation',
       sessionTimeout: 24 * 60 * 60 * 1000, // 24小时
       debugMode: false,
-      ...optimalConfig,
-      ...options // 用户选项优先级最高
-    };
+    }, optimalConfig, options);
 
     // 检测是否在Electron环境中
     this.isElectron = this.electronHelper.getEnvironmentInfo().isElectron;
@@ -70,23 +68,6 @@ class UserActivationManager {
         strategy: this.electronHelper.getRecommendedActivationStrategy()
       });
     }
-  }
-
-  /**
-   * 检测是否在Electron环境中
-   */
-  private detectElectronEnvironment(): boolean {
-    return !!(
-      typeof window !== 'undefined' &&
-      window.process &&
-      window.process.type === 'renderer'
-    ) || !!(
-      typeof window !== 'undefined' &&
-      window.electronAPI
-    ) || !!(
-      typeof window !== 'undefined' &&
-      window.desktopPet
-    );
   }
 
   /**
