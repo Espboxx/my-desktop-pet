@@ -16,6 +16,17 @@ export interface CompatibilityReport {
   fallbacksNeeded: string[];
 }
 
+interface NavigatorConnection {
+  effectiveType?: string;
+}
+
+interface PerformanceWithMemory extends Performance {
+  memory?: {
+    usedJSHeapSize: number;
+    jsHeapSizeLimit: number;
+  };
+}
+
 class CompatibilityChecker {
   private cachedReport: CompatibilityReport | null = null;
 
@@ -252,7 +263,7 @@ class CompatibilityChecker {
 
     // 检查网络状况
     if ('connection' in navigator) {
-      const connection = (navigator as any).connection;
+      const connection = (navigator as Navigator & { connection?: NavigatorConnection }).connection;
       if (connection && connection.effectiveType && 
           ['slow-2g', '2g', '3g'].includes(connection.effectiveType)) {
         recommendations.push('检测到网络较慢，建议使用压缩图像或emoji模式');
@@ -261,7 +272,7 @@ class CompatibilityChecker {
 
     // 检查内存使用
     if ('memory' in performance) {
-      const memory = (performance as any).memory;
+      const memory = (performance as PerformanceWithMemory).memory;
       if (memory && memory.usedJSHeapSize > memory.jsHeapSizeLimit * 0.8) {
         recommendations.push('内存使用较高，建议清理图像缓存');
       }

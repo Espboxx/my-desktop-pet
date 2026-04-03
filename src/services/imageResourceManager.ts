@@ -16,6 +16,16 @@ export interface PetImageSet {
   expressions: Record<string, string>;
 }
 
+interface ImageExpressionLike {
+  imageUrl?: string;
+}
+
+interface ImagePetTypeLike {
+  modelType?: string;
+  baseImageUrl?: string;
+  expressions: Record<string, ImageExpressionLike>;
+}
+
 class ImageResourceManager {
   private imageCache = new Map<string, ImageResource>();
   private loadingPromises = new Map<string, Promise<boolean>>();
@@ -222,10 +232,10 @@ class ImageResourceManager {
   /**
    * 预热缓存 - 预加载所有宠物类型的图像
    */
-  async warmupCache(petTypes: Record<string, any>): Promise<void> {
+  async warmupCache(petTypes: Record<string, ImagePetTypeLike>): Promise<void> {
     const promises: Promise<boolean>[] = [];
 
-    for (const [petTypeId, petType] of Object.entries(petTypes)) {
+    for (const [, petType] of Object.entries(petTypes)) {
       if (petType.modelType === 'image') {
         // 预加载基础图像
         if (petType.baseImageUrl) {
@@ -233,7 +243,7 @@ class ImageResourceManager {
         }
 
         // 预加载所有表情图像
-        for (const [expressionKey, expression] of Object.entries(petType.expressions)) {
+        for (const [, expression] of Object.entries<ImageExpressionLike>(petType.expressions)) {
           if (expression.imageUrl) {
             promises.push(this.preloadImage(expression.imageUrl));
           }
@@ -252,7 +262,7 @@ class ImageResourceManager {
   /**
    * 智能预加载 - 根据使用频率预加载图像
    */
-  async smartPreload(currentPetTypeId: string, petTypes: Record<string, any>): Promise<void> {
+  async smartPreload(currentPetTypeId: string, petTypes: Record<string, ImagePetTypeLike>): Promise<void> {
     const currentPetType = petTypes[currentPetTypeId];
     if (!currentPetType || currentPetType.modelType !== 'image') return;
 
@@ -281,7 +291,7 @@ class ImageResourceManager {
     }
 
     // 其他宠物类型的常用表情
-    for (const [petTypeId, petType] of Object.entries(petTypes)) {
+    for (const [petTypeId, petType] of Object.entries<ImagePetTypeLike>(petTypes)) {
       if (petTypeId !== currentPetTypeId && petType.modelType === 'image') {
         for (const expressionKey of highPriorityExpressions) {
           const expression = petType.expressions[expressionKey];

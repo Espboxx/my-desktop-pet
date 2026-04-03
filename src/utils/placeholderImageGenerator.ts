@@ -60,7 +60,7 @@ function unicodeSafeBase64Encode(str: string): string {
   } catch (error) {
     // 如果TextEncoder不可用，使用encodeURIComponent作为回退
     console.warn('TextEncoder not available, using encodeURIComponent fallback');
-    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_match, p1) => {
       return String.fromCharCode(parseInt(p1, 16));
     }));
   }

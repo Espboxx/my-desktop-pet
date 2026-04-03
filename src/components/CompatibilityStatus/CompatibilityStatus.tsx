@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCompatibility } from '@/hooks/utils/useCompatibility';
-import { usePerformanceMonitor } from '@/hooks/core/usePerformanceMonitor';
+import { usePerformanceMonitoring } from '@/hooks/utils/useCompatibility';
 import './CompatibilityStatus.css';
 
 interface CompatibilityStatusProps {
@@ -13,7 +13,7 @@ const CompatibilityStatus: React.FC<CompatibilityStatusProps> = ({
   className = '' 
 }) => {
   const { report, isChecking } = useCompatibility();
-  const { recommendations } = usePerformanceMonitor();
+  const { recommendations } = usePerformanceMonitoring();
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (isChecking) {
@@ -140,7 +140,7 @@ const CompatibilityStatus: React.FC<CompatibilityStatusProps> = ({
             <div className="performance-recommendations">
               <h4>性能建议</h4>
               <ul>
-                {recommendations.map((rec, index) => (
+                {recommendations.map((rec: string, index: number) => (
                   <li key={index}>{rec}</li>
                 ))}
               </ul>

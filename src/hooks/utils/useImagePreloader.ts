@@ -158,7 +158,12 @@ export function useImagePerformanceMonitor() {
 export function useAdaptiveImageQuality() {
   const qualityRef = useRef<"high" | "medium" | "low">("high");
 
-  const adjustQuality = useCallback((performanceStats: any) => {
+  interface AdaptivePerformanceStats {
+    averageLoadTime: number;
+    errorRate: number;
+  }
+
+  const adjustQuality = useCallback((performanceStats: AdaptivePerformanceStats) => {
     const { averageLoadTime, errorRate } = performanceStats;
 
     // 根据性能指标调整图像质量

@@ -12,6 +12,8 @@ export interface CustomImageData {
   size: number;
 }
 
+type CustomImageDataLike = Partial<CustomImageData>;
+
 export interface CustomImageStorage {
   images: CustomImageData[];
   version: number;
@@ -259,7 +261,7 @@ class CustomImageStorageManager {
     return `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  private validateImageData(image: any): boolean {
+  private validateImageData(image: CustomImageDataLike): boolean {
     return (
       typeof image.id === 'string' &&
       typeof image.petTypeId === 'string' &&
