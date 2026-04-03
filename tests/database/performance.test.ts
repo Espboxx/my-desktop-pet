@@ -1,4 +1,11 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
+
+vi.mock('electron', () => ({
+  app: {
+    getPath: () => process.cwd(),
+  },
+}));
+
 import { databaseManager } from '../../electron/database/DatabaseManager';
 import { petStatusService } from '../../electron/database/services/PetStatusService';
 import { settingsService } from '../../electron/database/services/SettingsService';
@@ -27,6 +34,11 @@ describe('Database Performance Tests', () => {
     db.exec('DELETE FROM inventory');
     db.exec('DELETE FROM unlocked_animations');
     db.exec('DELETE FROM app_settings');
+    db.exec('DELETE FROM pet_types');
+    db.prepare(`
+      INSERT INTO pet_types (id, name, category, is_active)
+      VALUES ('cat', 'Cat', 'default', 1)
+    `).run();
   });
 
   describe('Pet Status Operations', () => {

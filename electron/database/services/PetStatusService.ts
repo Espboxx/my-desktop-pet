@@ -86,10 +86,14 @@ export class PetStatusService {
   private upsertRecord(tableName: string, idField: string, data: Record<string, unknown>, whereCondition?: string): number {
     const db = databaseManager.getDatabase();
 
-    const whereClause = whereCondition || `${idField} = ?`;
-    const existingRecord = db.prepare<unknown[], Record<string, number>>(`SELECT ${idField} FROM ${tableName} WHERE ${whereClause} LIMIT 1`).get(
-      whereCondition ? undefined : [data[idField]]
-    );
+    const selectSql = whereCondition
+      ? `SELECT ${idField} FROM ${tableName} WHERE ${whereCondition}`
+      : `SELECT ${idField} FROM ${tableName} WHERE ${idField} = ? LIMIT 1`;
+
+    const selectStatement = db.prepare<unknown[], Record<string, number>>(selectSql)
+    const existingRecord = whereCondition
+      ? selectStatement.get()
+      : selectStatement.get([data[idField]])
 
     if (existingRecord) {
       // 更新现有记录
@@ -97,11 +101,7 @@ export class PetStatusService {
       const setClause = fields.map(field => `${field} = ?`).join(', ');
       const values = fields.map(field => data[field]);
 
-      if (whereCondition) {
-        db.prepare(`UPDATE ${tableName} SET ${setClause} WHERE ${whereClause}`).run(values);
-      } else {
-        db.prepare(`UPDATE ${tableName} SET ${setClause} WHERE ${idField} = ?`).run([...values, data[idField]]);
-      }
+      db.prepare(`UPDATE ${tableName} SET ${setClause} WHERE ${idField} = ?`).run([...values, existingRecord[idField]]);
 
       return existingRecord[idField];
     } else {
