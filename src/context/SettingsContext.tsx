@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { DEFAULT_PET_SETTINGS, type PetSettings } from '@/types/settings'
 
 interface SettingsContextValue {
@@ -8,7 +8,7 @@ interface SettingsContextValue {
   replaceSettings: (nextSettings: PetSettings) => void
 }
 
-const SettingsContext = createContext<SettingsContextValue | undefined>(undefined)
+export const SettingsContext = createContext<SettingsContextValue | undefined>(undefined)
 
 interface SettingsProviderProps {
   children: ReactNode
@@ -79,12 +79,3 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>
 }
 
-export function useSharedSettings() {
-  const context = useContext(SettingsContext)
-
-  if (!context) {
-    throw new Error('useSharedSettings must be used within a SettingsProvider')
-  }
-
-  return context
-}

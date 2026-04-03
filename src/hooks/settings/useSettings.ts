@@ -1,4 +1,4 @@
-import { useSharedSettings } from '@/context/SettingsContext'
+import { useSharedSettings } from '@/context/useSharedSettings'
 
 export { type PetSettings } from '@/types/settings'
 
