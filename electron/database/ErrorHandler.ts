@@ -11,6 +11,10 @@ export class DatabaseErrorHandler {
   private maxLogFileSize = 10 * 1024 * 1024; // 10MB
   private maxLogFiles = 5;
 
+  private isErrorInfoRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+  }
+
   constructor() {
     // 确保userData目录存在
     const userDataPath = app.getPath('userData');
@@ -53,7 +57,7 @@ export class DatabaseErrorHandler {
   /**
    * 写入日志文件
    */
-  private writeToLog(errorInfo: any): void {
+  private writeToLog(errorInfo: Record<string, unknown>): void {
     try {
       // 检查日志文件大小，进行轮转
       this.rotateLogFileIfNeeded();
@@ -256,7 +260,7 @@ export class DatabaseErrorHandler {
   /**
    * 获取错误日志
    */
-  public getErrorLogs(limit: number = 100): any[] {
+  public getErrorLogs(limit: number = 100): Array<Record<string, unknown>> {
     try {
       if (!fs.existsSync(this.logFilePath)) {
         return [];
@@ -270,7 +274,7 @@ export class DatabaseErrorHandler {
         .slice(-limit)
         .map(line => {
           try {
-            return JSON.parse(line);
+            return JSON.parse(line) as Record<string, unknown>;
           } catch {
             return { timestamp: new Date().toISOString(), raw: line };
           }
@@ -307,20 +311,23 @@ export class DatabaseErrorHandler {
       const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
       const recentErrors = logs.filter(log => {
-        const logTime = new Date(log.timestamp);
+        const timestamp = typeof log.timestamp === 'string' ? log.timestamp : new Date().toISOString();
+        const logTime = new Date(timestamp);
         return logTime > oneHourAgo;
       });
 
       const todayErrors = logs.filter(log => {
-        const logTime = new Date(log.timestamp);
+        const timestamp = typeof log.timestamp === 'string' ? log.timestamp : new Date().toISOString();
+        const logTime = new Date(timestamp);
         return logTime > oneDayAgo;
       });
 
-      const errorTypes = logs.reduce((acc, log) => {
-        const errorType = log.error?.name || 'Unknown';
-        acc[errorType] = (acc[errorType] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+       const errorTypes = logs.reduce<Record<string, number>>((acc, log) => {
+         const errorField = this.isErrorInfoRecord(log.error) ? log.error : undefined;
+         const errorType = typeof errorField?.name === 'string' ? errorField.name : 'Unknown';
+         acc[errorType] = (acc[errorType] || 0) + 1;
+         return acc;
+       }, {});
 
       return {
         totalErrors: logs.length,
@@ -351,5 +358,5 @@ export interface ErrorStats {
   recentErrors: number;
   todayErrors: number;
   errorTypes: Record<string, number>;
-  lastError: any;
+  lastError: Record<string, unknown> | null;
 }

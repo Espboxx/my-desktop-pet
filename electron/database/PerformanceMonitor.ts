@@ -1,6 +1,9 @@
 import { databaseManager } from './DatabaseManager';
 import { DatabaseErrorHandler } from './ErrorHandler';
-import type { DatabaseStats } from './DatabaseManager';
+
+interface ConnectionTestRow {
+  test: number;
+}
 
 /**
  * 性能监控数据接口
@@ -180,8 +183,8 @@ export class PerformanceMonitor {
   private checkDatabaseConnection(): boolean {
     try {
       const db = databaseManager.getDatabase();
-      const result = db.prepare('SELECT 1 as test').get();
-      return result && result.test === 1;
+      const result = db.prepare<[], ConnectionTestRow>('SELECT 1 as test').get();
+      return result?.test === 1;
     } catch (error) {
       this.errorHandler.handleError('数据库连接检查失败', error as Error);
       return false;
@@ -211,7 +214,6 @@ export class PerformanceMonitor {
   private async checkDiskSpace(): Promise<boolean> {
     try {
       const fs = await import('fs');
-      const path = await import('path');
       const app = await import('electron').then(m => m.app);
 
       const userDataPath = app.getPath('userData');
@@ -376,11 +378,12 @@ export class PerformanceMonitor {
 /**
  * 性能监控装饰器
  */
-export function monitorPerformance(target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function monitorPerformance(target: unknown, propertyName: string, descriptor: PropertyDescriptor) {
+  void target;
   const method = descriptor.value;
   const performanceMonitor = new PerformanceMonitor();
 
-  descriptor.value = async function (...args: any[]) {
+  descriptor.value = async function (...args: unknown[]) {
     const startTime = performance.now();
     let success = true;
     let error: Error | undefined;

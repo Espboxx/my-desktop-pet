@@ -23,7 +23,7 @@ export interface CacheConfig {
  * 查询缓存服务
  */
 export class QueryCache {
-  private cache = new Map<string, CacheEntry<any>>();
+  private cache = new Map<string, CacheEntry<unknown>>();
   private config: CacheConfig;
   private stats = {
     hits: 0,
@@ -46,7 +46,7 @@ export class QueryCache {
   /**
    * 生成缓存键
    */
-  private generateKey(sql: string, params: any[] = []): string {
+  private generateKey(sql: string, params: unknown[] = []): string {
     const normalizedParams = JSON.stringify(params || []);
     return `${sql}:${normalizedParams}`;
   }
@@ -54,7 +54,7 @@ export class QueryCache {
   /**
    * 检查缓存条目是否过期
    */
-  private isExpired(entry: CacheEntry<any>): boolean {
+  private isExpired(entry: CacheEntry<unknown>): boolean {
     return Date.now() - entry.timestamp > entry.ttl;
   }
 
@@ -62,7 +62,6 @@ export class QueryCache {
    * 检查并清理过期的缓存条目
    */
   private cleanupExpired(): void {
-    const now = Date.now();
     for (const [key, entry] of this.cache.entries()) {
       if (this.isExpired(entry)) {
         this.cache.delete(key);
@@ -97,7 +96,7 @@ export class QueryCache {
   /**
    * 获取缓存数据
    */
-  public get<T>(sql: string, params: any[] = []): T | null {
+  public get<T>(sql: string, params: unknown[] = []): T | null {
     if (!this.config.enableStats) {
       return null; // 如果缓存被禁用，直接返回null
     }
@@ -109,7 +108,7 @@ export class QueryCache {
       entry.hits++;
       this.stats.hits++;
       this.stats.totalQueries++;
-      return entry.data;
+      return entry.data as T;
     }
 
     this.stats.misses++;
@@ -120,7 +119,7 @@ export class QueryCache {
   /**
    * 设置缓存数据
    */
-  public set<T>(sql: string, params: any[] = [], data: T, ttl?: number): void {
+  public set<T>(sql: string, params: unknown[] = [], data: T, ttl?: number): void {
     if (!this.config.enableStats) {
       return; // 如果缓存被禁用，直接返回
     }
@@ -143,7 +142,7 @@ export class QueryCache {
   /**
    * 删除指定缓存
    */
-  public delete(sql: string, params: any[] = []): void {
+  public delete(sql: string, params: unknown[] = []): void {
     const key = this.generateKey(sql, params);
     this.cache.delete(key);
   }
@@ -186,7 +185,7 @@ export class QueryCache {
   public getCacheContents() {
     const contents: Array<{
       key: string;
-      data: any;
+        data: unknown;
       timestamp: number;
       ttl: number;
       hits: number;
@@ -265,7 +264,7 @@ export class QueryCache {
   /**
    * 获取缓存的TTL（剩余生存时间）
    */
-  public getTTL(sql: string, params: any[] = []): number {
+  public getTTL(sql: string, params: unknown[] = []): number {
     const key = this.generateKey(sql, params);
     const entry = this.cache.get(key);
 
@@ -280,7 +279,7 @@ export class QueryCache {
   /**
    * 检查缓存是否存在且未过期
    */
-  public has(sql: string, params: any[] = []): boolean {
+  public has(sql: string, params: unknown[] = []): boolean {
     const key = this.generateKey(sql, params);
     const entry = this.cache.get(key);
     return entry !== undefined && !this.isExpired(entry);
@@ -323,11 +322,12 @@ export class QueryCache {
  * 缓存装饰器
  */
 export function cacheQuery(ttl?: number) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (target: unknown, propertyName: string, descriptor: PropertyDescriptor) {
+    void target;
     const method = descriptor.value;
     const queryCache = new QueryCache();
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       // 生成缓存键（基于方法名和参数）
       const cacheKey = `${propertyName}:${JSON.stringify(args)}`;
 
