@@ -1,5 +1,6 @@
 // IPC 通信类型定义
 import type { SavedPetData } from "./petTypes";
+import type { PetSettings } from './settings'
 import type { SmoothTopMostConfig } from "./windowEffects";
 
 // IPC 通道名称
@@ -8,12 +9,10 @@ export type IPCChannel =
   | "save-pet-state"
   | "get-pet-settings"
   | "save-pet-settings"
+  | 'settings-updated'
   | "get-window-position"
-  | "set-pet-position"
   | "open-settings"
   | "set-always-on-top"
-  | "interact-with-pet"
-  | "update-pet-behavior"
   | "adjust-pet-window-size"
   | "exit-app"
   | "set-mouse-passthrough"
@@ -95,21 +94,16 @@ export interface DesktopPetAPI {
 
   // 窗口管理
   getWindowPosition: () => Promise<WindowPosition | undefined>;
-  setPetPosition: (x: number, y: number) => void;
 
   // 设置管理
   openSettings: () => void;
   setAlwaysOnTop: (flag: boolean) => void;
-  getPetSettings: () => Promise<unknown>;
-  savePetSettings: (settings: Record<string, unknown>) => void;
+  getPetSettings: () => Promise<PetSettings>;
+  savePetSettings: (settings: PetSettings) => void;
 
   // 宠物状态管理
   getPetState: () => Promise<SavedPetData | null>;
   savePetState: (state: SavedPetData) => void;
-
-  // 互动功能
-  interactWithPet: (action: string) => void;
-  updatePetBehavior: (behavior: PetBehaviorConfig) => void;
 
   // 窗口调整
   adjustPetWindowSize: (expand: boolean) => void;
@@ -129,7 +123,7 @@ export interface DesktopPetAPI {
   cancelTopMost: () => Promise<{ success: boolean; error: string | null }>;
   getWindowEffectsConfig: () => Promise<WindowEffectsConfigResponse>;
   updateWindowEffectsConfig: (
-    config: SmoothTopMostConfig,
+    config: Partial<SmoothTopMostConfig>,
   ) => Promise<WindowEffectsConfigResponse>;
   isWindowAnimating: () => Promise<WindowAnimationResponse>;
 }
@@ -138,3 +132,5 @@ export interface DesktopPetAPI {
 export interface WindowInfoAPI {
   getCurrentWindow: () => "pet" | "settings";
 }
+
+export type { SmoothTopMostConfig }

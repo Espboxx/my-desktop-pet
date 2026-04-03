@@ -30,19 +30,3 @@ export interface WindowEffectsAPI {
   updateWindowEffectsConfig(config: Partial<SmoothTopMostConfig>): Promise<WindowEffectsConfigResponse>;
   isWindowAnimating(): Promise<WindowAnimationStatusResponse>;
 }
-
-// 扩展全局window对象
-declare global {
-  interface Window {
-    desktopPet: {
-      // 现有API...
-      setMousePassthrough: (enable: boolean) => void;
-      // 新增窗口特效API
-      smoothBringToTop: () => Promise<WindowEffectsResponse>;
-      cancelTopMost: () => Promise<WindowEffectsResponse>;
-      getWindowEffectsConfig: () => Promise<WindowEffectsConfigResponse>;
-      updateWindowEffectsConfig: (config: Partial<SmoothTopMostConfig>) => Promise<WindowEffectsConfigResponse>;
-      isWindowAnimating: () => Promise<WindowAnimationStatusResponse>;
-    };
-  }
-}
