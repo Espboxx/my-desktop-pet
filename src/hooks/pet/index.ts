@@ -13,3 +13,5 @@ export * from './useTaskManager'; // Added export
 export * from './useAchievementManager'; // Added export
 export * from './useSpecialEvents'; // Added export
 export * from './useProactiveNeeds'; // Added export
+export { default as useAutonomousMovement } from './useAutonomousMovement';
+export { default as usePetAnimation } from './usePetAnimation';

@@ -4,36 +4,40 @@
  */
 
 // 动画相关 hooks
-export { default as useSmoothMovement } from "./animation/useSmoothMovement";
+export { useSmoothMovement } from "./animation/useSmoothMovement";
 export { default as usePetAnimation } from "./pet/usePetAnimation";
 
 // 核心功能 hooks
 export { default as usePetStatus } from "./core/usePetStatus";
-export { default as useEventManager } from "./core/useEventManager";
-export { default as useOptimizedState } from "./core/useOptimizedState";
-export { default as usePerformanceMonitor } from "./core/usePerformanceMonitor";
-export { default as useDebounce } from "./core/useDebounce";
-export { default as useWindowEffects } from "./core/useWindowEffects";
+export { useEventManager } from "./core/useEventManager";
+export { useOptimizedState } from "./core/useOptimizedState";
+export { usePerformanceMonitor } from "./core/usePerformanceMonitor";
+export { useDebounce } from "./core/useDebounce";
+export { useWindowEffects } from "./core/useWindowEffects";
 
 // 交互功能 hooks
 export {
-  default as usePetInteraction,
-  type UsePetInteractionReturn,
-  type PetPosition,
+  usePetInteraction,
 } from "./interaction/usePetInteraction";
 
+export {
+  type UsePetInteractionReturn,
+  type PetPosition,
+  type InteractionHandlers,
+} from "./interaction/types";
+
 export { default as useMouseHandling } from "./interaction/useMouseHandling";
-export { default as useDragHandling } from "./interaction/useDragHandling";
+export { useDragHandling } from "./interaction/useDragHandling";
 export { default as useMenuHandling } from "./interaction/useMenuHandling";
 export { default as useMouseChasing } from "./interaction/useMouseChasing";
 export { default as useReactionAnimations } from "./interaction/useReactionAnimations";
-export { default as useEyeTracking } from "./interaction/useEyeTracking";
-export { default as useHapticFeedback } from "./interaction/useHapticFeedback";
-export { default as useIdleHandling } from "./interaction/useIdleHandling";
-export { default as useContextMenuHandling } from "./interaction/useContextMenuHandling";
-export { default as useInteractionDetection } from "./interaction/useInteractionDetection";
-export { default as useInteractionFeedback } from "./interaction/useInteractionFeedback";
-export { default as useActionHandling } from "./interaction/useActionHandling";
+export { useEyeTracking } from "./interaction/useEyeTracking";
+export { useHapticFeedback } from "./interaction/useHapticFeedback";
+export { useIdleHandling } from "./interaction/useIdleHandling";
+export { useContextMenuHandling } from "./interaction/useContextMenuHandling";
+export { useInteractionDetection } from "./interaction/useInteractionDetection";
+export { useInteractionFeedback } from "./interaction/useInteractionFeedback";
+export { useActionHandling } from "./interaction/useActionHandling";
 
 // 宠物功能 hooks
 export {
@@ -59,15 +63,14 @@ export { default as useSettings } from "./settings/useSettings";
 export * from "./utils";
 
 // 交互相关类型和常量
-export type {
-  EventHandler,
-  EventTypeMap,
-  InteractionHandler,
-  DragHandler,
-  MenuHandler,
-} from "./interaction/types";
-
 export { INTERACTION_CONSTANTS } from "./interaction/constants";
 
 // 宠物相关常量
-export { PET_CONSTANTS } from "./pet/constants";
+export {
+  IDLE_ANIMATION_DURATIONS,
+  BASE_IDLE_ANIMATIONS,
+  defaultInitialStatus,
+  STATUS_THRESHOLDS,
+  EVENT_CHANCES,
+  DECAY_RATES,
+} from "./pet/constants";
